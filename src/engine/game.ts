@@ -71,6 +71,7 @@ export type Command=
  | {type:'resolveCrisis';id:string}
  | {type:'capital';rupees:number}
  | {type:'beginnerAssistance'}
+ | {type:'restartCompany'}
  | {type:'extendSupplier';id:string}
  | {type:'salvageMaterial';item:Material;qty:number}
  | {type:'ackCrisis';id:string}
@@ -201,6 +202,7 @@ function advance(g:Game,minutes:number){
  }
 }
 export function apply(source:Game,cmd:Command):Game{
+ if(cmd.type==='restartCompany'){check(source.accepted&&source.status==='liquidated','Only a liquidated company can restart');const fresh=initialGame(source.wall,(source.seed+2654435761)>>>0);fresh.revision=source.revision+1;assertState(fresh);return fresh}
  const g=clone(source);
  if(cmd.type==='takeover'){check(!g.accepted,'Already acquired');check(cmd.name.trim().length>0&&cmd.name.length<=60&&cmd.ceo.trim().length>0&&cmd.ceo.length<=60&&config.difficulties.includes(cmd.difficulty),'Invalid company identity');g.name=cmd.name.trim();g.ceo=cmd.ceo.trim();g.difficulty=cmd.difficulty;g.market=initialMarket(Math.floor(g.minute/1440),cmd.difficulty);g.accepted=true;decision(g,'takeover','Owner accepted inherited assets and liabilities');note(g,'Takeover completed')}
  else{

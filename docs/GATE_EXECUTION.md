@@ -105,3 +105,5 @@ G06 regional increment: regional order routing and commitment conservation, actu
 Persisted rescue phase progression, due-obligation distress model, difficulty windows, terminal operations freeze, beginner equity assistance and milestone history; CEO/Banking/News UI. Four tests authored, deferred. No PASS; legal liquidation distribution and viable playthroughs unverified.
 
 G07 governance increment: owner decision records and identity, supplier extension, raw inventory rescue sale, event causes/deadlines/acknowledgment and once-only penalties. Four tests authored, not run. Existing legacy crises retain records without retrospective penalties. Full equipment disposal, statutory liquidation distribution, board voting and viability checks remain open.
+
+G07 restart increment: fresh takeover allowed only after liquidation, old company archived in the same Dexie transaction, latest archive export, read-only terminal command guard and difficulty hints. Three tests authored. Full rescue path viability for all difficulties, archive integration testing, equipment disposals and true creditor distribution remain open. G07 partial; no PASS or merge.
