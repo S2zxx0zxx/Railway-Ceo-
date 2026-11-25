@@ -76,3 +76,5 @@ Baseline V3.0. Status is evidence-based; no task is verified by documentation al
 - All 12 release gates remain OPEN. Do not merge.
 
 - Follow-up: original financial reconciliation reports, replenishment forecast, bounded save codec, transactional previous-save backup, explicit import/recovery controls and regression tests authored. CI and browser persistence validation pending; EOQ/Stockpyl adoption and ECharts pending. No gate promoted.
+
+- RV-022: Added independent classical EOQ implementation, bounded advisory value in procurement, and three regression tests including the documented Stockpyl Example 3.1 vector. Assumptions are disclosed; not an auto-order policy. CI, shelf-life/capacity-aware optimization and upstream execution remain pending.
