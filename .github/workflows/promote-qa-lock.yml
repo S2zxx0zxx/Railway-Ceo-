@@ -1,0 +1,44 @@
+name: Promote audited QA lockfile (one-time)
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+permissions:
+  contents: read
+jobs:
+  promote:
+    if: github.repository == 'S2zxx0zxx/The-CEO-Company-Simulator-' && github.event.pull_request.number == 1 && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'feat/company-simulator-v3'
+    permissions:
+      contents: write
+      actions: read
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - id: needed
+        shell: bash
+        run: |
+          if test -f package-lock.json; then echo 'needed=false' >> "$GITHUB_OUTPUT"; else echo 'needed=true' >> "$GITHUB_OUTPUT"; fi
+      - if: steps.needed.outputs.needed == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: platform-build-evidence
+          run-id: 45611130371
+          github-token: ${{ github.token }}
+          path: /tmp/ceo-audited-lock
+      - if: steps.needed.outputs.needed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '4d0595b6234844517ca79bdbe03aef5c3c3e85c06dd773eb70c4a994c092cf84  /tmp/ceo-audited-lock/package-lock.json' | sha256sum -c -
+          node - <<'JS'
+          const p=require('./package.json'),l=require('/tmp/ceo-audited-lock/package-lock.json').packages[''];
+          for(const k of ['dependencies','devDependencies']) {
+            const sort=o=>JSON.stringify(Object.entries(o).sort(([a],[b])=>a.localeCompare(b)));
+            if(sort(p[k])!==sort(l[k]))throw Error('Dependency declarations changed; do not promote');
+          }
+          JS
+          cp /tmp/ceo-audited-lock/package-lock.json package-lock.json
+          git add -- package-lock.json
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'Pin verified G10 npm dependency resolution'
+          git push origin HEAD:refs/heads/feat/company-simulator-v3

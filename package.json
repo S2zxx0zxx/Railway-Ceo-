@@ -5,14 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/generate-icons.mjs && tsc --noEmit && vite build",
+    "build": "node scripts/generate-icons.mjs && node scripts/runtime-licenses.mjs && tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "android:sync": "npm run build && node scripts/prepare-android.mjs",
     "audit:resources": "node scripts/resource-inventory.mjs",
     "audit:bundle": "node scripts/audit-bundle.mjs",
     "android:apk": "npm run android:sync && node scripts/android-build.mjs assembleDebug",
-    "android:aab": "npm run android:sync && node scripts/android-build.mjs bundleRelease"
+    "android:aab": "npm run android:sync && node scripts/android-build.mjs bundleRelease",
+    "audit:licenses": "node scripts/runtime-licenses.mjs",
+    "android:sign": "node scripts/sign-android.mjs"
   },
   "dependencies": {
     "@capacitor/core": "8.0.0",

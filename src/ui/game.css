@@ -75,3 +75,6 @@
 
 /* Native edge-to-edge safe area; preserve portrait/tablet fallback. */
 .game{padding-top:max(env(safe-area-inset-top),0px);padding-right:max(env(safe-area-inset-right),0px);padding-bottom:max(env(safe-area-inset-bottom),0px);padding-left:max(env(safe-area-inset-left),0px)}.intro{padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}.panel>section{scroll-padding-bottom:env(safe-area-inset-bottom)}@media(orientation:landscape) and (max-height:450px){.panel{max-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 8px)}}
+
+/* G11: takeover must sit above all HUD/dock stacking contexts. */
+.intro{z-index:100;isolation:isolate;align-items:center}.intro>div{max-height:calc(100dvh - max(12px,env(safe-area-inset-top)) - max(12px,env(safe-area-inset-bottom)));overscroll-behavior:contain}.toast{z-index:110}

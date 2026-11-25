@@ -9,3 +9,6 @@ One narrow upstream adaptation is present; no third-party art has been imported 
 - Full notice: `docs/third-party/idle-game-template-LICENSE.txt`.
 
 The adopted notice is also included in `public/licenses/` for the distributable web/native bundle. Runtime dependency notices remain pending.
+
+## Runtime dependency notices
+Generated at build from exact installed lockfile versions by `scripts/runtime-licenses.mjs`; requires actual license files and accepted license identifiers, emits `public/licenses/RUNTIME_LICENSES.txt`. Final review pending. The original project license is owner-controlled and not selected here.

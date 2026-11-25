@@ -1,6 +1,6 @@
 # Sequential release gate execution
 
-Owner update: implementation may proceed in gate order on explicit owner command even if earlier tests or blockers are unresolved. Record incomplete scope and defer verification to the final remediation phase; never label it PASS. G10 is now active for implementation. G01–G09 remain incomplete; G11–G12 await owner instruction. Keep all work on PR #1, feat/company-simulator-v3. Do not merge until all gates pass. License/provenance permission remains a prerequisite to importing third-party material.
+Owner update: implementation may proceed in gate order on explicit owner command even if earlier tests or blockers are unresolved. Record incomplete scope and defer verification to the final remediation phase; never label it PASS. G11 is now active for implementation. G01–G10 remain incomplete; G12 awaits owner instruction. Keep all work on PR #1, feat/company-simulator-v3. Do not merge until all gates pass. License/provenance permission remains a prerequisite to importing third-party material.
 
 | Gate | Status | Acceptance from MASTER_BUILD_SPEC.md section 10 |
 |---|---|---|
@@ -13,8 +13,8 @@ Owner update: implementation may proceed in gate order on explicit owner command
 | G07 | PARTIAL / VERIFICATION DEFERRED | Viable rescue for each difficulty; recovery and liquidation |
 | G08 | PARTIAL / VERIFICATION DEFERRED | Offline parity, time anomalies, save integrity, migration and updates |
 | G09 | PARTIAL / VERIFICATION DEFERRED | Manager validation, budget, authority, stop conditions and decision evidence |
-| G10 | ACTIVE IMPLEMENTATION / NOT PASSED | Installable offline PWA, native APK device test, save transfer and no mandatory network |
-| G11 | LOCKED | Signed AAB, metadata, Play policies, notices, no secrets or high-priority defects |
+| G10 | PARTIAL / VERIFICATION DEFERRED | Installable offline PWA, native APK device test, save transfer and no mandatory network |
+| G11 | ACTIVE IMPLEMENTATION / NOT PASSED | Signed AAB, metadata, Play policies, notices, no secrets or high-priority defects |
 | G12 | LOCKED | Exact revision and final evidence, all gates passed, authorized merge |
 
 ## G01 corporate coverage register (initial audit)
@@ -132,3 +132,6 @@ G10 platform adapter increment: native App lifecycle/back, portable save and rep
 G10 build increment: reproducible-in-intent native generation scripts and CI QA APK/unsigned AAB outputs, signature/target evidence, byte/hash budget audit and platform contract. No artifact generation claimed until CI/local evidence. Owner app ID/versionCode and signing, real device/transfer/update and lockfile verification remain open. No PASS.
 
 G10 observed CI evidence: runs 45610920923 (web), 45610920864 (G08 browser), 45610920840 (Android) on 6dffa7985c051dfb9764dcaaa471973b4ca01a35 failed before build due to TS2367 in offline.ts and TS2307 in g06-regions.test.ts. Corrected both source anchors and added update activation timeout; rerun confirmation pending. No APK/AAB from those failed runs. No PASS.
+
+### G11 release increment
+Observed G10 74ed771: 118 tests pass, web and G08 offline acceptance pass, debug APK and unsigned AAB built and artifact hashes independently matched; browser smoke failed small-landscape takeover interception. Corrected stacking and added policy draft, store metadata/declaration checklist, exact lockfile promotion workflow, runtime license text generator, advisory audit workflow and local expected-certificate signing script. See G11_RELEASE_READINESS.md. Lock promotion/advisory/license runs, final build and signed AAB not yet verified. No gate PASS.

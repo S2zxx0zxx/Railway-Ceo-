@@ -19,3 +19,9 @@ coverage/
 
 /android/.idea/
 /android/capacitor-cordova-android-plugins/build/
+
+/public/licenses/RUNTIME_LICENSES.txt
+*.p12
+*.pfx
+*.pem
+*.key

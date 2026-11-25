@@ -1,0 +1,15 @@
+{
+  "title": "The CEO: Company Simulator",
+  "shortDescription": "Rescue a factory, manage your company and grow a business in an offline tycoon.",
+  "fullDescription": "Take charge of a distressed biscuit manufacturer. Inspect the company, manage suppliers and employees, repair machines, produce goods, control quality and sell to simulated markets. Review cash flow, debt and business risks as you work toward recovery. Choose a difficulty, delegate bounded tasks to managers and return to your locally saved progress. All money, loans, businesses and transactions in the game are fictional. No real-money banking, investing or gambling services. Core gameplay is designed for offline use. Save files can be exported and imported manually.",
+  "category": "Game / Simulation",
+  "ads": false,
+  "inAppPurchases": false,
+  "accountRequired": false,
+  "applicationId": "app.theceo.companysimulator",
+  "publisherContact": null,
+  "privacyPolicyUrl": null,
+  "targetAudience": null,
+  "contentRating": null,
+  "status": "draft-owner-review-required"
+}
