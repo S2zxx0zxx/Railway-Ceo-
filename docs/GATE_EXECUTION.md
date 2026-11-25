@@ -142,3 +142,5 @@ G11 lock promotion verified: run 45612480252 succeeded, c97d1d7 added exact 257-
 Reopened G01–G11. Exact 3e474e1 CI: 118 tests, browser, worker and APK/AAB package audit pass; release dependency audit fails (runtime 1 critical; full 4 critical, 1 high, 1 moderate). Security upgrades and lock regeneration initiated, not verified. See G12_REMEDIATION.md. No merge.
 
 G12 security lock resolution passed 118 tests and audit 0 vulnerabilities at 4367345 lock promotion; bot-triggered checks action_required, full rebuild required. Buyer reservation and contract lifecycle added; tests pending. No gate pass.
+
+- G12 continuation baseline c952660: release audit 45614466081 passed, runtime/full npm audit both zero. Verify 45614465957 and Android 45614466012 failed TS2451/TS2339 (duplicate block-scoped c in recall handler). Browser and worker runs also failed. Renamed contract variable without changing accounting; fresh CI required. No new artifact verified.

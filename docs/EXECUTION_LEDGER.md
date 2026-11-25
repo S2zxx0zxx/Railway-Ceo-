@@ -162,3 +162,5 @@ Baseline V3.0. Status is evidence-based; no task is verified by documentation al
 - G12 authorized. Baseline exact 3e474e1: 118 tests/30 files, browser, offline worker and Android package pass. Release audit fails on Capacitor Android, CLI/tar, Vitest/mocker/tinypool. Upgrade requested to audit-suggested patched versions and scoped CI lock resolution with regression gate. No gate passed.
 
 - G12: actual patched lock resolution succeeded (118 tests and 0 npm audit vulnerabilities in run 45614103984), promoted 4367345. Removed temporary lock workflow. Added buyer contract lifecycle with finished goods and regional demand reservations, locked terms, dispatch/cancel/expiry/recall and save linkage. Three tests authored; actual execution pending.
+
+- G12 continuation baseline c952660: release audit 45614466081 passed, runtime/full npm audit both zero. Verify 45614465957 and Android 45614466012 failed TS2451/TS2339 (duplicate block-scoped c in recall handler). Browser and worker runs also failed. Renamed contract variable without changing accounting; fresh CI required. No new artifact verified.
