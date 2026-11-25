@@ -56,3 +56,6 @@ D03/D05/D06: implemented credit purchases, pending-order cancellation, invoice c
 
 ### G01 customer-service increment
 D16/D19 now have persisted delivered sale records and actual complaint/refund commands in Sales. Paid refund and unpaid credit note reverse recognized revenue; food is not restocked; duplicate refunds rejected. tests/g01-customer.test.ts authored. Full automatic complaint/recall/partial returns acceptance remains open. No gate pass.
+
+### G01 HR increment
+D14/D15/D22: real shifts, safety training, fatigue/attendance, overtime, promotions, effective labor and payroll projection; tests/g01-hr.test.ts authored. Partial pending tests and remaining scope. No promotion to G02.

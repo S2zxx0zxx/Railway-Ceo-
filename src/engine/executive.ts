@@ -1,8 +1,8 @@
-import {balance,money,profit} from './ledger';
-import {throughput,demand,type Game} from './game';
+import {balance,profit} from './ledger';
+import {throughput,demand,scheduledPayroll,type Game} from './game';
 import {financialReport} from './reports';
 export function executiveReview(g:Game){
- const cash=balance(g.journal,'cash'),payroll=money(g.employees.reduce((s,e)=>s+e.wage,0));
+ const cash=balance(g.journal,'cash'),payroll=scheduledPayroll(g);
  const arrears=-balance(g.journal,'payroll'),debt=-balance(g.journal,'debt'),report=financialReport(g);
  const issues=[
   {id:'cash',active:cash<payroll,label:'Cash below one day of scheduled wages'},
