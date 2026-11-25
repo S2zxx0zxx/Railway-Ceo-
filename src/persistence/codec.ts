@@ -40,7 +40,7 @@ export function decodeSave(text:string):Game{
  check(validGovernance(g));
  check(Array.isArray(g.crises)&&g.crises.every(c=>str(c.id)&&['payroll','machine','liquidity','compliance','safety','supplier','creditor','quality','external'].includes(c.kind)&&int(c.opened,0,g.minute)&&typeof c.resolved==='boolean'&&validCrisisDetails(c.details,g.minute,c.opened,c.resolved)));
  check(Array.isArray(g.news)&&g.news.length<=100&&g.news.every(n=>str(n,1000))&&Array.isArray(g.history)&&g.history.every(h=>int(h.day)&&decimal(h.revenue)&&decimal(h.profit)));
- const ids=[...g.governance.decisions,...g.market.campaigns,...g.plans,...g.jobs,...g.lots,...g.employees,...g.crises,...g.payables,...g.sales,...g.loans,...g.journal].map(x=>x.id);
+ const ids=[...g.management.logs,...g.management.approvals,...g.governance.decisions,...g.market.campaigns,...g.plans,...g.jobs,...g.lots,...g.employees,...g.crises,...g.payables,...g.sales,...g.loans,...g.journal].map(x=>x.id);
  check(new Set(ids).size===ids.length&&ids.every(i=>!/^e[0-9]+$/.test(i)||Number(i.slice(1))<g.next),'Conflicting object identifiers');
  assertState(g);return g;
 }

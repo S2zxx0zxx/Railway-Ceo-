@@ -117,3 +117,5 @@ G08 UI increment: visible return report and stale-tab recovery UI, visibility li
 
 ### G09 engine increment
 Four departmental authorities, real candidate command validation and actual ledger cash-debit limits, same-day CEO approval queue, assignment/availability checks, cash reserve/risk stops and persistent logs. Legacy saves retain records but require explicit redelegation. UI/tests and approval-time margin/price safeguards pending. No PASS.
+
+G09 UI increment: assigned authority controls, company/department limits, CEO approval queue, emergency stop and execution history. Approval rechecks margin, quantity policy, repair need, actual ledger debit and all normal command constraints. Eight tests authored and existing manager test adapted. Verification deferred; broader authority scope, future scheduling budget reservations and comprehensive offline/approval tests remain open. G09 partial; no later gate started.

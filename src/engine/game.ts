@@ -207,7 +207,7 @@ export function advanceInPlace(g:Game,minutes:number){
   startDuePlans(g);
   reviewCrises(g);
   pauseUnsafe(g);
-  if(due===nextDay&&g.manager&&g.status!=='liquidated')automate(g);
+  if(due===nextDay){rollManagement(g);if(g.manager&&g.status!=='liquidated')automate(g)}
   if(g.accepted)updateMilestones(g);
   if(g.status==='liquidated'){g.speed=0;g.manager=false;g.management.approvals=[];note(g,'Operations frozen. Existing assets and obligations remain recorded.');break}
  }
@@ -259,12 +259,12 @@ export function apply(source:Game,cmd:Command):Game{
  case 'stopCampaign':{check(g.campaignUntil>g.minute,'No active campaign');const c=activeCampaign(g);if(c)c.stopped=g.minute;g.campaignUntil=g.minute;note(g,'Campaign stopped; spent budget not refundable');break}
  case 'research':check(g.research<5&&!g.jobs.some(j=>j.kind==='research'),'Research unavailable');spend(g,'expense',money(10000),'Efficiency research');enqueue(g,{kind:'research',qty:0,cost:'0',due:g.minute+1440});break;
  case 'automation':{check(typeof cmd.enabled==='boolean','Invalid automation flag');if(cmd.enabled){check(g.management.assignments.some(a=>a.enabled),'Assign a manager first');check(!managerRisk(g)&&cash(g)>=money(g.policy.minCash),'Resolve risk or cash reserve before enabling');g.management.halted=null}else g.management.approvals=[];g.manager=cmd.enabled;break}
- case 'assignManager':{const a=cmd.authority;check(validAuthority(a)&&g.employees.some(e=>e.id===a.employeeId&&e.role==='manager'),'Invalid manager authority');check(!g.management.assignments.some(x=>x.department===a.department&&x.employeeId!==a.employeeId),'Department already assigned');g.management.assignments=g.management.assignments.filter(x=>x.employeeId!==a.employeeId);g.management.assignments.push({...a});g.management.approvals=g.management.approvals.filter(x=>x.employeeId!==a.employeeId);break}
+ case 'assignManager':{const a=cmd.authority;check(validAuthority(a)&&g.employees.some(e=>e.id===a.employeeId&&e.role==='manager'),'Invalid manager authority');check(!g.management.assignments.some(x=>x.department===a.department&&x.employeeId!==a.employeeId),'Department already assigned');g.management.assignments=g.management.assignments.filter(x=>x.employeeId!==a.employeeId);g.management.assignments.push({...a});g.management.approvals=g.management.approvals.filter(x=>x.employeeId!==a.employeeId);if(!g.management.assignments.some(x=>x.enabled))g.manager=false;break}
  case 'unassignManager':{check(g.management.assignments.some(a=>a.employeeId===cmd.employeeId),'Manager not assigned');g.management.assignments=g.management.assignments.filter(a=>a.employeeId!==cmd.employeeId);g.management.approvals=g.management.approvals.filter(a=>a.employeeId!==cmd.employeeId);if(!g.management.assignments.some(a=>a.enabled))g.manager=false;break}
  case 'managerLimits':{check(Number.isSafeInteger(cmd.dailyLimit)&&cmd.dailyLimit>=0&&cmd.dailyLimit<=1000000&&Number.isSafeInteger(cmd.repairBelow)&&cmd.repairBelow>=40&&cmd.repairBelow<=95,'Invalid global limits');g.management.dailyLimit=cmd.dailyLimit;g.management.repairBelow=cmd.repairBelow;g.management.approvals=[];break}
  case 'managerStop':stopManagers(g,'CEO emergency stop');break;
  case 'managerApproval':{rollManagement(g);const a=g.management.approvals.find(x=>x.id===cmd.id);check(a&&typeof cmd.approve==='boolean','Approval expired or unavailable');g.management.approvals=g.management.approvals.filter(x=>x.id!==a.id);if(cmd.approve)delegatedAttempt(g,a.department,a.command,true,a.employeeId,BigInt(a.estimate));else managerLog(g,a.department,a.command.type,'rejected','CEO rejected request',0n,a.employeeId);break}
- case 'policy':{const p=cmd.policy;positive(p.reorderBatches,5);positive(p.batchSize,5000);positive(p.minCash,10000000);check(Number.isSafeInteger(p.minMargin)&&p.minMargin>=0&&p.minMargin<=3000,'Invalid margin');g.policy={...p};break}
+ case 'policy':{const p=cmd.policy;positive(p.reorderBatches,5);positive(p.batchSize,5000);positive(p.minCash,10000000);check(Number.isSafeInteger(p.minMargin)&&p.minMargin>=0&&p.minMargin<=3000,'Invalid margin');g.policy={...p};g.management.approvals=[];break}
  case 'train':{const e=g.employees.find(x=>x.id===cmd.id);check(e&&e.skill<100,'Employee unavailable or fully trained');spend(g,'expense',money(3000),'Staff training');e.skill=Math.min(100,e.skill+5);break}
  case 'shift':{const e=g.employees.find(x=>x.id===cmd.id);check(e&&[8,10,12].includes(cmd.hours),'Invalid employee or shift');check(cmd.hours===8||e.safetyTrained,'Extended shift requires safety training');check(cmd.hours===8||e.fatigue<60,'Employee needs recovery');e.shiftHours=cmd.hours;note(g,'Shift assignment updated');break}
  case 'safetyTraining':{const e=g.employees.find(x=>x.id===cmd.id);check(e&&!e.safetyTrained,'Safety training unavailable');spend(g,'expense',money(1500),'Safety training');e.safetyTrained=true;note(g,'Safety training completed');break}
@@ -280,7 +280,7 @@ export function apply(source:Game,cmd:Command):Game{
  case 'speed':check([0,1,5,20,60].includes(cmd.value),'Invalid speed');g.speed=cmd.value;break;
  }
  }
- pauseUnsafe(g);if(g.manager&&managerRisk(g))stopManagers(g,managerRisk(g)!);if(g.accepted)updateMilestones(g);g.revision++;assertState(g);return g;
+ pauseUnsafe(g);if(g.manager&&(managerRisk(g)||cash(g)<money(g.policy.minCash)))stopManagers(g,managerRisk(g)??'Cash reserve reached');if(g.accepted)updateMilestones(g);g.revision++;assertState(g);return g;
 }
 function managerLog(g:Game,department:ManagerLog['department'],action:string,outcome:ManagerLog['outcome'],reason:string,cashSpent=0n,employeeId?:string){
  g.management.logs.push({id:id(g),minute:g.minute,department,action,outcome,reason:reason.slice(0,240),cashSpent:String(cashSpent),...(employeeId?{employeeId}:{})});g.management.logs=g.management.logs.slice(-1000);
@@ -293,6 +293,9 @@ function delegatedAttempt(g:Game,department:Department,cmd:DelegatedCommand,appr
  const e=g.employees.find(e=>e.id===a.employeeId&&e.role==='manager'&&e.present&&e.fatigue<70&&e.morale>=20&&e.skill>=60);if(!e)return fail('Assigned manager unavailable or unqualified');
  if(!validDelegated(cmd)||commandDepartment(cmd)!==department)return fail('Command outside delegated authority');
  if(g.audit.length!==config.audit.length)return fail('Takeover audit required');
+ if(cmd.type==='produce'&&(cmd.qty>g.policy.batchSize||g.plans.length>0))return fail('Batch policy or existing reservation prevents production');
+ if(cmd.type==='sell'){if(cmd.qty>g.policy.batchSize||stock(g,'biscuit')<cmd.qty)return fail('Sale quantity no longer available');const cost=averageIssue(g.lots.filter(l=>l.item==='biscuit'),cmd.qty);if(BigInt(g.price)*BigInt(cmd.qty)-cost-30n*BigInt(cmd.qty)<BigInt(g.policy.minMargin)*BigInt(cmd.qty))return fail('Current contribution margin below policy')}
+ if(cmd.type==='repair'&&(g.machines[cmd.machine].condition>=g.management.repairBelow||g.machines[cmd.machine].readyAt!==0))return fail('Maintenance no longer required');
  // Estimate from the actual validated candidate, not a separate accounting simulation.
  let next:Game;try{next=apply(g,cmd)}catch(err){return fail(err instanceof Error?err.message:'Command validation failed')}
  const actual=next.journal.slice(g.journal.length).reduce((n,j)=>n+j.lines.filter(l=>l.account==='cash'&&BigInt(l.amount)<0n).reduce((s,l)=>s-BigInt(l.amount),0n),0n);
