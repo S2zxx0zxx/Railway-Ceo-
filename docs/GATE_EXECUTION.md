@@ -1,6 +1,6 @@
 # Sequential release gate execution
 
-Owner update: implementation may proceed in gate order on explicit owner command even if earlier tests or blockers are unresolved. Record incomplete scope and defer verification to the final remediation phase; never label it PASS. G06 is now active for implementation. G01–G05 remain incomplete; G07–G12 await owner instruction. Keep all work on PR #1, feat/company-simulator-v3. Do not merge until all gates pass. License/provenance permission remains a prerequisite to importing third-party material.
+Owner update: implementation may proceed in gate order on explicit owner command even if earlier tests or blockers are unresolved. Record incomplete scope and defer verification to the final remediation phase; never label it PASS. G07 is now active for implementation. G01–G06 remain incomplete; G08–G12 await owner instruction. Keep all work on PR #1, feat/company-simulator-v3. Do not merge until all gates pass. License/provenance permission remains a prerequisite to importing third-party material.
 
 | Gate | Status | Acceptance from MASTER_BUILD_SPEC.md section 10 |
 |---|---|---|
@@ -9,8 +9,8 @@ Owner update: implementation may proceed in gate order on explicit owner command
 | G03 | PARTIAL / VERIFICATION DEFERRED | Original approved UI baseline, screenshots of all panels, layout, touch and focus |
 | G04 | PARTIAL / VERIFICATION DEFERRED | Balanced ledger, exactly-once posting, AR/AP/stock and financial reconciliation |
 | G05 | PARTIAL / VERIFICATION DEFERRED | Manufacturing, inventory, quality and resource constraints |
-| G06 | ACTIVE IMPLEMENTATION / NOT PASSED | Bounded markets, competition, reproducible events and economy |
-| G07 | LOCKED | Viable rescue for each difficulty; recovery and liquidation |
+| G06 | PARTIAL / VERIFICATION DEFERRED | Bounded markets, competition, reproducible events and economy |
+| G07 | ACTIVE IMPLEMENTATION / NOT PASSED | Viable rescue for each difficulty; recovery and liquidation |
 | G08 | LOCKED | Offline parity, time anomalies, save integrity, migration and updates |
 | G09 | LOCKED | Manager validation, budget, authority, stop conditions and decision evidence |
 | G10 | LOCKED | Installable offline PWA, native APK device test, save transfer and no mandatory network |
@@ -100,3 +100,6 @@ Single market state with normalized integer quota, bounded rival agents, daily s
 G06 economic increment: dynamic bounded commodity indices and procurement quote integration, seeded shocks with three-day duration and news, difficulty-specific shock rates, budgeted campaigns with uncertain bounded preference and cancellation. Four tests authored; verification deferred. No PASS.
 
 G06 regional increment: regional order routing and commitment conservation, actual freight/time, destination history and pre-dispatch expiry guard. Three tests authored. G06 incomplete: full buyer contracts, region-specific rival dynamics, accounting/recovery viability and comprehensive deterministic/balancing checks deferred. Parameters are fictional, uncalibrated; no gate passed or merge.
+
+### G07 rescue increment
+Persisted rescue phase progression, due-obligation distress model, difficulty windows, terminal operations freeze, beginner equity assistance and milestone history; CEO/Banking/News UI. Four tests authored, deferred. No PASS; legal liquidation distribution and viable playthroughs unverified.

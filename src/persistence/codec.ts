@@ -1,3 +1,4 @@
+import {validRescue} from '../engine/rescue';
 import {validMarket,validEconomy,regionInfo} from '../engine/market';
 import {assertState,migrateGame,type Game} from '../engine/game';
 import {accounts} from '../engine/ledger';
@@ -10,6 +11,7 @@ export function decodeSave(text:string):Game{
  check(text.length<=8_000_000,'Save exceeds import limit');
  const g=migrateGame(JSON.parse(text) as Game);
  check(g.schema===1&&int(g.financeStart,0,g.minute)&&int(g.revision)&&int(g.minute)&&int(g.wall)&&int(g.seed,0,4294967295)&&int(g.next,1)&&str(g.name,60)&&str(g.brand,60)&&g.brand.trim().length>0&&str(g.ceo,60)&&config.difficulties.includes(g.difficulty));
+ check(validRescue(g.rescue,g.minute,g.difficulty));
  check(typeof g.accepted==='boolean'&&typeof g.manager==='boolean'&&[0,1,5,20,60].includes(g.speed)&&['distressed','recovering','stable','liquidated'].includes(g.status));
  check(int(g.price,100,3000)&&int(g.reputation,0,100)&&int(g.research,0,5)&&int(g.campaignUntil)&&int(g.produced)&&int(g.sold)&&g.sold<=g.produced&&int(g.competitorPrice,600,1200)&&int(g.distressDays));
  check(validMarket(g.market,g.minute)&&validEconomy(g.market,g.minute));
