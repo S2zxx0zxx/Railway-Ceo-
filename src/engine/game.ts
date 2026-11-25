@@ -38,6 +38,7 @@ export type Command=
  | {type:'hire';role:'operator'|'manager'}
  | {type:'settlePayroll';rupees:number}
  | {type:'repay';rupees:number}
+ | {type:'settleDebt'}
  | {type:'payTax';rupees:number}
  | {type:'settleTax'}
  | {type:'restructureLoan';id:string}
@@ -181,7 +182,8 @@ export function apply(source:Game,cmd:Command):Game{
  case 'price':positive(cmd.price,3000);check(cmd.price>=100,'Price too low');g.price=cmd.price;break;
  case 'hire':{check(g.employees.length<100&&['operator','manager'].includes(cmd.role),'Hiring limit');spend(g,'expense',money(2000),'Recruitment');g.employees.push({id:id(g),name:cmd.role==='manager'?'Production manager':'New operator',role:cmd.role,skill:65+Math.floor(rng(g)*25),morale:70,wage:cmd.role==='manager'?1500:800,shiftHours:8,fatigue:0,present:true,safetyTrained:false,grade:1});break}
  case 'settlePayroll':{positive(cmd.rupees);const amount=money(cmd.rupees);canPay(g,amount);check(amount<=-balance(g.journal,'payroll'),'Exceeds payroll payable');transfer(g.journal,id(g),g.minute,'Payroll settlement','payroll','cash',amount);break}
- case 'repay':{positive(cmd.rupees);const amount=money(cmd.rupees);canPay(g,amount);check(amount<=totalDebt(g.journal),'Exceeds debt');const accrued=-balance(g.journal,'interestPayable'),interest=amount<accrued?amount:accrued;if(interest>0n)transfer(g.journal,id(g),g.minute,'Interest payment','interestPayable','cash',interest);if(amount>interest){transfer(g.journal,id(g),g.minute,'Debt repayment','debt','cash',amount-interest);allocatePrincipal(g.loans,amount-interest)}break}
+ case 'settleDebt':
+ case 'repay':{if(cmd.type==='repay')positive(cmd.rupees);const amount=cmd.type==='settleDebt'?totalDebt(g.journal):money(cmd.rupees);canPay(g,amount);check(amount<=totalDebt(g.journal),'Exceeds debt');const accrued=-balance(g.journal,'interestPayable'),interest=amount<accrued?amount:accrued;if(interest>0n)transfer(g.journal,id(g),g.minute,'Interest payment','interestPayable','cash',interest);if(amount>interest){transfer(g.journal,id(g),g.minute,'Debt repayment','debt','cash',amount-interest);allocatePrincipal(g.loans,amount-interest)}break}
  case 'settleTax':
  case 'payTax':{if(cmd.type==='payTax')positive(cmd.rupees);const amount=cmd.type==='settleTax'?-balance(g.journal,'taxPayable'):money(cmd.rupees);canPay(g,amount);check(amount<=-balance(g.journal,'taxPayable'),'Exceeds tax payable');transfer(g.journal,id(g),g.minute,'Tax payment','taxPayable','cash',amount);break}
  case 'loan':{positive(cmd.rupees,config.finance.loanMaxRupees);check(g.reputation>=config.finance.loanMinReputation&&!g.loans.some(l=>loanSchedule(l,g.minute).due>0n)&&totalDebt(g.journal)+money(cmd.rupees)<=money(config.finance.loanLimitRupees),'Loan not eligible');transfer(g.journal,id(g),g.minute,'Loan proceeds','cash','debt',money(cmd.rupees));g.loans.push(makeLoan(id(g),money(cmd.rupees),g.minute));break}
