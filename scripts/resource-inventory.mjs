@@ -20,7 +20,7 @@ for(const [path,entry] of Object.entries(lock.packages).sort(([a],[b])=>a.locale
  }
  rows.push({path,name:manifest.name,version:manifest.version,lockedVersion:entry.version??null,license:manifest.license??null,integrity:entry.integrity??null,dev:!!entry.dev,optional:!!entry.optional,licenseFiles,status:manifest.version!==entry.version?'version-mismatch':!manifest.license||!licenseFiles.length?'manual-license-review':'recorded-not-approved'});
 }
-const assetPaths=['public/icon.svg','public/office.svg'];
+const assetPaths=['public/icon.svg','public/office.svg',...Array.from({length:5},(_,i)=>'public/offices/stage-'+(i+1)+'.svg')];
 const assets=[];for(const path of assetPaths){const bytes=await readFile(join(root,path));assets.push({path,sha256:sha(bytes),bytes:bytes.length,status:'verify-original-provenance'})}
 const report={schema:1,lockSha256:sha(await readFile(join(root,'package-lock.json'))),packages:rows,assets,disclaimer:'Inventory only. Review every grant, transitive dependency, missing notice and asset before redistribution.'};
 await mkdir(join(root,'audit-output'),{recursive:true});

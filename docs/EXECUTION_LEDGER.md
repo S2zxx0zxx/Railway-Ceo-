@@ -100,3 +100,5 @@ Baseline V3.0. Status is evidence-based; no task is verified by documentation al
 - Owner authorizes G02 implementation before G01 verification; G01 incomplete scope and test blockers retained. No gate pass or merge. G02 elapsed-time adaptation with original MIT notice, regression tests, actual installed-resource inventory command, ERPNext/Pluts source/license decisions and incompatibility findings committed. Verification deferred; no claim of complete resource adoption.
 
 - G02: added distributable MIT notice files and documented SimCorp demand/distress compatibility decision; package output verification pending.
+
+- G03 authorized; G01/G02 incomplete scope retained. Added five original static stage office SVGs, real executive dashboard, compact HUD, circular game dock, panel hierarchy and status feedback, confirmation for destructive actions, responsive skin, cache coverage and asset provenance. No engine/save modifications. Final photoreal render, owner visual sign-off and test evidence pending.

@@ -1,7 +1,7 @@
 import {defineConfig,type Plugin} from 'vite';
 import react from '@vitejs/plugin-react';
 function offline():Plugin{return {name:'ceo-offline',apply:'build',generateBundle(_options,bundle){
- const files=['./','./index.html','./manifest.webmanifest','./icon.svg','./office.svg',...Object.keys(bundle).map(x=>'./'+x)];
+ const files=['./','./index.html','./manifest.webmanifest','./icon.svg','./office.svg',...Array.from({length:5},(_,i)=>'./offices/stage-'+(i+1)+'.svg'),'./licenses/THIRD_PARTY_NOTICES.txt','./licenses/idle-game-template.txt',...Object.keys(bundle).map(x=>'./'+x)];
  const version=Object.keys(bundle).sort().join('|');
  let hash=2166136261;for(const ch of version)hash=Math.imul(hash^ch.charCodeAt(0),16777619);
  const cache='the-ceo-'+(hash>>>0).toString(16);

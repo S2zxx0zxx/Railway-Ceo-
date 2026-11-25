@@ -1,12 +1,12 @@
 # Sequential release gate execution
 
-Owner update: implementation may proceed in gate order on explicit owner command even if earlier tests or blockers are unresolved. Record incomplete scope and defer verification to the final remediation phase; never label it PASS. G02 is now active for implementation. G01 remains incomplete; G03–G12 await owner instruction. Keep all work on PR #1, feat/company-simulator-v3. Do not merge until all gates pass. License/provenance permission remains a prerequisite to importing third-party material.
+Owner update: implementation may proceed in gate order on explicit owner command even if earlier tests or blockers are unresolved. Record incomplete scope and defer verification to the final remediation phase; never label it PASS. G03 is now active for implementation. G01–G02 remain incomplete; G04–G12 await owner instruction. Keep all work on PR #1, feat/company-simulator-v3. Do not merge until all gates pass. License/provenance permission remains a prerequisite to importing third-party material.
 
 | Gate | Status | Acceptance from MASTER_BUILD_SPEC.md section 10 |
 |---|---|---|
 | G01 | PARTIAL / VERIFICATION DEFERRED | All D01–D25 and E01–E34 mapped to implementation or expressly approved deferral; every M01–M15 panel tested; no silent omissions |
-| G02 | ACTIVE IMPLEMENTATION / NOT PASSED | Pinned upstream commits, actual files, test evidence, dependencies/licenses, asset provenance |
-| G03 | LOCKED | Original approved UI baseline, screenshots of all panels, layout, touch and focus |
+| G02 | PARTIAL / VERIFICATION DEFERRED | Pinned upstream commits, actual files, test evidence, dependencies/licenses, asset provenance |
+| G03 | ACTIVE IMPLEMENTATION / NOT PASSED | Original approved UI baseline, screenshots of all panels, layout, touch and focus |
 | G04 | LOCKED | Balanced ledger, exactly-once posting, AR/AP/stock and financial reconciliation |
 | G05 | LOCKED | Manufacturing, inventory, quality and resource constraints |
 | G06 | LOCKED | Bounded markets, competition, reproducible events and economy |
@@ -70,3 +70,6 @@ At c0d20aa: web/unit workflow 45597960788 succeeded; browser 45597960836 failed 
 G01 unresolved functional work and test evidence retained above; no pass inferred. G02: adapted MIT wall-time planning into live catch-up path, retained full upstream license, added three regression tests and installed-resolution/asset inventory command. ERPNext confirmed GPL-3.0 (reference only); Pluts README and package declare MIT but full notice not located at pin, so no code import. Economia order matching lacks a price-crossing guard and uses unseeded randomness; reject direct import. TeamDay economy is coupled to global state and office configuration; no renderer or SaaS logic import. Full dependency lock, actual audit output, upstream smoke tests, visual and audio assets and remaining selected modules still open. Tests deferred under owner instruction; CI may run automatically.
 
 G02 additional increment: distributable license notice added under public/licenses. SimCorp demand/distress source reviewed; calibration deferred to G06 instead of replacing current INR model without evidence. Bundle verification pending.
+
+### G03 visual implementation checkpoint
+Original five-stage static SVG office scenes, stage-driven asset routing, compact real HUD, 12-button circular dock, distinct CEO dashboard, shared management dialog, status/feedback and destructive-action confirmation, landscape/portrait styles, PWA precache and asset inventory added. Existing command engine and save format unchanged. Art is authored vector illustration, not final photorealistic WebP; owner visual sign-off, physical touch/focus checks, full per-panel interactions, final artwork/sound and screenshot tests still pending. No gate passed.
