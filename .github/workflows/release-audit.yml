@@ -1,0 +1,41 @@
+name: Release dependency and license audit
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Require committed lockfile
+        run: test -f package-lock.json
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run audit:source
+      - run: npm run audit:resources
+      - run: npm run audit:licenses
+      - name: Record advisory reports
+        shell: bash
+        run: |
+          mkdir -p audit-output
+          npm audit --omit=dev --json > audit-output/npm-runtime-audit.json || true
+          npm audit --json > audit-output/npm-full-audit.json || true
+          node - <<'JS'
+          for(const name of ['runtime','full']){
+            const r=require('./audit-output/npm-'+name+'-audit.json');
+            if(r.error||!r.metadata?.vulnerabilities)throw Error('Audit unavailable: '+name);
+            console.log(name, r.metadata.vulnerabilities);
+            if(r.metadata.vulnerabilities.high||r.metadata.vulnerabilities.critical)process.exitCode=1;
+          }
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: release-dependency-evidence
+          path: |
+            audit-output/
+            public/licenses/RUNTIME_LICENSES.txt

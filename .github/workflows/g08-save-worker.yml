@@ -1,0 +1,26 @@
+name: G08 save and worker acceptance
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --no-audit --no-fund
+      - run: npm run build
+      - run: npm install --no-save --package-lock=false --no-audit --no-fund playwright@1.51.1
+      - run: npx playwright install --with-deps chromium
+      - name: Verify worker and save behavior
+        shell: bash
+        run: |
+          set -e
+          npm exec vite preview -- --host 127.0.0.1 --port 4173 >/tmp/ceo-g08.log 2>&1 &
+          trap 'kill $! 2>/dev/null || true' EXIT
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:4173/ >/dev/null && break; sleep 1; done
+          node scripts/g08-browser.mjs

@@ -1,0 +1,48 @@
+import {unwrapPayload,wrapPayload} from './integrity';
+import {validGovernance,validCrisisDetails} from '../engine/governance';
+import {validRescue} from '../engine/rescue';
+import {validMarket,validEconomy,regionInfo} from '../engine/market';
+import {assertState,migrateGame,type Game} from '../engine/game';
+import {accounts} from '../engine/ledger';
+import {config} from '../content/scenario';
+function check(ok:unknown,msg='Invalid save data'):asserts ok{if(!ok)throw Error(msg)}
+const int=(v:unknown,min=0,max=Number.MAX_SAFE_INTEGER)=>typeof v==='number'&&Number.isSafeInteger(v)&&v>=min&&v<=max;
+const str=(v:unknown,max=256)=>typeof v==='string'&&v.length>0&&v.length<=max;
+const decimal=(v:unknown)=>typeof v==='string'&&/^-?(0|[1-9][0-9]{0,29})$/.test(v);
+export function decodeSave(text:string):Game{
+ const raw=JSON.parse(unwrapPayload(text)) as Game;
+ check(raw&&typeof raw==='object'&&!Array.isArray(raw)&&raw.schema===1,'Unsupported game schema');
+ const g=migrateGame(raw);
+ check(g.schema===1&&int(g.financeStart,0,g.minute)&&int(g.revision)&&int(g.minute)&&int(g.wall)&&int(g.seed,0,4294967295)&&int(g.next,1)&&str(g.name,60)&&str(g.brand,60)&&g.brand.trim().length>0&&str(g.ceo,60)&&config.difficulties.includes(g.difficulty));
+ check(validRescue(g.rescue,g.minute,g.difficulty));
+ check(typeof g.accepted==='boolean'&&typeof g.manager==='boolean'&&[0,1,5,20,60].includes(g.speed)&&['distressed','recovering','stable','liquidated'].includes(g.status));
+ check(int(g.price,100,3000)&&int(g.reputation,0,100)&&int(g.research,0,5)&&int(g.campaignUntil)&&int(g.produced)&&int(g.sold)&&g.sold<=g.produced&&int(g.competitorPrice,600,1200)&&int(g.distressDays));
+ check(validMarket(g.market,g.minute)&&validEconomy(g.market,g.minute));
+ check(g.operations&&int(g.operations.permitUntil)&&int(g.operations.sanitation,0,100)&&int(g.operations.rejected)&&int(g.operations.discarded)&&int(g.operations.marketDay)&&int(g.operations.marketCommitted));
+ check(Array.isArray(g.audit)&&g.audit.every(a=>config.audit.some(x=>x===a))&&new Set(g.audit).size===g.audit.length);
+ check(g.policy&&int(g.policy.batchSize,1,5000)&&int(g.policy.reorderBatches,1,5)&&int(g.policy.minCash,1,10000000)&&int(g.policy.minMargin,0,3000));
+ check(Array.isArray(g.journal)&&g.journal.length>0&&g.journal.length<=50000&&g.journal.every(e=>str(e.id)&&int(e.minute,0,g.minute)&&str(e.description)&&Array.isArray(e.lines)&&e.lines.length>=2&&e.lines.every(l=>accounts.includes(l.account)&&decimal(l.amount))));
+ check(Array.isArray(g.lots)&&g.lots.length<=10000&&g.lots.every(l=>str(l.id)&&[...config.materials,'biscuit'].includes(l.item)&&int(l.qty,1,100000000)&&decimal(l.cost)&&int(l.expiry,g.minute+1)&&typeof l.held==='boolean'&&int(l.quality,0,100)&&str(l.source)));
+ check(Array.isArray(g.machines)&&g.machines.length===config.machineNames.length&&g.machines.every((m,i)=>m.name===config.machineNames[i]&&int(m.condition,0,100)&&int(m.readyAt)&&int(m.level,1,3)&&int(m.lastService,0,g.minute)));
+ check(Array.isArray(g.employees)&&g.employees.length<=100&&g.employees.every(e=>str(e.id)&&str(e.name)&&['operator','manager'].includes(e.role)&&int(e.skill,0,100)&&int(e.morale,0,100)&&int(e.wage,1,100000)&&[8,10,12].includes(e.shiftHours)&&int(e.fatigue,0,100)&&typeof e.present==='boolean'&&typeof e.safetyTrained==='boolean'&&int(e.grade,1,3)));
+ const costBreakdown=(x:{cost:string;materialCost?:string;energyCost?:string;laborCost?:string;activeMinutes?:number})=>x.materialCost===undefined?x.energyCost===undefined&&x.activeMinutes===undefined&&x.laborCost===undefined:decimal(x.materialCost)&&decimal(x.energyCost)&&int(x.activeMinutes)&&BigInt(x.materialCost)>=0n&&BigInt(x.energyCost!)>=0n&&(x.laborCost===undefined||decimal(x.laborCost)&&BigInt(x.laborCost)>=0n)&&BigInt(x.materialCost)+BigInt(x.energyCost!)+BigInt(x.laborCost??'0')===BigInt(x.cost);
+ const trace=(t:import('../engine/traceability').TracePortion[])=>Array.isArray(t)&&t.length<=10000&&t.every(x=>str(x.lotId)&&str(x.source)&&[...config.materials,'biscuit'].includes(x.item)&&int(x.qty,1,100000000)&&int(x.expiry));
+ check(g.utilities&&typeof g.utilities.power==='boolean'&&typeof g.utilities.water==='boolean');
+ check(Array.isArray(g.purchases)&&g.purchases.length<=50000&&g.purchases.every(p=>str(p.id)&&config.materials.includes(p.item)&&config.suppliers.some(s=>s.id===p.supplier)&&int(p.qty,1,10000000)&&decimal(p.cost)&&BigInt(p.cost)>0n&&int(p.placed,0,g.minute)&&int(p.due,p.placed+1)&&[0,7,15].includes(p.credit)&&['inTransit','accepted','held','canceled'].includes(p.status)&&(p.closed===undefined||int(p.closed,p.placed,g.minute))&&(p.lotId===undefined||str(p.lotId))));
+ check(Array.isArray(g.serviceHistory)&&g.serviceHistory.length<=50000&&g.serviceHistory.every(s=>str(s.id)&&int(s.machine,0,g.machines.length-1)&&['service','upgrade'].includes(s.kind)&&decimal(s.cost)&&BigInt(s.cost)>0n&&int(s.started,0,g.minute)&&int(s.completed,s.started,g.minute)));
+ check(Array.isArray(g.batches)&&g.batches.length<=50000&&g.batches.every(b=>str(b.id)&&int(b.started,0,g.minute)&&int(b.completed,b.started,g.minute)&&trace(b.input)&&int(b.planned,1,10000)&&int(b.good,0,10000)&&int(b.rejected,0,10000)&&int(b.quality,0,100)&&decimal(b.cost)&&BigInt(b.cost)>=0n&&costBreakdown(b)&&typeof b.recalled==='boolean'&&(b.reason===undefined||str(b.reason,120))));
+ check(g.waste&&[g.waste.rawGrams,g.waste.packagingPieces,g.waste.finishedPackets,g.waste.rejectedPackets,g.waste.processLossGrams].every(n=>int(n))&&decimal(g.waste.energyPaise)&&BigInt(g.waste.energyPaise)>=0n);
+ check(Array.isArray(g.plans)&&g.plans.length<=50&&g.plans.every(p=>str(p.id)&&int(p.qty,1,10000)&&int(p.due,g.minute+1)&&Array.isArray(p.reservations)&&p.reservations.every(r=>str(r.lotId)&&int(r.qty,1,100000000))));
+ check(Array.isArray(g.jobs)&&g.jobs.length<=10000&&g.jobs.every(j=>str(j.id)&&['receipt','batch','delivery','collection','repair','research'].includes(j.kind)&&(j.paused===true?(j.kind==='batch'||j.kind==='research')&&int(j.due)&&int(j.remainingMinutes,1):j.paused===undefined&&int(j.due,g.minute+1))&&int(j.qty,0,100000000)&&decimal(j.cost)&&BigInt(j.cost)>=0n&&(j.trace===undefined||trace(j.trace))&&(j.region===undefined||j.kind==='delivery'&&!!regionInfo(j.region))&&(j.contractId===undefined||j.kind==='delivery'&&str(j.contractId)&&g.contracts.some(c=>c.id===j.contractId&&c.status==='dispatched'))&&(j.started===undefined||int(j.started,0,g.minute))&&costBreakdown(j)&&(j.laborRate===undefined?j.laborCost===undefined:j.kind==='batch'&&decimal(j.laborRate)&&BigInt(j.laborRate)>=0n&&decimal(j.laborCost)&&j.activeMinutes!==undefined&&BigInt(j.laborCost!)<=BigInt(j.laborRate)*BigInt(j.activeMinutes)/1440n)&&(j.serviceCost===undefined||decimal(j.serviceCost)&&BigInt(j.serviceCost)>0n)&&(j.quality===undefined||int(j.quality,0,100))&&(j.source===undefined||str(j.source))&&(j.kind!=='receipt'||(config.materials.includes(j.item!)&&[0,7,15].includes(j.credit??0)&&j.qty>0))&&(j.kind!=='repair'||(int(j.machine,0,g.machines.length-1)&&(j.upgrade===undefined||typeof j.upgrade==='boolean')))&&(j.kind!=='batch'||(j.qty>0&&int(j.stage??0,0,4)))&&(j.kind!=='delivery'||(j.qty>0&&int(j.price,100,3000)&&[0,15,30].includes(j.credit!)))));
+ check(Array.isArray(g.loans)&&g.loans.length<=10000&&g.loans.every(l=>str(l.id)&&decimal(l.original)&&decimal(l.remaining)&&int(l.opened,0,g.minute)&&[180,360].includes(l.termDays)&&typeof l.restructured==='boolean'));
+ check(Array.isArray(g.sales)&&g.sales.length<=50000&&g.sales.every(s=>str(s.id)&&int(s.qty,1,10000)&&decimal(s.amount)&&BigInt(s.amount)>0n&&int(s.delivered,0,g.minute)&&(s.trace===undefined||trace(s.trace))&&(s.region===undefined||!!regionInfo(s.region))&&(s.contractId===undefined||str(s.contractId)&&g.contracts.some(c=>c.id===s.contractId&&c.status==='delivered'))&&(s.recalled===undefined||typeof s.recalled==='boolean')&&['receivable','paid','refunded'].includes(s.status)&&['none','open','closed'].includes(s.complaint)&&(s.complaint==='none'?s.reason===undefined:['damaged','late','quality'].includes(s.reason!))&&(s.status!=='refunded'||s.complaint==='closed')));
+ check(Array.isArray(g.payables)&&g.payables.length<=10000&&g.payables.every(p=>str(p.id)&&str(p.source)&&decimal(p.amount)&&BigInt(p.amount)>0n&&int(p.due)));
+ check(validGovernance(g));
+ check(Array.isArray(g.crises)&&g.crises.every(c=>str(c.id)&&['payroll','machine','liquidity','compliance','safety','supplier','creditor','quality','external'].includes(c.kind)&&int(c.opened,0,g.minute)&&typeof c.resolved==='boolean'&&validCrisisDetails(c.details,g.minute,c.opened,c.resolved)));
+ check(Array.isArray(g.news)&&g.news.length<=100&&g.news.every(n=>str(n,1000))&&Array.isArray(g.history)&&g.history.every(h=>int(h.day)&&decimal(h.revenue)&&decimal(h.profit)));
+ const ids=[...g.contracts,...g.management.logs,...g.management.approvals,...g.governance.decisions,...g.market.campaigns,...g.plans,...g.jobs,...g.lots,...g.employees,...g.crises,...g.payables,...g.sales,...g.loans,...g.journal].map(x=>x.id);
+ check(new Set(ids).size===ids.length&&ids.every(i=>!/^e[0-9]+$/.test(i)||Number(i.slice(1))<g.next),'Conflicting object identifiers');
+ assertState(g);return g;
+}
+
+export function encodeSave(game:Game):string{assertState(game);return wrapPayload(JSON.stringify(game))}

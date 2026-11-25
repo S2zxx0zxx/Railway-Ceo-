@@ -1,0 +1,11 @@
+import {describe,it,expect} from 'vitest';
+import {initialGame,apply,stock} from '../src/engine/game';
+import {balance,money} from '../src/engine/ledger';
+import {decodeSave} from '../src/persistence/codec';
+const start=()=>apply(initialGame(),{type:'takeover',name:'Owner',ceo:'CEO',difficulty:'Realistic'});
+describe('G07 governance and crisis decisions',()=>{
+ it('preserves immutable identity through rename and save round trip',()=>{let g=start(),id=g.governance.companyId;g=apply(g,{type:'identity',name:'New company',brand:'New brand'});expect(g.governance.companyId).toBe(id);expect(g.governance.decisions.map(d=>d.kind)).toEqual(['takeover','identity']);expect(decodeSave(JSON.stringify(g))).toEqual(g)});
+ it('extends supplier due date once without removing principal',()=>{let g=apply(start(),{type:'purchase',item:'flour',qty:1000,creditDays:7});g=apply(g,{type:'advance',minutes:7*1440});const p=g.payables[0],cash=balance(g.journal,'cash'),due=p.due,amount=balance(g.journal,'payable');g=apply(g,{type:'extendSupplier',id:p.id});expect(g.payables[0].due).toBe(Math.max(due,g.minute)+7*1440);expect(balance(g.journal,'payable')).toBe(amount);expect(balance(g.journal,'cash')).toBe(cash-30n);expect(()=>apply(g,{type:'extendSupplier',id:p.id})).toThrow()});
+ it('records missed crisis deadline once, and acknowledgement does not close it',()=>{let g=apply(start(),{type:'advance',minutes:1440});const c=g.crises.find(c=>c.kind==='machine')!;g=apply(g,{type:'ackCrisis',id:c.id});expect(g.crises.find(x=>x.id===c.id)?.resolved).toBe(false);expect(()=>apply(g,{type:'resolveCrisis',id:c.id})).toThrow();g=apply(g,{type:'advance',minutes:3*1440});expect(g.crises.find(x=>x.id===c.id)?.details.penaltyApplied).toBe(true);expect(g.crises.filter(x=>x.kind==='machine')).toHaveLength(1)});
+ it('disposes usable inventory at a discount with a balanced posting',()=>{let g=apply(start(),{type:'purchase',item:'flour',qty:1000});g=apply(g,{type:'advance',minutes:12*1440});const cash=balance(g.journal,'cash'),raw=balance(g.journal,'raw');expect(g.distressDays).toBeGreaterThan(0);g=apply(g,{type:'salvageMaterial',item:'flour',qty:1000});expect(stock(g,'flour')).toBe(0);expect(balance(g.journal,'cash')-cash).toBe(raw*60n/100n);expect(balance(g.journal,'raw')).toBe(0n)});
+});

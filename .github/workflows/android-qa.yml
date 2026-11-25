@@ -1,0 +1,84 @@
+name: Android QA APK and unsigned AAB
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'capacitor.config.ts'
+      - 'vite.config.ts'
+      - '.github/workflows/android-qa.yml'
+permissions:
+  contents: read
+jobs:
+  qa-apk:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
+          log-accepted-android-sdk-licenses: 'false'
+      - run: npm ci --no-audit --no-fund
+      - run: npm run android:sync
+      - run: npm run audit:bundle
+      - name: Assemble debug APK
+        run: |
+          chmod +x android/gradlew
+          node scripts/android-build.mjs assembleDebug
+      - name: Verify debug APK and record evidence
+        run: |
+          set -e
+          APK=android/app/build/outputs/apk/debug/app-debug.apk
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK" > android-apk-signature.txt
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" > android-apk-badging.txt
+          grep "targetSdkVersion:'36'" android-apk-badging.txt
+          sha256sum "$APK" > android-qa-sha256.txt
+          "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c -P 16 -v 4 "$APK" > android-apk-alignment.txt
+          python3 scripts/audit-native-package.py --apk "$APK" --badging android-apk-badging.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-qa-debug-apk
+          path: |
+            android/app/build/outputs/apk/debug/app-debug.apk
+            android-qa-sha256.txt
+            android-apk-signature.txt
+            android-apk-badging.txt
+            android-apk-alignment.txt
+      - name: Assemble unsigned release bundle
+        run: node scripts/android-build.mjs bundleRelease
+      - name: Record unsigned AAB hash
+        run: |
+          sha256sum android/app/build/outputs/bundle/release/app-release.aab > android-aab-sha256.txt
+          python3 scripts/audit-native-package.py --apk android/app/build/outputs/apk/debug/app-debug.apk --badging android-apk-badging.txt --aab android/app/build/outputs/bundle/release/app-release.aab
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-unsigned-aab-NOT-FOR-PUBLISHING
+          path: |
+            android/app/build/outputs/bundle/release/app-release.aab
+            android-aab-sha256.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: platform-build-evidence
+          path: |
+            audit-output/bundle.json
+            audit-output/native-package.json
+            package-lock.json
+      - name: Prepare generated native source evidence
+        run: |
+          tar --exclude=android/.gradle --exclude=android/app/build --exclude=android/build --exclude=android/app/src/main/assets/public --exclude=android/local.properties -czf android-source.tar.gz android
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-generated-source
+          path: android-source.tar.gz

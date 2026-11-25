@@ -1,0 +1,26 @@
+import {spawnSync} from 'node:child_process';
+import {existsSync} from 'node:fs';
+import {readFile,copyFile,writeFile,mkdir} from 'node:fs/promises';
+import {resolve,basename} from 'node:path';
+import {createHash} from 'node:crypto';
+const required=['CEO_UPLOAD_KEYSTORE','CEO_UPLOAD_ALIAS','CEO_UPLOAD_STOREPASS','CEO_UPLOAD_KEYPASS','CEO_UPLOAD_CERT_SHA256'];
+for(const k of required)if(!process.env[k])throw Error('Missing local environment variable '+k);
+const key=resolve(process.env.CEO_UPLOAD_KEYSTORE),root=resolve('.');
+if(key===root||key.startsWith(root+'/')||key.startsWith(root+'\\')||!existsSync(key))throw Error('Use a private keystore outside the repository');
+const expected=process.env.CEO_UPLOAD_CERT_SHA256.replace(/:/g,'').toLowerCase();
+if(!/^[0-9a-f]{64}$/.test(expected))throw Error('Invalid expected certificate fingerprint');
+const input='android/app/build/outputs/bundle/release/app-release.aab';
+if(!existsSync(input))throw Error('Build the unsigned AAB first');
+await mkdir('audit-output',{recursive:true});
+const output='audit-output/the-ceo-signed-release.aab';
+if(existsSync(output))throw Error('Move previous release artifact before signing');
+function run(tool,args){const p=spawnSync(tool,args,{encoding:'utf8',env:process.env});if(p.status!==0)throw Error(tool+' failed (inspect locally; credentials are never printed)');return p.stdout}
+const cert=run('keytool',['-J-Duser.language=en','-J-Duser.country=US','-list','-v','-keystore',key,'-alias',process.env.CEO_UPLOAD_ALIAS,'-storepass:env','CEO_UPLOAD_STOREPASS']);
+const actual=cert.match(/SHA256:\s*([A-Fa-f0-9:]+)/)?.[1]?.replace(/:/g,'').toLowerCase();
+if(actual!==expected)throw Error('Upload certificate mismatch; refusing to sign');
+run('jarsigner',['-keystore',key,'-storepass:env','CEO_UPLOAD_STOREPASS','-keypass:env','CEO_UPLOAD_KEYPASS','-signedjar',output,input,process.env.CEO_UPLOAD_ALIAS]);
+const verified=run('jarsigner',['-J-Duser.language=en','-J-Duser.country=US','-verify',output]);if(!verified.includes('jar verified'))throw Error('Signature not verified');
+const signedCert=run('keytool',['-J-Duser.language=en','-J-Duser.country=US','-printcert','-jarfile',output]);
+if(signedCert.match(/SHA256:\s*([A-Fa-f0-9:]+)/)?.[1]?.replace(/:/g,'').toLowerCase()!==expected)throw Error('Signed AAB certificate mismatch');
+await writeFile('audit-output/signed-aab-evidence.json',JSON.stringify({file:basename(output),sha256:createHash('sha256').update(await readFile(output)).digest('hex'),uploadCertificateSha256:expected},null,2));
+console.log('Signed bundle verified against expected upload certificate. No publication performed.');

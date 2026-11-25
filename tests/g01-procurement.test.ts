@@ -1,0 +1,13 @@
+import {describe,it,expect} from 'vitest';
+import {initialGame,apply,stock,assertState} from '../src/engine/game';
+import {balance} from '../src/engine/ledger';
+import {decodeSave} from '../src/persistence/codec';
+const start=()=>apply(initialGame(),{type:'takeover',name:'Supplier Test',ceo:'CEO',difficulty:'Realistic'});
+describe('G01 procurement and supplier credit',()=>{
+ it('records supplier liability only upon receipt, then settles once',()=>{let g=start();const cash=balance(g.journal,'cash');g=apply(g,{type:'purchase',item:'flour',qty:1000,creditDays:7});expect(balance(g.journal,'cash')).toBe(cash);expect(balance(g.journal,'payable')).toBe(0n);g=apply(g,{type:'advance',minutes:180});expect(stock(g,'flour')).toBe(1000);expect(balance(g.journal,'payable')).toBe(-3000n);const invoice=g.payables[0];expect(invoice.due).toBe(180+7*1440);expect(decodeSave(JSON.stringify(g))).toEqual(g);g=apply(g,{type:'paySupplier',id:invoice.id});expect(balance(g.journal,'cash')).toBe(cash-3000n);expect(balance(g.journal,'payable')).toBe(0n);expect(()=>apply(g,{type:'paySupplier',id:invoice.id})).toThrow();assertState(g)});
+ it('cancels prepaid orders with full clearing reversal',()=>{const g=start();let n=apply(g,{type:'purchase',item:'flour',qty:1000});n=apply(n,{type:'cancelPurchase',id:n.jobs[0].id});expect(balance(n.journal,'cash')).toBe(balance(g.journal,'cash'));expect(balance(n.journal,'wip')).toBe(0n);expect(n.jobs).toHaveLength(0);expect(stock(n,'flour')).toBe(0)});
+ it('cancels credit orders without creating cash or liability',()=>{const g=start();let n=apply(g,{type:'purchase',item:'flour',qty:1000,creditDays:15});n=apply(n,{type:'cancelPurchase',id:n.jobs[0].id});expect(n.journal).toEqual(g.journal);expect(n.payables).toHaveLength(0)});
+ it('rejects invalid terms and unavailable credit suppliers',()=>{const g=start();expect(()=>apply(g,{type:'purchase',item:'flour',qty:1000,creditDays:30})).toThrow();expect(()=>apply(g,{type:'purchase',item:'flour',qty:1000,supplier:'economy',creditDays:7})).toThrow()});
+ it('blocks additional credit beyond the committed limit',()=>{let g=apply(start(),{type:'purchase',item:'oil',qty:800000,creditDays:7});expect(()=>apply(g,{type:'purchase',item:'oil',qty:100000,creditDays:7})).toThrow()});
+ it('blocks credit with overdue invoices and permits settlement',()=>{let g=apply(start(),{type:'purchase',item:'flour',qty:1000,creditDays:7});g=apply(g,{type:'advance',minutes:8*1440});expect(()=>apply(g,{type:'purchase',item:'flour',qty:1000,creditDays:7})).toThrow();g=apply(g,{type:'paySupplier',id:g.payables[0].id});expect(()=>apply(g,{type:'purchase',item:'flour',qty:1000,creditDays:7})).not.toThrow()});
+});
