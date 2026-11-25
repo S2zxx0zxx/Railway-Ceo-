@@ -44,7 +44,7 @@ Baseline V3.0. Status is evidence-based; no task is verified by documentation al
 | RV-038 | P09 | PARTIAL | Debt restructuring, owner capital/asset sale and Banking UI; principal != revenue |
 | RV-039 | P10 | PARTIAL | Causal/seeded events, news inbox, deadlines, decision effects and dedupe |
 | RV-040 | P10 | PARTIAL | Distress/recovery/liquidation states, difficulty and restart rules |
-| RV-041 | P10 | NOT STARTED | Compliance, safety, environment, risk/audit controls and event consequences |
+| RV-041 | P10 | PARTIAL | Compliance, safety, environment, risk/audit controls and event consequences |
 | RV-042 | P11 | PARTIAL | Research prerequisites and timed improvements, automation unlocks |
 | RV-043 | P11 | PARTIAL | Manager execution using normal commands, policy limits, explainable log |
 | RV-044 | P11 | PARTIAL | Offline catch-up, cap, anomalies, pause and resume, duplicate protection |
@@ -78,3 +78,5 @@ Baseline V3.0. Status is evidence-based; no task is verified by documentation al
 - Follow-up: original financial reconciliation reports, replenishment forecast, bounded save codec, transactional previous-save backup, explicit import/recovery controls and regression tests authored. CI and browser persistence validation pending; EOQ/Stockpyl adoption and ECharts pending. No gate promoted.
 
 - RV-022: Added independent classical EOQ implementation, bounded advisory value in procurement, and three regression tests including the documented Stockpyl Example 3.1 vector. Assumptions are disclosed; not an auto-order policy. CI, shelf-life/capacity-aware optimization and upstream execution remain pending.
+
+- Operational follow-up: permit renewal, sanitation restrictions, rejected/disposed output, daily market commitment limit, corresponding controls and invariant tests. CI pending. Still missing full supplier/credit models, recalls, detailed safety/environment and balancing. All release gates open.
