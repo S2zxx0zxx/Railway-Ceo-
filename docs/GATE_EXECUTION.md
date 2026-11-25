@@ -1,6 +1,6 @@
 # Sequential release gate execution
 
-Owner update: implementation may proceed in gate order on explicit owner command even if earlier tests or blockers are unresolved. Record incomplete scope and defer verification to the final remediation phase; never label it PASS. G11 is now active for implementation. G01–G10 remain incomplete; G12 awaits owner instruction. Keep all work on PR #1, feat/company-simulator-v3. Do not merge until all gates pass. License/provenance permission remains a prerequisite to importing third-party material.
+Owner update: implementation may proceed in gate order on explicit owner command even if earlier tests or blockers are unresolved. Record incomplete scope and defer verification to the final remediation phase; never label it PASS. G12 is now active for final remediation. Reopen G01–G11 and preserve their outstanding requirements. Keep all work on PR #1, feat/company-simulator-v3. Do not merge until all gates pass. License/provenance permission remains a prerequisite to importing third-party material.
 
 | Gate | Status | Acceptance from MASTER_BUILD_SPEC.md section 10 |
 |---|---|---|
@@ -14,8 +14,8 @@ Owner update: implementation may proceed in gate order on explicit owner command
 | G08 | PARTIAL / VERIFICATION DEFERRED | Offline parity, time anomalies, save integrity, migration and updates |
 | G09 | PARTIAL / VERIFICATION DEFERRED | Manager validation, budget, authority, stop conditions and decision evidence |
 | G10 | PARTIAL / VERIFICATION DEFERRED | Installable offline PWA, native APK device test, save transfer and no mandatory network |
-| G11 | ACTIVE IMPLEMENTATION / NOT PASSED | Signed AAB, metadata, Play policies, notices, no secrets or high-priority defects |
-| G12 | LOCKED | Exact revision and final evidence, all gates passed, authorized merge |
+| G11 | PARTIAL / REMEDIATION REQUIRED | Signed AAB, metadata, Play policies, notices, no secrets or high-priority defects |
+| G12 | ACTIVE REMEDIATION / NOT PASSED | Exact revision and final evidence, all gates passed, authorized merge |
 
 ## G01 corporate coverage register (initial audit)
 
@@ -137,3 +137,6 @@ G10 observed CI evidence: runs 45610920923 (web), 45610920864 (G08 browser), 456
 Observed G10 74ed771: 118 tests pass, web and G08 offline acceptance pass, debug APK and unsigned AAB built and artifact hashes independently matched; browser smoke failed small-landscape takeover interception. Corrected stacking and added policy draft, store metadata/declaration checklist, exact lockfile promotion workflow, runtime license text generator, advisory audit workflow and local expected-certificate signing script. See G11_RELEASE_READINESS.md. Lock promotion/advisory/license runs, final build and signed AAB not yet verified. No gate PASS.
 
 G11 lock promotion verified: run 45612480252 succeeded, c97d1d7 added exact 257-entry lockfile. Temporary write workflow removed, npm ci enforced in existing CI, source/asset and native packaging audit added. First audit failed before lock commit, rerun needed; G11 source build succeeded at d499d66. Signed artifact, final audit, native device and actual Play declarations pending. No PASS or merge.
+
+### G12 baseline
+Reopened G01–G11. Exact 3e474e1 CI: 118 tests, browser, worker and APK/AAB package audit pass; release dependency audit fails (runtime 1 critical; full 4 critical, 1 high, 1 moderate). Security upgrades and lock regeneration initiated, not verified. See G12_REMEDIATION.md. No merge.
