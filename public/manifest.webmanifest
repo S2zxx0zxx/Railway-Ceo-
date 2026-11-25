@@ -1,0 +1,19 @@
+{
+  "name": "The CEO: Company Simulator",
+  "short_name": "The CEO",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#143c59",
+  "theme_color": "#143c59",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

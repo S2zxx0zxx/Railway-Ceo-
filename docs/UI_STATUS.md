@@ -1,0 +1,3 @@
+# UI and platform status
+
+Original SVG office prototype, responsive landscape HUD/dock, portrait fallback, takeover, actual state/action panels, native dialog, basic save/export and PWA build cache authored. SVG is a placeholder for the required premium pre-rendered progression art. No upstream UI/asset copied. Full 15-panel acceptance, charts, all subcommands, save import/migration/recovery, Android project generation, native signing and device tests pending. Difficulty is currently recorded but not balanced. CI must run before verified status. Current PWA cache is an initial implementation, not release-tested.
