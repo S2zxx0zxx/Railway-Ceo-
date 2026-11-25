@@ -1,6 +1,6 @@
 # Sequential release gate execution
 
-Owner update: implementation may proceed in gate order on explicit owner command even if earlier tests or blockers are unresolved. Record incomplete scope and defer verification to the final remediation phase; never label it PASS. G07 is now active for implementation. G01–G06 remain incomplete; G08–G12 await owner instruction. Keep all work on PR #1, feat/company-simulator-v3. Do not merge until all gates pass. License/provenance permission remains a prerequisite to importing third-party material.
+Owner update: implementation may proceed in gate order on explicit owner command even if earlier tests or blockers are unresolved. Record incomplete scope and defer verification to the final remediation phase; never label it PASS. G08 is now active for implementation. G01–G07 remain incomplete; G09–G12 await owner instruction. Keep all work on PR #1, feat/company-simulator-v3. Do not merge until all gates pass. License/provenance permission remains a prerequisite to importing third-party material.
 
 | Gate | Status | Acceptance from MASTER_BUILD_SPEC.md section 10 |
 |---|---|---|
@@ -10,8 +10,8 @@ Owner update: implementation may proceed in gate order on explicit owner command
 | G04 | PARTIAL / VERIFICATION DEFERRED | Balanced ledger, exactly-once posting, AR/AP/stock and financial reconciliation |
 | G05 | PARTIAL / VERIFICATION DEFERRED | Manufacturing, inventory, quality and resource constraints |
 | G06 | PARTIAL / VERIFICATION DEFERRED | Bounded markets, competition, reproducible events and economy |
-| G07 | ACTIVE IMPLEMENTATION / NOT PASSED | Viable rescue for each difficulty; recovery and liquidation |
-| G08 | LOCKED | Offline parity, time anomalies, save integrity, migration and updates |
+| G07 | PARTIAL / VERIFICATION DEFERRED | Viable rescue for each difficulty; recovery and liquidation |
+| G08 | ACTIVE IMPLEMENTATION / NOT PASSED | Offline parity, time anomalies, save integrity, migration and updates |
 | G09 | LOCKED | Manager validation, budget, authority, stop conditions and decision evidence |
 | G10 | LOCKED | Installable offline PWA, native APK device test, save transfer and no mandatory network |
 | G11 | LOCKED | Signed AAB, metadata, Play policies, notices, no secrets or high-priority defects |
@@ -107,3 +107,6 @@ Persisted rescue phase progression, due-obligation distress model, difficulty wi
 G07 governance increment: owner decision records and identity, supplier extension, raw inventory rescue sale, event causes/deadlines/acknowledgment and once-only penalties. Four tests authored, not run. Existing legacy crises retain records without retrospective penalties. Full equipment disposal, statutory liquidation distribution, board voting and viability checks remain open.
 
 G07 restart increment: fresh takeover allowed only after liquidation, old company archived in the same Dexie transaction, latest archive export, read-only terminal command guard and difficulty hints. Three tests authored. Full rescue path viability for all difficulties, archive integration testing, equipment disposals and true creditor distribution remain open. G07 partial; no PASS or merge.
+
+### G08 clock increment
+Refactored elapsed planning and single-revision catch-up, in-place bounded simulation chunks, milestone evaluation at scheduler boundaries, bounded minimum-event scan, pure worker request/reply and chunked fallback when worker unavailable. Four tests authored, deferred. Worker proposal is not yet connected to persistence in this commit. Actual chunk parity, event ordering, worker precache and device performance remain unverified.

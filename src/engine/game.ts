@@ -187,10 +187,14 @@ function startDuePlans(g:Game){
  }
 }
 function pauseUnsafe(g:Game){if(throughput(g)>0&&g.status!=='liquidated')return;for(const j of g.jobs.filter(j=>j.kind==='batch'&&!j.paused)){j.remainingMinutes=Math.max(1,j.due-g.minute);j.paused=true;note(g,'Batch paused: operating conditions unavailable')}}
-function advance(g:Game,minutes:number){
+export function advanceInPlace(g:Game,minutes:number){
  positive(minutes,config.offlineCapMinutes*60);const end=g.minute+minutes;
  while(g.minute<end){const nextDay=(Math.floor(g.minute/1440)+1)*1440;
-  const due=Math.min(...g.jobs.filter(j=>!j.paused).map(j=>j.due),...g.plans.map(p=>p.due),...g.crises.filter(c=>!c.resolved&&!c.details.penaltyApplied&&c.details.deadline>g.minute).map(c=>c.details.deadline),...g.lots.map(l=>l.expiry),g.operations.permitUntil>g.minute?g.operations.permitUntil:Infinity,nextDay,end);
+  let due=Math.min(g.operations.permitUntil>g.minute?g.operations.permitUntil:Infinity,nextDay,end);
+  for(const j of g.jobs)if(!j.paused)due=Math.min(due,j.due);
+  for(const p of g.plans)due=Math.min(due,p.due);
+  for(const c of g.crises)if(!c.resolved&&!c.details.penaltyApplied&&c.details.deadline>g.minute)due=Math.min(due,c.details.deadline);
+  for(const l of g.lots)due=Math.min(due,l.expiry);
   check(due>g.minute,'Invalid scheduler state');for(const j of g.jobs.filter(j=>j.kind==='batch'&&!j.paused&&j.activeMinutes!==undefined))j.activeMinutes!+=due-g.minute;g.minute=due;expire(g);if(due===nextDay)daily(g);
   const ready=g.jobs.filter(j=>!j.paused&&j.due===due).sort((a,b)=>a.id.localeCompare(b.id));g.jobs=g.jobs.filter(j=>j.paused||j.due!==due);
   for(const j of ready)runJob(g,j);
@@ -198,6 +202,7 @@ function advance(g:Game,minutes:number){
   reviewCrises(g);
   pauseUnsafe(g);
   if(due===nextDay&&g.manager&&g.status!=='liquidated')automate(g);
+  if(g.accepted)updateMilestones(g);
   if(g.status==='liquidated'){g.speed=0;g.manager=false;note(g,'Operations frozen. Existing assets and obligations remain recorded.');break}
  }
 }
@@ -260,7 +265,7 @@ export function apply(source:Game,cmd:Command):Game{
  case 'salvageMaterial':{positive(cmd.qty,config.rawCapacityPerItem);check(g.distressDays>0&&config.materials.includes(cmd.item),'Emergency disposal unavailable');const {cost}=take(g,cmd.item,cmd.qty);const proceeds=cost*60n/100n;check(proceeds>0n,'No recoverable value');const loss=cost-proceeds;post(g.journal,id(g),g.minute,'Emergency raw inventory disposal',[{account:'cash',amount:String(proceeds)},{account:'loss',amount:String(loss)},{account:'raw',amount:String(-cost)}]);decision(g,'assetDisposal','Raw inventory sold at 60% carrying value: '+cmd.item,proceeds);note(g,'Emergency inventory sale completed');break}
  case 'ackCrisis':{const c=g.crises.find(x=>x.id===cmd.id&&!x.resolved);check(c&&!c.details.acknowledged,'Crisis acknowledgement unavailable');c.details.acknowledged=true;break}
  case 'resolveCrisis':{const c=g.crises.find(x=>x.id===cmd.id&&!x.resolved);check(c,'Crisis not open');check(crisisResolved(g,c),'Underlying problem is unresolved');c.resolved=true;c.details.closed=g.minute;c.details.outcome='Underlying condition verified as resolved';note(g,'Resolved '+c.kind+' crisis');break}
- case 'advance':advance(g,cmd.minutes);break;
+ case 'advance':advanceInPlace(g,cmd.minutes);break;
  case 'speed':check([0,1,5,20,60].includes(cmd.value),'Invalid speed');g.speed=cmd.value;break;
  }
  }
@@ -307,8 +312,21 @@ export function assertState(g:Game){
  for(const sale of g.sales){const linked=g.jobs.filter(j=>j.kind==='collection'&&j.source===sale.id);check(sale.status==='receivable'?linked.length===1&&linked[0].cost===sale.amount:linked.length===0,'Sale/invoice linkage failure')}
  check(balance(g.journal,'receivable')===g.jobs.filter(j=>j.kind==='collection').reduce((n,j)=>n+BigInt(j.cost),0n),'Receivables reconciliation failure');
 }
+export function catchUpPlan(g:Game,now:number){
+ check(Number.isSafeInteger(now)&&now>=0,'Invalid timestamp');
+ const timing=planElapsedTime(g.wall,now,config.offlineCapMinutes);
+ const running=g.accepted&&g.status!=='liquidated'&&g.speed>0;
+ const minutes=running?timing.simulatedMinutes*g.speed:0;
+ const wall=!running||timing.wasCapped?Math.max(now,g.wall):g.wall+timing.elapsedMinutes*60000;
+ return {...timing,minutes,wall,running};
+}
+export function finishCatchUp(g:Game,plan:ReturnType<typeof catchUpPlan>,originalMinute:number){
+ if(g.minute>originalMinute){pauseUnsafe(g);if(g.accepted)updateMilestones(g);g.revision++}
+ g.wall=plan.wall;assertState(g);return g;
+}
 export function catchUp(g:Game,now:number):Game{
- check(Number.isSafeInteger(now)&&now>=0,'Invalid timestamp');const timing=planElapsedTime(g.wall,now,config.offlineCapMinutes),elapsed=timing.elapsedMinutes;const minutes=timing.simulatedMinutes*g.speed;
- const out=minutes>0&&g.accepted&&g.status!=='liquidated'?apply(g,{type:'advance',minutes}):clone(g);out.wall=timing.wasCapped||g.speed===0||!g.accepted?Math.max(now,g.wall):g.wall+elapsed*60000;return out;
+ const plan=catchUpPlan(g,now),out=clone(g);
+ if(plan.minutes>0)advanceInPlace(out,plan.minutes);
+ return finishCatchUp(out,plan,g.minute);
 }
 export function stage(g:Game){const debt=totalDebt(g.journal);return g.sold>=1000000&&debt===0n?5:g.sold>=250000&&g.reputation>=80?4:g.sold>=50000&&g.reputation>=50?3:g.sold>=5000&&profit(g.journal)>0n?2:1}
