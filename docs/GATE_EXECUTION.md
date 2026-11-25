@@ -1,14 +1,14 @@
 # Sequential release gate execution
 
-Owner update: implementation may proceed in gate order on explicit owner command even if earlier tests or blockers are unresolved. Record incomplete scope and defer verification to the final remediation phase; never label it PASS. G04 is now active for implementation. G01–G03 remain incomplete; G05–G12 await owner instruction. Keep all work on PR #1, feat/company-simulator-v3. Do not merge until all gates pass. License/provenance permission remains a prerequisite to importing third-party material.
+Owner update: implementation may proceed in gate order on explicit owner command even if earlier tests or blockers are unresolved. Record incomplete scope and defer verification to the final remediation phase; never label it PASS. G05 is now active for implementation. G01–G04 remain incomplete; G06–G12 await owner instruction. Keep all work on PR #1, feat/company-simulator-v3. Do not merge until all gates pass. License/provenance permission remains a prerequisite to importing third-party material.
 
 | Gate | Status | Acceptance from MASTER_BUILD_SPEC.md section 10 |
 |---|---|---|
 | G01 | PARTIAL / VERIFICATION DEFERRED | All D01–D25 and E01–E34 mapped to implementation or expressly approved deferral; every M01–M15 panel tested; no silent omissions |
 | G02 | PARTIAL / VERIFICATION DEFERRED | Pinned upstream commits, actual files, test evidence, dependencies/licenses, asset provenance |
 | G03 | PARTIAL / VERIFICATION DEFERRED | Original approved UI baseline, screenshots of all panels, layout, touch and focus |
-| G04 | ACTIVE IMPLEMENTATION / NOT PASSED | Balanced ledger, exactly-once posting, AR/AP/stock and financial reconciliation |
-| G05 | LOCKED | Manufacturing, inventory, quality and resource constraints |
+| G04 | PARTIAL / VERIFICATION DEFERRED | Balanced ledger, exactly-once posting, AR/AP/stock and financial reconciliation |
+| G05 | ACTIVE IMPLEMENTATION / NOT PASSED | Manufacturing, inventory, quality and resource constraints |
 | G06 | LOCKED | Bounded markets, competition, reproducible events and economy |
 | G07 | LOCKED | Viable rescue for each difficulty; recovery and liquidation |
 | G08 | LOCKED | Offline parity, time anomalies, save integrity, migration and updates |
@@ -84,3 +84,6 @@ G04 banking increment: loan records and schedules reconcile to the debt account,
 G04 costing increment: moving weighted-average inventory issue, deterministic residual allocation, receipt pool revaluation, exact tax settlement and loan tie-break correction. Tests authored. Historical lots retain prior valuation until first affected receipt/issue; no retroactive journal changes. Full cost lifecycle and evidence remain open.
 
 G04 final implementation increment for this session: bounded command receipt persistence, exact debt settlement, JSON financial exports. Unit tests authored, no new tests executed on request. Remaining: real IndexedDB concurrency/retry verification, accounting golden vectors and full end-to-end reconciliation, production labor/overhead allocation, credit/overdraft and risk-based lending, asset disposals, tax migration edge cases and authorized reversals. G04 stays partial; all prior gates retain verification debt.
+
+### G05 planning increment
+Added real persisted lot reservations, scheduling, cancellation, pause/resume and stage-boundary operating guard; accounting preserved. Three tests authored, execution pending. Continuous within-stage outage handling and complete traceability/waste still open.

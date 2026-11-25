@@ -1,3 +1,4 @@
+import {freeQuantity} from './planning';
 import {economicOrderQuantity} from './ordering';
 import {balance,profit,profitBeforeTax,netRevenue,totalDebt,type Account,type Entry} from './ledger';
 import type {Game} from './game';
@@ -18,7 +19,7 @@ export function financialReport(g:Game){
 export function receivableSchedule(g:Game){return g.jobs.filter(j=>j.kind==='collection').map(j=>({id:j.id,due:j.due,amount:BigInt(j.cost)}))}
 export function replenishment(g:Game,item:import('../content/scenario').Material){
  const incoming=g.jobs.filter(j=>j.kind==='receipt'&&j.item===item).reduce((s,j)=>s+j.qty,0);
- const available=g.lots.filter(l=>l.item===item&&!l.held&&l.expiry>g.minute).reduce((s,l)=>s+l.qty,0);
+ const available=g.lots.filter(l=>l.item===item).reduce((s,l)=>s+freeQuantity(g,l),0);
  const daily=g.policy.batchSize*config.bom[item],leadDemand=Math.ceil(daily*config.leadMinutes/1440),safety=daily;
  // Indicative classical EOQ, not the manager's binding replenishment quantity.
  const eoq=Math.min(10000000,Math.ceil(economicOrderQuantity(100,config.prices[item]/100*0.2,daily*365).quantity));
