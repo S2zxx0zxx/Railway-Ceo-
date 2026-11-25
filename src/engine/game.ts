@@ -10,7 +10,7 @@ import {balance,post,transfer,money,profit,netRevenue,totalDebt,type Entry} from
 export type Lot={id:string;item:Material|'biscuit';qty:number;cost:string;expiry:number;held:boolean;quality:number;source:string};
 export type Machine={name:string;condition:number;readyAt:number;level:1|2|3;lastService:number};
 export type Employee={id:string;name:string;skill:number;morale:number;wage:number;role:'operator'|'manager';shiftHours:8|10|12;fatigue:number;present:boolean;safetyTrained:boolean;grade:1|2|3};
-export type Job={id:string;kind:'receipt'|'batch'|'delivery'|'collection'|'repair'|'research';due:number;qty:number;cost:string;item?:Material;machine?:number;stage?:number;price?:number;credit?:number;quality?:number;source?:string;upgrade?:boolean;paused?:boolean;remainingMinutes?:number;trace?:TracePortion[];started?:number;serviceCost?:string};
+export type Job={id:string;kind:'receipt'|'batch'|'delivery'|'collection'|'repair'|'research';due:number;qty:number;cost:string;item?:Material;machine?:number;stage?:number;price?:number;credit?:number;quality?:number;source?:string;upgrade?:boolean;paused?:boolean;remainingMinutes?:number;trace?:TracePortion[];started?:number;serviceCost?:string;materialCost?:string;energyCost?:string;activeMinutes?:number};
 export type DeliveredSale={id:string;qty:number;amount:string;delivered:number;status:'receivable'|'paid'|'refunded';complaint:'none'|'open'|'closed';reason?:'damaged'|'late'|'quality';trace?:TracePortion[];recalled?:boolean};
 export type SupplierPayable={id:string;source:string;amount:string;due:number};
 export type ManagerPolicy={reorderBatches:number;batchSize:number;minCash:number;minMargin:number};
@@ -116,7 +116,7 @@ function runJob(g:Game,j:Job){
   if(goodCost>0n)transfer(g.journal,id(g),g.minute,'Completed batch','finished','wip',goodCost);
   if(cost>goodCost)transfer(g.journal,id(g),g.minute,'Rejected output','loss','wip',cost-goodCost);
   const batchId=j.source??j.id;
-  addLot(g,'biscuit',good,goodCost,true,quality,batchId);if(j.trace&&j.started!==undefined){g.batches.push({id:batchId,started:j.started,completed:g.minute,input:j.trace,planned:j.qty,good,rejected,quality,cost:j.cost,recalled:false});g.waste.rejectedPackets+=rejected;const grams=(config.bom.flour+config.bom.sugar+config.bom.oil);g.waste.processLossGrams+=(grams-config.manufacturing.packetGrams)*j.qty+config.manufacturing.packetGrams*rejected;}g.produced+=good;g.operations.rejected+=rejected;g.operations.sanitation=Math.max(0,g.operations.sanitation-Math.max(1,Math.ceil(j.qty/2500)));
+  addLot(g,'biscuit',good,goodCost,true,quality,batchId);if(j.trace&&j.started!==undefined){g.batches.push({id:batchId,started:j.started,completed:g.minute,input:j.trace,planned:j.qty,good,rejected,quality,cost:j.cost,...(j.materialCost!==undefined?{materialCost:j.materialCost,energyCost:j.energyCost,activeMinutes:j.activeMinutes}:{}),recalled:false});g.waste.rejectedPackets+=rejected;const grams=(config.bom.flour+config.bom.sugar+config.bom.oil);g.waste.processLossGrams+=(grams-config.manufacturing.packetGrams)*j.qty+config.manufacturing.packetGrams*rejected;}g.produced+=good;g.operations.rejected+=rejected;g.operations.sanitation=Math.max(0,g.operations.sanitation-Math.max(1,Math.ceil(j.qty/2500)));
   for(const m of g.machines)m.condition=Math.max(0,m.condition-1-Math.floor(rng(g)*2)-(g.minute-m.lastService>7*1440?1:0));
   note(g,'Batch completed; '+good+' packets awaiting quality release');break}
  case 'delivery':{
@@ -165,7 +165,7 @@ function startBatch(g:Game,qty:number,allocation?:Reservation[]){
  const energy=BigInt(qty)*BigInt(Math.max(15,50-g.research*5));canPay(g,energy);let cost=0n,quality=100;const trace:TracePortion[]=[];
  for(const item of config.materials){const consumed=take(g,item,config.bom[item]*qty,allocation);cost+=consumed.cost;quality=Math.min(quality,consumed.quality);trace.push(...consumed.trace)}
  if(cost>0n)transfer(g.journal,id(g),g.minute,'Materials issued','wip','raw',cost);
- spend(g,'wip',energy,'Batch energy');g.waste.energyPaise=String(BigInt(g.waste.energyPaise)+energy);enqueue(g,{kind:'batch',stage:0,qty,cost:String(cost+energy),quality,trace,started:g.minute,source:'batch-'+g.next,due:g.minute+Math.max(30,Math.ceil(qty/rate*60))});
+ spend(g,'wip',energy,'Batch energy');g.waste.energyPaise=String(BigInt(g.waste.energyPaise)+energy);enqueue(g,{kind:'batch',stage:0,qty,cost:String(cost+energy),quality,trace,started:g.minute,materialCost:String(cost),energyCost:String(energy),activeMinutes:0,source:'batch-'+g.next,due:g.minute+Math.max(30,Math.ceil(qty/rate*60))});
 }
 function startDuePlans(g:Game){
  for(const plan of g.plans.filter(p=>p.due<=g.minute).sort((a,b)=>a.due-b.due||a.id.localeCompare(b.id))){
@@ -175,14 +175,16 @@ function startDuePlans(g:Game){
   catch{g.plans=g.plans.filter(p=>p.id!==plan.id);note(g,'Scheduled batch canceled: resources or operating conditions unavailable ('+plan.id+')')}
  }
 }
+function pauseUnsafe(g:Game){if(throughput(g)>0&&g.status!=='liquidated')return;for(const j of g.jobs.filter(j=>j.kind==='batch'&&!j.paused)){j.remainingMinutes=Math.max(1,j.due-g.minute);j.paused=true;note(g,'Batch paused: operating conditions unavailable')}}
 function advance(g:Game,minutes:number){
  positive(minutes,config.offlineCapMinutes*60);const end=g.minute+minutes;
  while(g.minute<end){const nextDay=(Math.floor(g.minute/1440)+1)*1440;
-  const due=Math.min(...g.jobs.filter(j=>!j.paused).map(j=>j.due),...g.plans.map(p=>p.due),...g.lots.map(l=>l.expiry),nextDay,end);
-  check(due>g.minute,'Invalid scheduler state');g.minute=due;expire(g);if(due===nextDay)daily(g);
+  const due=Math.min(...g.jobs.filter(j=>!j.paused).map(j=>j.due),...g.plans.map(p=>p.due),...g.lots.map(l=>l.expiry),g.operations.permitUntil>g.minute?g.operations.permitUntil:Infinity,nextDay,end);
+  check(due>g.minute,'Invalid scheduler state');for(const j of g.jobs.filter(j=>j.kind==='batch'&&!j.paused&&j.activeMinutes!==undefined))j.activeMinutes!+=due-g.minute;g.minute=due;expire(g);if(due===nextDay)daily(g);
   const ready=g.jobs.filter(j=>!j.paused&&j.due===due).sort((a,b)=>a.id.localeCompare(b.id));g.jobs=g.jobs.filter(j=>j.paused||j.due!==due);
   for(const j of ready)runJob(g,j);
   startDuePlans(g);
+  pauseUnsafe(g);
   if(due===nextDay&&g.manager&&g.status!=='liquidated')automate(g);
  }
 }
@@ -242,7 +244,7 @@ export function apply(source:Game,cmd:Command):Game{
  case 'speed':check([0,1,5,20,60].includes(cmd.value),'Invalid speed');g.speed=cmd.value;break;
  }
  }
- g.revision++;assertState(g);return g;
+ pauseUnsafe(g);g.revision++;assertState(g);return g;
 }
 function automate(g:Game){
  const p=g.policy, floor=money(p.minCash);
@@ -266,7 +268,7 @@ export function assertState(g:Game){
  check(typeof g.utilities.power==='boolean'&&typeof g.utilities.water==='boolean','Invalid utilities');
  check(g.purchases.length<=50000&&new Set(g.purchases.map(p=>p.id)).size===g.purchases.length&&g.purchases.every(p=>p.status==='inTransit'?g.jobs.some(j=>j.id===p.id&&j.kind==='receipt'&&j.item===p.item&&j.qty===p.qty&&j.cost===p.cost&&j.due===p.due):p.closed!==undefined&&p.closed<=g.minute),'Purchase history linkage failure');
  check(g.serviceHistory.length<=50000&&new Set(g.serviceHistory.map(s=>s.id)).size===g.serviceHistory.length&&g.serviceHistory.every(s=>s.started<=s.completed&&s.completed<=g.minute&&BigInt(s.cost)>0n),'Invalid service history');
- check(g.batches.length<=50000&&new Set(g.batches.map(b=>b.id)).size===g.batches.length&&g.batches.every(b=>b.good+b.rejected===b.planned&&b.started<=b.completed&&b.completed<=g.minute&&config.materials.every(item=>b.input.filter(t=>t.item===item).reduce((n,t)=>n+t.qty,0)===config.bom[item]*b.planned)),'Batch genealogy failure');
+ check(g.batches.length<=50000&&new Set(g.batches.map(b=>b.id)).size===g.batches.length&&g.batches.every(b=>b.good+b.rejected===b.planned&&(b.materialCost===undefined?b.energyCost===undefined&&b.activeMinutes===undefined:b.energyCost!==undefined&&b.activeMinutes!==undefined&&BigInt(b.materialCost)>=0n&&BigInt(b.energyCost)>=0n&&BigInt(b.materialCost)+BigInt(b.energyCost)===BigInt(b.cost)&&Number.isSafeInteger(b.activeMinutes)&&b.activeMinutes>=0&&b.activeMinutes<=b.completed-b.started)&&b.started<=b.completed&&b.completed<=g.minute&&config.materials.every(item=>b.input.filter(t=>t.item===item).reduce((n,t)=>n+t.qty,0)===config.bom[item]*b.planned)),'Batch genealogy failure');
  check([g.waste.rawGrams,g.waste.packagingPieces,g.waste.finishedPackets,g.waste.rejectedPackets,g.waste.processLossGrams].every(n=>Number.isSafeInteger(n)&&n>=0)&&BigInt(g.waste.energyPaise)>=0n,'Invalid waste totals');
  check(g.plans.length<=50&&g.plans.every(p=>Number.isSafeInteger(p.qty)&&p.qty>0&&p.qty<=10000&&Number.isSafeInteger(p.due)&&p.due>g.minute&&p.reservations.every(r=>Number.isSafeInteger(r.qty)&&r.qty>0&&g.lots.some(l=>l.id===r.lotId&&!l.held&&l.expiry>p.due))&&config.materials.every(item=>p.reservations.filter(r=>g.lots.find(l=>l.id===r.lotId)?.item===item).reduce((n,r)=>n+r.qty,0)===config.bom[item]*p.qty))&&g.lots.every(l=>reserved(g,l.id)<=l.qty),'Reservation integrity failure');
  check(g.schema===1&&Number.isSafeInteger(g.revision)&&g.revision>=0&&Number.isSafeInteger(g.minute)&&g.minute>=0,'Invalid game state');
