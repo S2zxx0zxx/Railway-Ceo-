@@ -1,3 +1,4 @@
+import {validGovernance,validCrisisDetails} from '../engine/governance';
 import {validRescue} from '../engine/rescue';
 import {validMarket,validEconomy,regionInfo} from '../engine/market';
 import {assertState,migrateGame,type Game} from '../engine/game';
@@ -34,9 +35,10 @@ export function decodeSave(text:string):Game{
  check(Array.isArray(g.loans)&&g.loans.length<=10000&&g.loans.every(l=>str(l.id)&&decimal(l.original)&&decimal(l.remaining)&&int(l.opened,0,g.minute)&&[180,360].includes(l.termDays)&&typeof l.restructured==='boolean'));
  check(Array.isArray(g.sales)&&g.sales.length<=50000&&g.sales.every(s=>str(s.id)&&int(s.qty,1,10000)&&decimal(s.amount)&&BigInt(s.amount)>0n&&int(s.delivered,0,g.minute)&&(s.trace===undefined||trace(s.trace))&&(s.region===undefined||!!regionInfo(s.region))&&(s.recalled===undefined||typeof s.recalled==='boolean')&&['receivable','paid','refunded'].includes(s.status)&&['none','open','closed'].includes(s.complaint)&&(s.complaint==='none'?s.reason===undefined:['damaged','late','quality'].includes(s.reason!))&&(s.status!=='refunded'||s.complaint==='closed')));
  check(Array.isArray(g.payables)&&g.payables.length<=10000&&g.payables.every(p=>str(p.id)&&str(p.source)&&decimal(p.amount)&&BigInt(p.amount)>0n&&int(p.due)));
- check(Array.isArray(g.crises)&&g.crises.every(c=>str(c.id)&&['payroll','machine','liquidity','compliance','safety'].includes(c.kind)&&int(c.opened,0,g.minute)&&typeof c.resolved==='boolean'));
+ check(validGovernance(g));
+ check(Array.isArray(g.crises)&&g.crises.every(c=>str(c.id)&&['payroll','machine','liquidity','compliance','safety','supplier','creditor','quality','external'].includes(c.kind)&&int(c.opened,0,g.minute)&&typeof c.resolved==='boolean'&&validCrisisDetails(c.details,g.minute,c.opened,c.resolved)));
  check(Array.isArray(g.news)&&g.news.length<=100&&g.news.every(n=>str(n,1000))&&Array.isArray(g.history)&&g.history.every(h=>int(h.day)&&decimal(h.revenue)&&decimal(h.profit)));
- const ids=[...g.market.campaigns,...g.plans,...g.jobs,...g.lots,...g.employees,...g.crises,...g.payables,...g.sales,...g.loans,...g.journal].map(x=>x.id);
+ const ids=[...g.governance.decisions,...g.market.campaigns,...g.plans,...g.jobs,...g.lots,...g.employees,...g.crises,...g.payables,...g.sales,...g.loans,...g.journal].map(x=>x.id);
  check(new Set(ids).size===ids.length&&ids.every(i=>!/^e[0-9]+$/.test(i)||Number(i.slice(1))<g.next),'Conflicting object identifiers');
  assertState(g);return g;
 }

@@ -103,3 +103,5 @@ G06 regional increment: regional order routing and commitment conservation, actu
 
 ### G07 rescue increment
 Persisted rescue phase progression, due-obligation distress model, difficulty windows, terminal operations freeze, beginner equity assistance and milestone history; CEO/Banking/News UI. Four tests authored, deferred. No PASS; legal liquidation distribution and viable playthroughs unverified.
+
+G07 governance increment: owner decision records and identity, supplier extension, raw inventory rescue sale, event causes/deadlines/acknowledgment and once-only penalties. Four tests authored, not run. Existing legacy crises retain records without retrospective penalties. Full equipment disposal, statutory liquidation distribution, board voting and viability checks remain open.
