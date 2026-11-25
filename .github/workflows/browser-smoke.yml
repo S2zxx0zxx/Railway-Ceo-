@@ -47,6 +47,10 @@ jobs:
               await dialog.getByRole('button',{name:'Inspect',exact:true}).first().click();
               await page.waitForFunction(n=>document.querySelectorAll('dialog button').length>=1 && [...document.querySelectorAll('dialog button')].filter(b=>b.textContent.trim()==='Inspect').length===n,5-i);
             }
+            await page.screenshot({path:'browser-evidence/M02-company.png'});
+            await dialog.getByRole('button',{name:'CEO dashboard',exact:true}).click();
+            await dialog.getByRole('heading',{name:'CEO dashboard',exact:true}).waitFor();
+            await page.screenshot({path:'browser-evidence/M01-dashboard.png'});
             await dialog.getByRole('button',{name:'Close panel'}).click();
             await nav.getByRole('button',{name:'Procurement'}).click();
             await dialog.getByLabel('Grams').fill('1000');
@@ -54,6 +58,7 @@ jobs:
             await dialog.getByRole('button',{name:'Place order',exact:true}).click();
             const creditOrder=dialog.locator('.journal').filter({hasText:'flour · 1,000'});
             await creditOrder.getByText('Credit',{exact:false}).waitFor();
+            page.once('dialog', confirmation=>confirmation.accept());
             await creditOrder.getByRole('button',{name:'Cancel order',exact:true}).click();
             await creditOrder.waitFor({state:'detached'});
             await dialog.getByLabel('Grams').fill('75000');
@@ -66,10 +71,12 @@ jobs:
             for(const name of ['Quick actions','Employees','Warehouse','Production','Sales','Market','Finance','Banking','Research','Business news']){
               await nav.getByRole('button',{name,exact:true}).click();
               await dialog.getByRole('heading',{name,exact:true}).first().waitFor();
+              await page.screenshot({path:'browser-evidence/panel-'+name.replaceAll(' ','-')+'.png'});
               if(name==='Production'){
                 for(const sub of ['Machinery','Quality']){
                   await dialog.getByRole('button',{name:sub,exact:true}).click();
                   await dialog.getByRole('heading',{name:sub,exact:true}).first().waitFor();
+                  await page.screenshot({path:'browser-evidence/panel-'+sub+'.png'});
                   await dialog.getByRole('button',{name:'Close panel'}).click();
                   await nav.getByRole('button',{name:'Production',exact:true}).click();
                 }
@@ -77,6 +84,7 @@ jobs:
               if(name==='Market'){
                 await dialog.getByRole('button',{name:'Marketing',exact:true}).click();
                 await dialog.getByRole('heading',{name:'Marketing',exact:true}).first().waitFor();
+                await page.screenshot({path:'browser-evidence/panel-Marketing.png'});
               }
               await dialog.getByRole('button',{name:'Close panel'}).click();
             }
@@ -91,8 +99,19 @@ jobs:
             await dialog.getByText('Smoke Industries',{exact:true}).waitFor();
             await dialog.getByRole('button',{name:'Close panel'}).click();
             await page.screenshot({path:'browser-evidence/offline.png'});
-            await page.setViewportSize({width:360,height:800});
-            await page.screenshot({path:'browser-evidence/portrait.png'});
+            // All stage assets must be cached even before their milestones are reached.
+            const images=await page.evaluate(async()=>Promise.all([1,2,3,4,5].map(async n=>{const img=new Image();img.src=new URL('offices/stage-'+n+'.svg',document.baseURI).href;await img.decode();return img.naturalWidth>0})));
+            assert.deepEqual(images,[true,true,true,true,true]);
+            await page.getByRole('button',{name:'Settings',exact:true}).click();
+            await dialog.getByLabel('Reduce interface motion').check();
+            assert.equal(await page.locator('main.game').getAttribute('data-reduced-motion'),'true');
+            await page.keyboard.press('Escape');
+            await dialog.waitFor({state:'hidden'});
+            for(const [width,height] of [[640,360],[800,360],[1280,720],[1536,702],[1024,768],[360,800]]){
+              await page.setViewportSize({width,height});
+              await page.screenshot({path:'browser-evidence/layout-'+width+'x'+height+'.png'});
+              assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+            }
             assert.deepEqual(errors,[]);
             console.log('Browser smoke passed: takeover, 12 dock controls, audit, credit purchase/cancellation, prepaid purchase, management route reachability, persistence, offline reload, portrait screenshot.');
           } finally { await browser.close(); }

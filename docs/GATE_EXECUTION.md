@@ -73,3 +73,5 @@ G02 additional increment: distributable license notice added under public/licens
 
 ### G03 visual implementation checkpoint
 Original five-stage static SVG office scenes, stage-driven asset routing, compact real HUD, 12-button circular dock, distinct CEO dashboard, shared management dialog, status/feedback and destructive-action confirmation, landscape/portrait styles, PWA precache and asset inventory added. Existing command engine and save format unchanged. Art is authored vector illustration, not final photorealistic WebP; owner visual sign-off, physical touch/focus checks, full per-panel interactions, final artwork/sound and screenshot tests still pending. No gate passed.
+
+G03 follow-up: persistent reduced-motion preference, small landscape auto-collapse on initial load, legal notice access and browser acceptance/screenshot coverage for all 15 panels, six viewport sizes and offline office assets. Full interaction and visual review not yet executed; no pass.

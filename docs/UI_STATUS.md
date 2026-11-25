@@ -4,3 +4,5 @@ Original SVG office prototype, responsive landscape HUD/dock, portrait fallback,
 
 ## G03 visual checkpoint
 Five original static stage scenes now replace the single office on the home screen. Stage comes from the existing simulation; no new progression counter. M01 is a distinct reachable executive dashboard, M02–M15 retain existing commands. Shared dialog exposes parent navigation, status and pause/resume. HUD uses compact amounts with full exact values in Finance/Banking. Responsive CSS and offline precache authored. Original stylized SVG is an interim art direction, not photorealistic WebP or final reference match. No external models or screenshot assets used. Browser/device/visual verification and full feature coverage remain open.
+
+G03 follow-up: reduced motion preference, license link, initial compact landscape behavior and browser screenshot matrix authored. Verification deferred.

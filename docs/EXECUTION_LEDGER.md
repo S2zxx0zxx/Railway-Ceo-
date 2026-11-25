@@ -102,3 +102,5 @@ Baseline V3.0. Status is evidence-based; no task is verified by documentation al
 - G02: added distributable MIT notice files and documented SimCorp demand/distress compatibility decision; package output verification pending.
 
 - G03 authorized; G01/G02 incomplete scope retained. Added five original static stage office SVGs, real executive dashboard, compact HUD, circular game dock, panel hierarchy and status feedback, confirmation for destructive actions, responsive skin, cache coverage and asset provenance. No engine/save modifications. Final photoreal render, owner visual sign-off and test evidence pending.
+
+- G03 follow-up: reduced-motion preference with OS preference preserved, settings notices link, small landscape default collapsed performance card, and expanded Chromium acceptance script covering executive dashboard, all management routes, destructive-action confirmation, all five offline assets and six viewport screenshots. Script authored, not executed in this turn; owner visual sign-off pending.
