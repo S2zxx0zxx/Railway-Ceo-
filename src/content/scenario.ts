@@ -13,6 +13,7 @@ export const config={
  ] as const,
  rawCapacityPerItem:2000000,finishedCapacity:50000,
  repairCost:12000, repairMinutes:120, initialPrice:900, capacity:750,
+ researchProjects:{quality:{max:3,cost:12000,minutes:1440,bonus:3},shelfLife:{max:3,cost:15000,minutes:2880,bonusMinutes:21600}},
  wagePerDay:800, dailyInterestBps:3, offlineCapMinutes:1440,
  market:{baseDemand:10000,elasticity:1.5,cashCap:1000000000,stockCap:12000,unitCost:580,regions:[{id:'local',name:'Local district',demand:10000,reputation:0,sold:0,cost:0,deliveryPaise:30,deliveryMinutes:120},{id:'regional',name:'Regional network',demand:6000,reputation:30,sold:5000,cost:25000,deliveryPaise:55,deliveryMinutes:240},{id:'national',name:'National distribution',demand:16000,reputation:55,sold:25000,cost:100000,deliveryPaise:90,deliveryMinutes:480},{id:'export',name:'Export market',demand:24000,reputation:80,sold:100000,cost:250000,deliveryPaise:140,deliveryMinutes:720}] as const,difficulty:{Beginner:115,Realistic:100,Hardcore:85},campaignMin:1000,campaignMax:50000,shockChance:{Beginner:0.08,Realistic:0.12,Hardcore:0.18}},
  manufacturing:{packetGrams:100,incomingQualityMin:70,finishedQualityMin:70,supplierLimits:{standard:{minimum:1,maxOrder:2000000,inTransitCapacity:6000000},economy:{minimum:1,maxOrder:2000000,inTransitCapacity:4000000},premium:{minimum:1,maxOrder:2000000,inTransitCapacity:5000000}}},
