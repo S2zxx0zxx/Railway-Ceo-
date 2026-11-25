@@ -1,6 +1,6 @@
 # Sequential release gate execution
 
-Owner update: implementation may proceed in gate order on explicit owner command even if earlier tests or blockers are unresolved. Record incomplete scope and defer verification to the final remediation phase; never label it PASS. G08 is now active for implementation. G01–G07 remain incomplete; G09–G12 await owner instruction. Keep all work on PR #1, feat/company-simulator-v3. Do not merge until all gates pass. License/provenance permission remains a prerequisite to importing third-party material.
+Owner update: implementation may proceed in gate order on explicit owner command even if earlier tests or blockers are unresolved. Record incomplete scope and defer verification to the final remediation phase; never label it PASS. G09 is now active for implementation. G01–G08 remain incomplete; G10–G12 await owner instruction. Keep all work on PR #1, feat/company-simulator-v3. Do not merge until all gates pass. License/provenance permission remains a prerequisite to importing third-party material.
 
 | Gate | Status | Acceptance from MASTER_BUILD_SPEC.md section 10 |
 |---|---|---|
@@ -11,8 +11,8 @@ Owner update: implementation may proceed in gate order on explicit owner command
 | G05 | PARTIAL / VERIFICATION DEFERRED | Manufacturing, inventory, quality and resource constraints |
 | G06 | PARTIAL / VERIFICATION DEFERRED | Bounded markets, competition, reproducible events and economy |
 | G07 | PARTIAL / VERIFICATION DEFERRED | Viable rescue for each difficulty; recovery and liquidation |
-| G08 | ACTIVE IMPLEMENTATION / NOT PASSED | Offline parity, time anomalies, save integrity, migration and updates |
-| G09 | LOCKED | Manager validation, budget, authority, stop conditions and decision evidence |
+| G08 | PARTIAL / VERIFICATION DEFERRED | Offline parity, time anomalies, save integrity, migration and updates |
+| G09 | ACTIVE IMPLEMENTATION / NOT PASSED | Manager validation, budget, authority, stop conditions and decision evidence |
 | G10 | LOCKED | Installable offline PWA, native APK device test, save transfer and no mandatory network |
 | G11 | LOCKED | Signed AAB, metadata, Play policies, notices, no secrets or high-priority defects |
 | G12 | LOCKED | Exact revision and final evidence, all gates passed, authorized merge |
@@ -114,3 +114,6 @@ Refactored elapsed planning and single-revision catch-up, in-place bounded simul
 G08 persistence increment: actual worker bridge integrated into open/command/resume, stale proposals rejected at atomic commit, bounded receipts preserved, portable envelope and database checksums, three rotating backups and explicit newest-valid recovery. Four tests authored; real IndexedDB concurrent tabs, crash recovery, quota and platform import/export verification pending. Legacy raw saves still accepted. No gate pass.
 
 G08 UI increment: visible return report and stale-tab recovery UI, visibility lifecycle routing, checksummed export controls and dedicated browser acceptance workflow. Eight unit tests plus browser workflow authored across G08, not executed here. Full worker/cache/device checks, storage quota, durable interrupted checkpoint, cross-platform save transfer, safe PWA update and long-run parity remain open. G08 partial; no later gate started, no merge.
+
+### G09 engine increment
+Four departmental authorities, real candidate command validation and actual ledger cash-debit limits, same-day CEO approval queue, assignment/availability checks, cash reserve/risk stops and persistent logs. Legacy saves retain records but require explicit redelegation. UI/tests and approval-time margin/price safeguards pending. No PASS.
