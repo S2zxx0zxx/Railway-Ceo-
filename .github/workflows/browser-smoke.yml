@@ -1,0 +1,79 @@
+name: Browser and offline smoke
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm run build
+      - run: npm install --no-save --no-audit --no-fund playwright@1.51.1
+      - run: npx playwright install --with-deps chromium
+      - name: Test actual game in Chromium
+        shell: bash
+        run: |
+          set -e
+          npm exec vite preview -- --host 127.0.0.1 --port 4173 > /tmp/ceo-preview.log 2>&1 &
+          trap 'kill $! 2>/dev/null || true' EXIT
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:4173/ >/dev/null && break; sleep 1; done
+          mkdir -p browser-evidence
+          cat > browser-smoke.mjs <<'EOF'
+          import { chromium } from 'playwright';
+          import assert from 'node:assert/strict';
+          const browser = await chromium.launch();
+          const context = await browser.newContext({viewport:{width:800,height:360}});
+          const page = await context.newPage();
+          const errors = [];
+          page.on('pageerror', e => errors.push(e.message));
+          try {
+            await page.goto('http://127.0.0.1:4173/');
+            await page.getByLabel('Company name').fill('Smoke Industries');
+            await page.getByLabel('CEO name').fill('Test CEO');
+            await page.getByRole('button',{name:'Accept takeover'}).click();
+            await page.getByRole('button',{name:'Accept takeover'}).waitFor({state:'hidden'});
+            const nav=page.getByRole('navigation',{name:'Management departments'});
+            assert.equal(await nav.getByRole('button').count(),12);
+            await page.screenshot({path:'browser-evidence/landscape.png'});
+            await nav.getByRole('button',{name:'Company',exact:true}).click();
+            const dialog=page.getByRole('dialog');
+            for(let i=0;i<6;i++){
+              await dialog.getByRole('button',{name:'Inspect',exact:true}).first().click();
+              await page.waitForFunction(n=>document.querySelectorAll('dialog button').length>=1 && [...document.querySelectorAll('dialog button')].filter(b=>b.textContent.trim()==='Inspect').length===n,5-i);
+            }
+            await dialog.getByRole('button',{name:'Close panel'}).click();
+            await nav.getByRole('button',{name:'Procurement'}).click();
+            await dialog.getByLabel('Grams').fill('75000');
+            await dialog.getByRole('button',{name:'Place prepaid order'}).click();
+            await dialog.getByText('receipt · 75,000').waitFor();
+            await page.screenshot({path:'browser-evidence/procurement.png'});
+            await dialog.getByRole('button',{name:'Close panel'}).click();
+            await page.evaluate(async()=>{await navigator.serviceWorker.ready});
+            await page.reload();
+            await nav.getByRole('button',{name:'Warehouse'}).waitFor();
+            await page.waitForFunction(()=>Boolean(navigator.serviceWorker.controller));
+            await context.setOffline(true);
+            await page.reload();
+            await nav.getByRole('button',{name:'Company',exact:true}).waitFor();
+            await nav.getByRole('button',{name:'Company',exact:true}).click();
+            await dialog.getByText('Smoke Industries',{exact:true}).waitFor();
+            await dialog.getByRole('button',{name:'Close panel'}).click();
+            await page.screenshot({path:'browser-evidence/offline.png'});
+            await page.setViewportSize({width:360,height:800});
+            await page.screenshot({path:'browser-evidence/portrait.png'});
+            assert.deepEqual(errors,[]);
+            console.log('Browser smoke passed: takeover, 12 dock controls, audit, purchase, persistence, offline reload, portrait screenshot.');
+          } finally { await browser.close(); }
+          EOF
+          node browser-smoke.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-evidence
+          path: browser-evidence
