@@ -69,3 +69,6 @@
 @media(prefers-reduced-motion:reduce){.dock .round,.panel .action{transition:none!important}}
 
 .game[data-reduced-motion=true] *{transition:none!important;animation:none!important}.toggle-field{display:flex;align-items:center;gap:12px;min-height:44px;font-size:13px;font-weight:600}.toggle-field input{width:22px;height:22px;accent-color:#266c88}.license-link{color:#1b5c79;display:inline-flex;align-items:center;min-height:44px;font-weight:700}.performance[data-collapsed=false]{max-height:calc(80% - 4px);overflow:auto}.performance[data-collapsed=true]{max-height:none}.panel>header>div{min-width:0}.panel>header>button{flex:none}.panel-status span{white-space:nowrap}@media(orientation:landscape) and (max-height:450px){.performance[data-collapsed=false]{max-height:82%}.office-label{left:52%;max-width:40%}}@media(orientation:portrait){.performance[data-collapsed=false]{max-height:54%}}
+
+/* G08 return brief and save status */
+.return-link{background:#e0edf2;color:#1d526c;border:1px solid #bed5df;border-radius:7px;min-height:44px;font-size:11px;font-weight:700;padding:4px 9px}.return-summary h3{margin-top:0}.return-summary .line{font-variant-numeric:tabular-nums}.game[aria-busy=true] .clock{opacity:.75}@media(orientation:landscape) and (max-height:450px){.return-link{min-height:32px}}

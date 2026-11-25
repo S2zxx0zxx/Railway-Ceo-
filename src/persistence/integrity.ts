@@ -1,7 +1,8 @@
 // CRC32 detects accidental corruption; it is not authentication or tamper protection.
+const table=Uint32Array.from({length:256},(_,n)=>{let c=n;for(let i=0;i<8;i++)c=(c>>>1)^((c&1)?0xedb88320:0);return c>>>0});
 export function checksum(text:string):string{
  let crc=0xffffffff;
- for(const b of new TextEncoder().encode(text)){crc^=b;for(let i=0;i<8;i++)crc=(crc>>>1)^((crc&1)?0xedb88320:0)}
+ for(const b of new TextEncoder().encode(text))crc=(crc>>>8)^table[(crc^b)&255];
  return ((crc^0xffffffff)>>>0).toString(16).padStart(8,'0');
 }
 export const payloadLimit=8_000_000;
