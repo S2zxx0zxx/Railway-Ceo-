@@ -1,0 +1,7 @@
+The CEO: Company Simulator — third-party notices
+
+Idle Game Template: Copyright (c) 2026 ciefa. MIT.
+Adapted elapsed-time calculation; see idle-game-template.txt for full license.
+Source: https://github.com/ciefa/idle-game-template/blob/a91cd5f8a26cdffd3f1803297c9a92c0a7f850c4/src/game/engine/offline.ts
+
+Additional dependency notices must be reconciled before release.

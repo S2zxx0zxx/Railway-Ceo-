@@ -36,3 +36,6 @@ Pluts: recursive pinned tree confirms domain ledger and unit tests but no root L
 - Economia: inspected resolveOffers/shuffle in pinned Economy.js; direct matching lacks a bid>=ask check and uses Math.random. Reject direct engine import; retain deterministic independent model; later market implementation must enforce clearing and conservation.
 - TeamDay: getWorkforceQuality/calculateFunnel depend on global G, map and event state; reference bounded workforce/marketing concepts only; no incompatible UI or SaaS funnel imported.
 - `npm run audit:resources` produces installed-resolution license/integrity/file-hash inventory and hashes known SVG assets. It is not an approval or vulnerability scan. Lockfile and actual audit output still pending; no third-party art downloaded or approved here.
+
+- SimCorp `calculate_product_demand` uses a cost-based fair price, bounded elasticity, quality/reputation and seeded random noise. Its distress thresholds are absolute currency amounts. Do not substitute these parameters into the current INR game without scenario calibration; no Python code imported. Preserve existing single engine and record demand calibration under G06.
+- The adapted MIT notice is present under `public/licenses/` for web and Android packaging; final bundle inclusion verification remains deferred.

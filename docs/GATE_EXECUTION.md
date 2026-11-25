@@ -68,3 +68,5 @@ At c0d20aa: web/unit workflow 45597960788 succeeded; browser 45597960836 failed 
 
 ### G02 implementation checkpoint
 G01 unresolved functional work and test evidence retained above; no pass inferred. G02: adapted MIT wall-time planning into live catch-up path, retained full upstream license, added three regression tests and installed-resolution/asset inventory command. ERPNext confirmed GPL-3.0 (reference only); Pluts README and package declare MIT but full notice not located at pin, so no code import. Economia order matching lacks a price-crossing guard and uses unseeded randomness; reject direct import. TeamDay economy is coupled to global state and office configuration; no renderer or SaaS logic import. Full dependency lock, actual audit output, upstream smoke tests, visual and audio assets and remaining selected modules still open. Tests deferred under owner instruction; CI may run automatically.
+
+G02 additional increment: distributable license notice added under public/licenses. SimCorp demand/distress source reviewed; calibration deferred to G06 instead of replacing current INR model without evidence. Bundle verification pending.

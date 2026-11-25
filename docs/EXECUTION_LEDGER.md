@@ -98,3 +98,5 @@ Baseline V3.0. Status is evidence-based; no task is verified by documentation al
 - G01 test maintenance: run 45597960836 failed on obsolete 'Place prepaid order' locator after the procurement UI change (build succeeded). Updated browser smoke to use current order labels, exercise credit order cancellation/prepaid ordering, and reach remaining management routes. New CI pending; no claim of full UI action coverage.
 
 - Owner authorizes G02 implementation before G01 verification; G01 incomplete scope and test blockers retained. No gate pass or merge. G02 elapsed-time adaptation with original MIT notice, regression tests, actual installed-resource inventory command, ERPNext/Pluts source/license decisions and incompatibility findings committed. Verification deferred; no claim of complete resource adoption.
+
+- G02: added distributable MIT notice files and documented SimCorp demand/distress compatibility decision; package output verification pending.
