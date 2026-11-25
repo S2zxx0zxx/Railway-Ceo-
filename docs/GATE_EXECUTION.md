@@ -50,3 +50,6 @@ No row below is a pass. Existing commands/screens and authored tests are baselin
 | D25 IT/automation | M01/M14/policies | Save, clock and managers; automation levels and decision evidence |
 
 E01–E34 and M01–M15 mappings are in master spec sections 3 and 8. Add an individual acceptance record for each; E34 optional monetization is expressly tracked as deferred by the existing spec. For every active feature require real state, UI path, validated commands, persistence where relevant, and observed tests. Record commit and evidence before promotion. A green general CI run alone is insufficient. No gate or row can be closed on planning alone.
+
+### G01 implementation increment — procurement/payables
+D03/D05/D06: implemented credit purchases, pending-order cancellation, invoice creation/settlement, AP reconciliation and due-date restrictions. UI controls in Procurement and Finance; tests/g01-procurement.test.ts authored. Acceptance still partial until CI and complete scope verified. Credit limit ₹1 lakh, 7/15-day terms, no economy supplier credit and free pending cancellation are scenario tuning defaults, not real supplier terms.

@@ -86,3 +86,5 @@ Baseline V3.0. Status is evidence-based; no task is verified by documentation al
 - Owner requires strict G01 → G12 sequence. See docs/GATE_EXECUTION.md for the active gate and initial D01–D25 gap register. G01 is not passed; G02–G12 locked. Preserve all prior implementation; no merge until final verification.
 
 - G01 increment: added company/brand identity decision, backward-compatible brand save migration, executive metrics and internal risk indicators, and four regression tests. Full governance and corporate coverage remain open. CI not yet verified for this change.
+
+- G01 D03/D05/D06: supplier credit terms and committed limit, cancellable prepaid/credit purchase orders, payable recognition at receipt, due dates, settlement, overdue credit restriction, save validation, UI and six regression tests added. CI pending. Full purchase-document lifecycle and incoming QC remain partial.
