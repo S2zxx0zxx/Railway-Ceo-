@@ -25,7 +25,7 @@ Baseline V3.0. Status is evidence-based; no task is verified by documentation al
 | RV-019 | P04 | PARTIAL | P&L, balance sheet, cash flow, journal, aging, valuation; reconciliation tests |
 | RV-020 | P05 | PARTIAL | Supplier offers, PO, lead time and receipt lifecycle; credit and dedupe |
 | RV-021 | P05 | PARTIAL | Lot inventory, FEFO, reserved stock and weighted average; unit/cost conservation |
-| RV-022 | P05 | NOT STARTED | Reorder/safety stock/EOQ, expiry, capacity and disposal; Stockpyl comparison |
+| RV-022 | P05 | PARTIAL | Reorder/safety stock/EOQ, expiry, capacity and disposal; Stockpyl comparison |
 | RV-023 | P05 | PARTIAL | Procurement/warehouse UI and end-to-end receipt with ledger |
 | RV-024 | P06 | PARTIAL | BOM, yield and staged batch scheduler; reservations and WIP cost |
 | RV-025 | P06 | PARTIAL | Machine capacity/condition/OEE, wear and failure; deterministic fixtures |
@@ -54,7 +54,7 @@ Baseline V3.0. Status is evidence-based; no task is verified by documentation al
 | RV-048 | P12 | NOT STARTED | Modular ECharts and financial reports; charts match underlying data |
 | RV-049 | P13 | PARTIAL | Full economic golden scenario, invariant/property tests, seeded multi-year simulations |
 | RV-050 | P13 | NOT STARTED | Balance three difficulty modes and recovery paths; no deadlock, impossible tutorial or endless inflation |
-| RV-051 | P13 | NOT STARTED | Save/crash/update/import/multi-tab and time anomaly tests, repair any regressions |
+| RV-051 | P13 | PARTIAL | Save/crash/update/import/multi-tab and time anomaly tests, repair any regressions |
 | RV-052 | P13 | NOT STARTED | Check dependency licenses, vulnerability scan, asset hashes and no runtime external requests |
 | RV-053 | P14 | PARTIAL | PWA manifest, icons, service worker and safe updates; install and airplane-mode tests |
 | RV-054 | P14 | PARTIAL | Android Capacitor wrapper, bundled assets, lifecycle/back/safe-area and offline fresh install |
@@ -74,3 +74,5 @@ Baseline V3.0. Status is evidence-based; no task is verified by documentation al
 - Commit 80235ae78b35d2af7fb2319a3a760e750fac3364: GitHub Actions run 45595860042 completed successfully, 6 engine tests passed, TypeScript and Vite build passed; web-dist uploaded. This validates only that commit and its initial tests, not complete scope.
 - Subsequent changes add bounded manager policies, crisis checks, competitor price, training, severance, emergency capital and elapsed-time fix; new tests pending CI.
 - All 12 release gates remain OPEN. Do not merge.
+
+- Follow-up: original financial reconciliation reports, replenishment forecast, bounded save codec, transactional previous-save backup, explicit import/recovery controls and regression tests authored. CI and browser persistence validation pending; EOQ/Stockpyl adoption and ECharts pending. No gate promoted.
