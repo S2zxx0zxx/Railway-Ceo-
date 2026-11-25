@@ -6,6 +6,12 @@ export const config={
  // prices in paise per gram/piece
  prices:{flour:3,sugar:4,oil:12,packaging:70},
  leadMinutes:180, shelfMinutes:43200, finishedShelfMinutes:129600,
+ suppliers:[
+ {id:'standard',name:'United Industrial Supply',pricePercent:100,quality:90,leadMinutes:180,reliability:100},
+ {id:'economy',name:'Economy Agro Supply',pricePercent:88,quality:76,leadMinutes:240,reliability:82},
+ {id:'premium',name:'Prime Ingredient Supply',pricePercent:115,quality:98,leadMinutes:120,reliability:97}
+ ] as const,
+ rawCapacityPerItem:2000000,finishedCapacity:50000,
  repairCost:12000, repairMinutes:120, initialPrice:900, capacity:750,
  wagePerDay:800, dailyInterestBps:3, offlineCapMinutes:1440,
  audit:['Financial records','Machinery','Inventory','Employees','Buyers','Utilities and compliance'],
@@ -15,3 +21,5 @@ export const config={
 } as const;
 export type Material=typeof config.materials[number];
 export type Difficulty=typeof config.difficulties[number];
+
+export type SupplierId=typeof config.suppliers[number]['id'];

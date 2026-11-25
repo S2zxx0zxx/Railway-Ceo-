@@ -1,9 +1,9 @@
-import {config,type Material,type Difficulty} from '../content/scenario';
+import {config,type Material,type Difficulty,type SupplierId} from '../content/scenario';
 import {balance,post,transfer,money,profit,type Entry} from './ledger';
-export type Lot={id:string;item:Material|'biscuit';qty:number;cost:string;expiry:number;held:boolean};
+export type Lot={id:string;item:Material|'biscuit';qty:number;cost:string;expiry:number;held:boolean;quality:number;source:string};
 export type Machine={name:string;condition:number;readyAt:number};
 export type Employee={id:string;name:string;skill:number;morale:number;wage:number;role:'operator'|'manager'};
-export type Job={id:string;kind:'receipt'|'batch'|'delivery'|'collection'|'repair'|'research';due:number;qty:number;cost:string;item?:Material;machine?:number;stage?:number;price?:number;credit?:number};
+export type Job={id:string;kind:'receipt'|'batch'|'delivery'|'collection'|'repair'|'research';due:number;qty:number;cost:string;item?:Material;machine?:number;stage?:number;price?:number;credit?:number;quality?:number;source?:string};
 export type ManagerPolicy={reorderBatches:number;batchSize:number;minCash:number;minMargin:number};
 export type Crisis={id:string;kind:'payroll'|'machine'|'liquidity'|'compliance'|'safety';opened:number;resolved:boolean};
 export type Operations={permitUntil:number;sanitation:number;rejected:number;discarded:number;marketDay:number;marketCommitted:number};
@@ -12,7 +12,7 @@ export type Game={schema:1;operations:Operations;policy:ManagerPolicy;crises:Cri
 export type Command=
  | {type:'takeover';name:string;ceo:string;difficulty:Difficulty}
  | {type:'audit';item:string}
- | {type:'purchase';item:Material;qty:number}
+ | {type:'purchase';item:Material;qty:number;supplier?:SupplierId}
  | {type:'repair';machine:number}
  | {type:'renewPermit'}
  | {type:'sanitize'}
@@ -51,33 +51,34 @@ export function initialGame(wall=0,seed=20261125):Game{
  return g;
 }
 export function stock(g:Game,item:Lot['item']){return g.lots.filter(l=>l.item===item&&!l.held&&l.expiry>g.minute).reduce((s,l)=>s+l.qty,0)}
-function take(g:Game,item:Lot['item'],qty:number):bigint{
+function take(g:Game,item:Lot['item'],qty:number):{cost:bigint;quality:number}{
  positive(qty,100_000_000);check(stock(g,item)>=qty,'Insufficient available '+item);
- let remaining=qty,total=0n;
+ let remaining=qty,total=0n,quality=0;
  for(const l of g.lots.filter(l=>l.item===item&&!l.held&&l.expiry>g.minute).sort((a,b)=>a.expiry-b.expiry||a.id.localeCompare(b.id))){
   if(!remaining)break;
   const n=Math.min(remaining,l.qty),cost=BigInt(l.cost)*BigInt(n)/BigInt(l.qty);
-  l.qty-=n;l.cost=String(BigInt(l.cost)-cost);remaining-=n;total+=cost;
+  quality+=n*l.quality;l.qty-=n;l.cost=String(BigInt(l.cost)-cost);remaining-=n;total+=cost;
  }
- g.lots=g.lots.filter(l=>l.qty>0);return total;
+ g.lots=g.lots.filter(l=>l.qty>0);return {cost:total,quality:Math.floor(quality/qty)};
 }
+export function supplierQuote(item:Material,qty:number,supplier:SupplierId='standard'){const offer=config.suppliers.find(s=>s.id===supplier);check(offer,'Unknown supplier');positive(qty,10000000);return {...offer,cost:(BigInt(qty)*BigInt(config.prices[item])*BigInt(offer.pricePercent)+99n)/100n}}
 export function marketDemand(g:Game){return Math.max(0,Math.floor(6000*Math.pow(config.initialPrice/g.price,1.5)*(0.5+g.reputation/100)*(g.campaignUntil>g.minute?1.2:1)*Math.pow(g.competitorPrice/config.initialPrice,0.4)))}
 export function demand(g:Game){return Math.max(0,marketDemand(g)-(g.operations.marketDay===Math.floor(g.minute/1440)?g.operations.marketCommitted:0))}
 export function throughput(g:Game){if(g.operations.permitUntil<=g.minute||g.operations.sanitation<40)return 0;if(g.machines.some(m=>m.condition<40||m.readyAt>g.minute)||!g.employees.some(e=>e.role==='operator'))return 0;return Math.floor(config.capacity*Math.min(...g.machines.map(m=>m.condition))/100*Math.min(1,g.employees.filter(e=>e.role==='operator').length/12))}
-function addLot(g:Game,item:Lot['item'],qty:number,cost:bigint,held=false){if(qty>0)g.lots.push({id:id(g),item,qty,cost:String(cost),held,expiry:g.minute+(item==='biscuit'?config.finishedShelfMinutes:config.shelfMinutes)})}
+function addLot(g:Game,item:Lot['item'],qty:number,cost:bigint,held=false,quality=90,source='opening'){if(qty>0)g.lots.push({id:id(g),item,qty,cost:String(cost),held,quality,source,expiry:g.minute+(item==='biscuit'?config.finishedShelfMinutes:config.shelfMinutes)})}
 function enqueue(g:Game,job:Omit<Job,'id'>){g.jobs.push({...job,id:id(g)})}
 function runJob(g:Game,j:Job){
  const cost=BigInt(j.cost);
  switch(j.kind){
- case 'receipt':addLot(g,j.item!,j.qty,cost);if(cost>0n)transfer(g.journal,id(g),g.minute,'Materials received','raw','wip',cost);note(g,'Received '+j.qty+' '+j.item);break;
+ case 'receipt':addLot(g,j.item!,j.qty,cost,false,j.quality??90,j.source??j.id);if(cost>0n)transfer(g.journal,id(g),g.minute,'Materials received','raw','wip',cost);note(g,'Received '+j.qty+' '+j.item);break;
  case 'repair':g.machines[j.machine!].condition=95;g.machines[j.machine!].readyAt=0;note(g,g.machines[j.machine!].name+' repaired');break;
  case 'batch':{
   if((j.stage??0)<4){enqueue(g,{...j,stage:(j.stage??0)+1,due:g.minute+30});break}
-  const rejected=Math.floor(j.qty*(0.02+(1-Math.min(...g.machines.map(m=>m.condition))/100)*0.08));
+  const inputQuality=j.quality??90,condition=Math.min(...g.machines.map(m=>m.condition));const quality=Math.max(0,Math.min(100,Math.floor(inputQuality*0.65+condition*0.2+g.operations.sanitation*0.15+g.research)));const rejected=Math.min(j.qty,Math.floor(j.qty*(0.02+(1-condition/100)*0.08+(100-inputQuality)*0.001)));
   const good=j.qty-rejected,goodCost=cost*BigInt(good)/BigInt(j.qty);
   if(goodCost>0n)transfer(g.journal,id(g),g.minute,'Completed batch','finished','wip',goodCost);
   if(cost>goodCost)transfer(g.journal,id(g),g.minute,'Rejected output','loss','wip',cost-goodCost);
-  addLot(g,'biscuit',good,goodCost,true);g.produced+=good;g.operations.rejected+=rejected;g.operations.sanitation=Math.max(0,g.operations.sanitation-Math.max(1,Math.ceil(j.qty/2500)));
+  addLot(g,'biscuit',good,goodCost,true,quality,j.source??j.id);g.produced+=good;g.operations.rejected+=rejected;g.operations.sanitation=Math.max(0,g.operations.sanitation-Math.max(1,Math.ceil(j.qty/2500)));
   for(const m of g.machines)m.condition=Math.max(0,m.condition-1-Math.floor(rng(g)*2));
   note(g,'Batch completed; '+good+' packets awaiting quality release');break}
  case 'delivery':{
@@ -131,14 +132,14 @@ export function apply(source:Game,cmd:Command):Game{
  check(g.status!=='liquidated'||cmd.type==='speed','Company has been liquidated');
  switch(cmd.type){
  case 'audit':check(config.audit.some(x=>x===cmd.item),'Invalid audit item');if(!g.audit.includes(cmd.item))g.audit.push(cmd.item);break;
- case 'purchase':{check(config.materials.includes(cmd.item),'Invalid material');positive(cmd.qty,10000000);const cost=BigInt(cmd.qty)*BigInt(config.prices[cmd.item]);spend(g,'wip',cost,'Prepaid material order');enqueue(g,{kind:'receipt',item:cmd.item,qty:cmd.qty,cost:String(cost),due:g.minute+config.leadMinutes});break}
+ case 'purchase':{check(config.materials.includes(cmd.item),'Invalid material');const offer=supplierQuote(cmd.item,cmd.qty,cmd.supplier);const reserved=g.lots.filter(l=>l.item===cmd.item).reduce((n,l)=>n+l.qty,0)+g.jobs.filter(j=>j.kind==='receipt'&&j.item===cmd.item).reduce((n,j)=>n+j.qty,0);check(reserved+cmd.qty<=config.rawCapacityPerItem,'Warehouse capacity exceeded');spend(g,'wip',offer.cost,'Prepaid material order');const delay=offer.reliability<100&&rng(g)*100>=offer.reliability?120:0;enqueue(g,{kind:'receipt',item:cmd.item,qty:cmd.qty,cost:String(offer.cost),due:g.minute+offer.leadMinutes+delay,quality:offer.quality,source:offer.id});break}
  case 'repair':{const m=g.machines[cmd.machine];check(m&&m.readyAt===0&&!g.jobs.some(j=>j.kind==='batch'),'Repair unavailable');check(m.condition<95,'Machine already serviced');spend(g,'expense',money(config.repairCost),'Machine repair');m.readyAt=g.minute+config.repairMinutes;enqueue(g,{kind:'repair',machine:cmd.machine,qty:0,cost:'0',due:m.readyAt});break}
  case 'renewPermit':check(g.operations.permitUntil-g.minute<=7*1440,'Renewal not due');spend(g,'expense',money(6000),'Operating permit renewal');g.operations.permitUntil=Math.max(g.operations.permitUntil,g.minute)+30*1440;break;
  case 'sanitize':check(g.operations.sanitation<100&&!g.jobs.some(j=>j.kind==='batch'),'Sanitation unavailable');spend(g,'expense',money(5000),'Factory sanitation');g.operations.sanitation=100;break;
  case 'discard':{const l=g.lots.find(x=>x.id===cmd.id);check(l,'Lot unavailable');const c=BigInt(l.cost);if(c>0n)transfer(g.journal,id(g),g.minute,'Disposed inventory','loss',l.item==='biscuit'?'finished':'raw',c);if(l.item==='biscuit')g.operations.discarded+=l.qty;g.lots=g.lots.filter(x=>x.id!==l.id);note(g,'Disposed '+l.qty+' '+l.item);break}
- case 'produce':{positive(cmd.qty,10000);check(g.audit.length===config.audit.length,'Complete company audit');const rate=throughput(g);check(rate>0&&!g.jobs.some(j=>j.kind==='batch'),'Production line unavailable');let cost=0n;for(const item of config.materials)cost+=take(g,item,config.bom[item]*cmd.qty);if(cost>0n)transfer(g.journal,id(g),g.minute,'Materials issued','wip','raw',cost);const energy=BigInt(cmd.qty)*BigInt(Math.max(15,50-g.research*5));spend(g,'wip',energy,'Batch energy');enqueue(g,{kind:'batch',stage:0,qty:cmd.qty,cost:String(cost+energy),due:g.minute+Math.max(30,Math.ceil(cmd.qty/rate*60))});break}
- case 'release':{const l=g.lots.find(l=>l.id===cmd.id&&l.item==='biscuit'&&l.held&&l.expiry>g.minute);check(l,'Batch unavailable');l.held=false;note(g,'Quality release: '+l.qty+' packets');break}
- case 'sell':{positive(cmd.qty,10000);check([0,15,30].includes(cmd.credit)&&cmd.qty<=demand(g),'Order exceeds market demand or invalid terms');const cost=take(g,'biscuit',cmd.qty);g.operations.marketDay=Math.floor(g.minute/1440);g.operations.marketCommitted+=cmd.qty;if(cost>0n)transfer(g.journal,id(g),g.minute,'Goods dispatched','wip','finished',cost);spend(g,'expense',BigInt(cmd.qty)*30n,'Delivery cost');enqueue(g,{kind:'delivery',qty:cmd.qty,cost:String(cost),price:g.price,credit:cmd.credit,due:g.minute+120});break}
+ case 'produce':{positive(cmd.qty,10000);check(g.audit.length===config.audit.length,'Complete company audit');const rate=throughput(g);check(rate>0&&!g.jobs.some(j=>j.kind==='batch'),'Production line unavailable');check(g.lots.filter(l=>l.item==='biscuit').reduce((n,l)=>n+l.qty,0)+cmd.qty<=config.finishedCapacity,'Finished goods capacity exceeded');let cost=0n,quality=100;for(const item of config.materials){const consumed=take(g,item,config.bom[item]*cmd.qty);cost+=consumed.cost;quality=Math.min(quality,consumed.quality)}if(cost>0n)transfer(g.journal,id(g),g.minute,'Materials issued','wip','raw',cost);const energy=BigInt(cmd.qty)*BigInt(Math.max(15,50-g.research*5));spend(g,'wip',energy,'Batch energy');enqueue(g,{kind:'batch',stage:0,qty:cmd.qty,cost:String(cost+energy),quality,source:'batch-'+g.next,due:g.minute+Math.max(30,Math.ceil(cmd.qty/rate*60))});break}
+ case 'release':{const l=g.lots.find(l=>l.id===cmd.id&&l.item==='biscuit'&&l.held&&l.expiry>g.minute);check(l,'Batch unavailable');check(l.quality>=70,'Quality failed; dispose the held batch');l.held=false;note(g,'Quality release: '+l.qty+' packets');break}
+ case 'sell':{positive(cmd.qty,10000);check([0,15,30].includes(cmd.credit)&&cmd.qty<=demand(g),'Order exceeds market demand or invalid terms');const {cost}=take(g,'biscuit',cmd.qty);g.operations.marketDay=Math.floor(g.minute/1440);g.operations.marketCommitted+=cmd.qty;if(cost>0n)transfer(g.journal,id(g),g.minute,'Goods dispatched','wip','finished',cost);spend(g,'expense',BigInt(cmd.qty)*30n,'Delivery cost');enqueue(g,{kind:'delivery',qty:cmd.qty,cost:String(cost),price:g.price,credit:cmd.credit,due:g.minute+120});break}
  case 'price':positive(cmd.price,3000);check(cmd.price>=100,'Price too low');g.price=cmd.price;break;
  case 'hire':{check(g.employees.length<100&&['operator','manager'].includes(cmd.role),'Hiring limit');spend(g,'expense',money(2000),'Recruitment');g.employees.push({id:id(g),name:cmd.role==='manager'?'Production manager':'New operator',role:cmd.role,skill:65+Math.floor(rng(g)*25),morale:70,wage:cmd.role==='manager'?1500:800});break}
  case 'settlePayroll':{positive(cmd.rupees);const amount=money(cmd.rupees);canPay(g,amount);check(amount<=-balance(g.journal,'payroll'),'Exceeds payroll payable');transfer(g.journal,id(g),g.minute,'Payroll settlement','payroll','cash',amount);break}
@@ -173,7 +174,7 @@ function automate(g:Game){
  if(q>0&&BigInt(g.price)-cost/BigInt(available)-30n>=BigInt(p.minMargin))attempt({type:'sell',qty:q,credit:0},BigInt(q)*30n);
 }
 export function migrateGame(g:Game):Game{
- return {...g,operations:g.operations??{...initialOps(),permitUntil:g.minute+30*1440,marketDay:Math.floor(g.minute/1440)},policy:g.policy??{reorderBatches:2,batchSize:1000,minCash:50000,minMargin:100},crises:g.crises??[],competitorPrice:g.competitorPrice??900,distressDays:g.distressDays??0,status:g.status??'distressed'};
+ return {...g,lots:g.lots.map(l=>({...l,quality:l.quality??90,source:l.source??'legacy'})),operations:g.operations??{...initialOps(),permitUntil:g.minute+30*1440,marketDay:Math.floor(g.minute/1440)},policy:g.policy??{reorderBatches:2,batchSize:1000,minCash:50000,minMargin:100},crises:g.crises??[],competitorPrice:g.competitorPrice??900,distressDays:g.distressDays??0,status:g.status??'distressed'};
 }
 export function assertState(g:Game){
  check(g.schema===1&&Number.isSafeInteger(g.revision)&&g.revision>=0&&Number.isSafeInteger(g.minute)&&g.minute>=0,'Invalid game state');
