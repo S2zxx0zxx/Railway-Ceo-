@@ -14,9 +14,9 @@ export function marketTotal(regions:RegionId[],difficulty:Difficulty,day:number,
 }
 export function initialMarket(day=0,difficulty:Difficulty='Realistic',legacyCommitted=0):MarketState{
  return {day,total:Math.max(legacyCommitted,marketTotal(['local'],difficulty,day)),commodity:{flour:100,sugar:100,oil:100,packaging:100},shock:null,shockHistory:[],campaigns:[],regions:['local'],activeRegions:['local'],regionCommitted:{local:legacyCommitted,regional:0,national:0,export:0},last:null,competitors:[
- {id:'rival-value',name:'Value Bake',strategy:'value',price:750,brand:40,quality:74,cash:10000000,stock:3000,capacity:3000,lastSold:0},
- {id:'rival-balanced',name:'Union Biscuits',strategy:'balanced',price:900,brand:55,quality:85,cash:15000000,stock:3500,capacity:3500,lastSold:0},
- {id:'rival-premium',name:'Crown Bakery',strategy:'premium',price:1100,brand:65,quality:94,cash:20000000,stock:2500,capacity:2500,lastSold:0}
+ {id:'rival-value',name:'Value Bake',strategy:'value',price:750,brand:40,quality:74,cash:10000000,stock:8000,capacity:8000,lastSold:0},
+ {id:'rival-balanced',name:'Union Biscuits',strategy:'balanced',price:900,brand:55,quality:85,cash:15000000,stock:8500,capacity:8500,lastSold:0},
+ {id:'rival-premium',name:'Crown Bakery',strategy:'premium',price:1100,brand:65,quality:94,cash:20000000,stock:6000,capacity:6000,lastSold:0}
  ]};
 }
 /** Stable logit weights; rounded integer quotas cannot exceed the fixed daily market. */

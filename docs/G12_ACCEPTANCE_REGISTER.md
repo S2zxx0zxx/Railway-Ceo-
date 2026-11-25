@@ -153,3 +153,6 @@ Reviewed source baseline 09c8f148d3298394a79d8a8af8d293a300cf2211. All 134 IDs m
 | RV-060 | Release decision, documented limitations, rollback/save compatibility and owner approval; no unauthorized merge/publication | G12_REMEDIATION.md | PARTIAL | All gates, rollback and owner sign-off |
 
 Owner-controlled external gates: visual approval, license/brand, publisher identity and contact, publicly hosted privacy URL, actual Play Console answers and applicable closed testing, physical Android device and signed upload bundle. No publishing or merge.
+
+### Subsequent evidence
+09c8f14: all five checks passed (124 tests; browser, offline, audit and Android package). 8c95f7d: 3 recovery paths failed; see remediation ledger. New research projects and market calibration require latest CI. No row passed automatically.

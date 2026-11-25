@@ -38,7 +38,7 @@ function rescue(difficulty:Difficulty){
    if(g.minute+Math.max(30,Math.ceil(qty/throughput(g)*60))+120+120<end&&throughput(g)>0){act({type:'produce',qty});while(g.jobs.some(j=>j.kind==='batch'&&!j.paused)){const batch=g.jobs.find(j=>j.kind==='batch'&&!j.paused)!;advance(batch.due-g.minute)}for(const l of g.lots.filter(l=>l.item==='biscuit'&&l.held&&l.quality>=70))act({type:'release',id:l.id});sell()}
   }
   // Keep operating reserves, settle accrued payroll including fractional paise when affordable.
-  const owed=-balance(g.journal,'payroll'),available=cash()-reserve;
+  const owed=-balance(g.journal,'payroll'),available=cash()-reserve-money(50000);
   if(owed>0n&&available>=owed)act({type:'settlePayrollExact'});else if(owed>0n&&available>=100n)act({type:'settlePayroll',rupees:Number((available<owed?available:owed)/100n)});
   advance(end-g.minute);
   const statement=financialReport(g);expect(statement.balanced).toBe(true);expect(statement.cashDifference).toBe(0n);expect(cash()).toBeGreaterThanOrEqual(0n);
