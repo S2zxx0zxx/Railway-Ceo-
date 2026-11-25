@@ -30,6 +30,6 @@ export function validManagement(g:Game){
 }
 export function managerRisk(g:Game){
  if(g.status==='liquidated'||['default','restructuring'].includes(g.rescue.phase))return 'Creditor default or liquidation';
- if(g.crises.some(c=>!c.resolved&&['safety','compliance','quality'].includes(c.kind)))return 'Unresolved safety, compliance or recall crisis';
+ if(g.operations.permitUntil<=g.minute||g.operations.sanitation<40||g.sales.some(s=>s.recalled&&s.complaint==='open')||g.employees.some(e=>e.fatigue>=70&&!e.safetyTrained)||g.crises.some(c=>!c.resolved&&['safety','compliance','quality'].includes(c.kind)))return 'Unresolved safety, compliance or recall crisis';
  return null;
 }

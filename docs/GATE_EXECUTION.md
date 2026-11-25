@@ -121,3 +121,5 @@ Four departmental authorities, real candidate command validation and actual ledg
 G09 UI increment: assigned authority controls, company/department limits, CEO approval queue, emergency stop and execution history. Approval rechecks margin, quantity policy, repair need, actual ledger debit and all normal command constraints. Eight tests authored and existing manager test adapted. Verification deferred; broader authority scope, future scheduling budget reservations and comprehensive offline/approval tests remain open. G09 partial; no later gate started.
 
 G09 final increment: stale procurement approval rejection, explicit expiration records and documented authority/limits. Ten tests authored total; all runtime evidence deferred. Current supported delegation covers four departments, not complete automated corporate coverage. Future budgeted scheduling, detailed qualification and additional risk/authority scope remain incomplete. No G10 execution.
+
+G09 boundary review: stop on direct safety/permit/recall conditions at scheduler boundaries, corrected legacy test fixture audit, added three cases. Total 13 newly authored tests, unexecuted. No PASS.

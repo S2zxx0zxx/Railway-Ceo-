@@ -208,6 +208,7 @@ export function advanceInPlace(g:Game,minutes:number){
   reviewCrises(g);
   pauseUnsafe(g);
   if(due===nextDay){for(const a of g.management.approvals)managerLog(g,a.department,a.command.type,'rejected','Request expired at next game day',0n,a.employeeId);rollManagement(g);if(g.manager&&g.status!=='liquidated')automate(g)}
+  if(g.manager&&(managerRisk(g)||cash(g)<money(g.policy.minCash)))stopManagers(g,managerRisk(g)??'Cash reserve reached');
   if(g.accepted)updateMilestones(g);
   if(g.status==='liquidated'){g.speed=0;g.manager=false;g.management.approvals=[];g.management.halted='Company liquidated';note(g,'Operations frozen. Existing assets and obligations remain recorded.');break}
  }
