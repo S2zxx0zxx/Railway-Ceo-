@@ -15,6 +15,7 @@ jobs:
       - name: Require committed lockfile
         run: test -f package-lock.json
       - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm run audit:source
       - run: npm run audit:resources
       - run: npm run audit:licenses
       - name: Record advisory reports

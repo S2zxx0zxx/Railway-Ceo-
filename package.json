@@ -14,7 +14,8 @@
     "android:apk": "npm run android:sync && node scripts/android-build.mjs assembleDebug",
     "android:aab": "npm run android:sync && node scripts/android-build.mjs bundleRelease",
     "audit:licenses": "node scripts/runtime-licenses.mjs",
-    "android:sign": "node scripts/sign-android.mjs"
+    "android:sign": "node scripts/sign-android.mjs",
+    "audit:source": "node scripts/release-source-audit.mjs"
   },
   "dependencies": {
     "@capacitor/core": "8.0.0",

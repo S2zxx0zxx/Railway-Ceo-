@@ -135,3 +135,5 @@ G10 observed CI evidence: runs 45610920923 (web), 45610920864 (G08 browser), 456
 
 ### G11 release increment
 Observed G10 74ed771: 118 tests pass, web and G08 offline acceptance pass, debug APK and unsigned AAB built and artifact hashes independently matched; browser smoke failed small-landscape takeover interception. Corrected stacking and added policy draft, store metadata/declaration checklist, exact lockfile promotion workflow, runtime license text generator, advisory audit workflow and local expected-certificate signing script. See G11_RELEASE_READINESS.md. Lock promotion/advisory/license runs, final build and signed AAB not yet verified. No gate PASS.
+
+G11 lock promotion verified: run 45612480252 succeeded, c97d1d7 added exact 257-entry lockfile. Temporary write workflow removed, npm ci enforced in existing CI, source/asset and native packaging audit added. First audit failed before lock commit, rerun needed; G11 source build succeeded at d499d66. Signed artifact, final audit, native device and actual Play declarations pending. No PASS or merge.

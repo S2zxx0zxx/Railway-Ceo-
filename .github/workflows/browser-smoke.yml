@@ -12,9 +12,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: npm install --no-audit --no-fund
+      - run: npm ci --no-audit --no-fund
       - run: npm run build
-      - run: npm install --no-save --no-audit --no-fund playwright@1.51.1
+      - run: npm install --no-save --package-lock=false --no-audit --no-fund playwright@1.51.1
       - run: npx playwright install --with-deps chromium
       - name: Test actual game in Chromium
         shell: bash

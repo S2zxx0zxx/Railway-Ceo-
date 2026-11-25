@@ -7,6 +7,7 @@ on:
       - 'public/**'
       - 'scripts/**'
       - 'package.json'
+      - 'package-lock.json'
       - 'capacitor.config.ts'
       - 'vite.config.ts'
       - '.github/workflows/android-qa.yml'
@@ -29,7 +30,7 @@ jobs:
         with:
           packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
           log-accepted-android-sdk-licenses: 'false'
-      - run: npm install --no-audit --no-fund
+      - run: npm ci --no-audit --no-fund
       - run: npm run android:sync
       - run: npm run audit:bundle
       - name: Assemble debug APK
@@ -44,6 +45,8 @@ jobs:
           "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" > android-apk-badging.txt
           grep "targetSdkVersion:'36'" android-apk-badging.txt
           sha256sum "$APK" > android-qa-sha256.txt
+          "$ANDROID_HOME/build-tools/36.0.0/zipalign" -c -P 16 -v 4 "$APK" > android-apk-alignment.txt
+          python3 scripts/audit-native-package.py --apk "$APK" --badging android-apk-badging.txt
       - uses: actions/upload-artifact@v4
         with:
           name: android-qa-debug-apk
@@ -52,10 +55,13 @@ jobs:
             android-qa-sha256.txt
             android-apk-signature.txt
             android-apk-badging.txt
+            android-apk-alignment.txt
       - name: Assemble unsigned release bundle
         run: node scripts/android-build.mjs bundleRelease
       - name: Record unsigned AAB hash
-        run: sha256sum android/app/build/outputs/bundle/release/app-release.aab > android-aab-sha256.txt
+        run: |
+          sha256sum android/app/build/outputs/bundle/release/app-release.aab > android-aab-sha256.txt
+          python3 scripts/audit-native-package.py --apk android/app/build/outputs/apk/debug/app-debug.apk --badging android-apk-badging.txt --aab android/app/build/outputs/bundle/release/app-release.aab
       - uses: actions/upload-artifact@v4
         with:
           name: android-unsigned-aab-NOT-FOR-PUBLISHING
@@ -67,6 +73,7 @@ jobs:
           name: platform-build-evidence
           path: |
             audit-output/bundle.json
+            audit-output/native-package.json
             package-lock.json
       - name: Prepare generated native source evidence
         run: |
