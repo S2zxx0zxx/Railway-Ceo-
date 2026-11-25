@@ -1,3 +1,4 @@
+import {exportJson} from '../platform/native';
 import {requestReceipt,wasCommitted,remember,receiptLimit,type Receipt} from './receipts';
 import Dexie,{type Table} from 'dexie';
 import {apply,assertState,initialGame,type Command,type Game} from '../engine/game';
@@ -100,8 +101,6 @@ export async function recoverBackup(expected?:number):Promise<SaveView>{
   await db.slots.put(record);return {game,version:record.version};
  });
 }
-export function exportSave(game:Game){
- const blob=new Blob([encodeSave(game)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='the-ceo-save.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
-}
+export async function exportSave(game:Game){await exportJson('the-ceo-save.json',encodeSave(game))}
 /** Archives share the same local database; export before clearing browser storage. */
-export async function exportLatestLiquidated(){const archived=await db.slots.where('id').startsWith('archive:').toArray();const latest=archived.sort((a,b)=>b.version-a.version)[0];if(!latest)throw Error('No archived liquidated company');exportSave(verifyRecord(latest))}
+export async function exportLatestLiquidated(){const archived=await db.slots.where('id').startsWith('archive:').toArray();const latest=archived.sort((a,b)=>b.version-a.version)[0];if(!latest)throw Error('No archived liquidated company');await exportSave(verifyRecord(latest))}

@@ -72,3 +72,6 @@
 
 /* G08 return brief and save status */
 .return-link{background:#e0edf2;color:#1d526c;border:1px solid #bed5df;border-radius:7px;min-height:44px;font-size:11px;font-weight:700;padding:4px 9px}.return-summary h3{margin-top:0}.return-summary .line{font-variant-numeric:tabular-nums}.game[aria-busy=true] .clock{opacity:.75}@media(orientation:landscape) and (max-height:450px){.return-link{min-height:32px}}
+
+/* Native edge-to-edge safe area; preserve portrait/tablet fallback. */
+.game{padding-top:max(env(safe-area-inset-top),0px);padding-right:max(env(safe-area-inset-right),0px);padding-bottom:max(env(safe-area-inset-bottom),0px);padding-left:max(env(safe-area-inset-left),0px)}.intro{padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}.panel>section{scroll-padding-bottom:env(safe-area-inset-bottom)}@media(orientation:landscape) and (max-height:450px){.panel{max-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 8px)}}

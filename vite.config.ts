@@ -13,7 +13,7 @@ function offline():Plugin{return {name:'ceo-offline',apply:'build',enforce:'post
  const url=p=>new URL(p,self.registration.scope).href;
  self.addEventListener('install',e=>e.waitUntil((async()=>{const cache=await caches.open(CACHE);try{await cache.addAll(FILES.map(p=>new Request(url(p),{cache:'reload'})));for(const p of FILES)if(!await cache.match(url(p)))throw Error('Missing precache entry')}catch(err){await caches.delete(CACHE);throw err}})()));
  // Do not skipWaiting automatically; existing clients must reach a safe boundary first.
- self.addEventListener('message',e=>{if(e.data?.type==='ACTIVATE_UPDATE'&&e.source?.url?.startsWith(self.registration.scope))e.waitUntil(self.skipWaiting())});
+ self.addEventListener('message',e=>{if(e.data?.type==='ACTIVATE_UPDATE'&&e.source?.url?.startsWith(self.registration.scope))e.waitUntil((async()=>{const clients=await self.clients.matchAll({type:'window',includeUncontrolled:true});if(clients.filter(c=>c.url.startsWith(self.registration.scope)).length!==1){e.source.postMessage({type:'UPDATE_BLOCKED'});return}await self.skipWaiting()})())});
  // Keep previous caches until old clients exit; do not claim clients or delete caches on activate.
  self.addEventListener('fetch',e=>{const r=e.request,u=new URL(r.url);if(r.method!=='GET'||u.origin!==self.location.origin||!u.href.startsWith(self.registration.scope))return;
  if(r.mode==='navigate'){e.respondWith(caches.open(CACHE).then(c=>c.match(url('./index.html'))).then(x=>x||Response.error()));return}
