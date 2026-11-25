@@ -2,7 +2,7 @@ import {config,type Material} from '../content/scenario';
 import type {Game,Lot} from './game';
 export type Reservation={lotId:string;qty:number};
 export type WorkPlan={id:string;qty:number;due:number;reservations:Reservation[]};
-export function reserved(g:Game,lotId:string){return g.plans.reduce((n,p)=>n+p.reservations.filter(r=>r.lotId===lotId).reduce((s,r)=>s+r.qty,0),0)}
+export function reserved(g:Game,lotId:string){return [...g.plans,...g.contracts.filter(c=>c.status==='reserved')].reduce((n,p)=>n+p.reservations.filter(r=>r.lotId===lotId).reduce((s,r)=>s+r.qty,0),0)}
 export function freeQuantity(g:Game,l:Lot){return l.held||l.expiry<=g.minute?0:Math.max(0,l.qty-reserved(g,l.id))}
 export function reserveRecipe(g:Game,qty:number,due:number){
  const result:Reservation[]=[];
