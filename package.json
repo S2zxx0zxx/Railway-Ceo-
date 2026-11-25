@@ -8,7 +8,8 @@
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "android:sync": "npm run build && cap sync android"
+    "android:sync": "npm run build && cap sync android",
+    "audit:resources": "node scripts/resource-inventory.mjs"
   },
   "dependencies": {
     "@capacitor/core": "^7.4.0",

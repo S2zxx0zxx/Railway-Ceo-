@@ -5,3 +5,5 @@ coverage/
 *.jks
 *.keystore
 .env*
+
+/audit-output/

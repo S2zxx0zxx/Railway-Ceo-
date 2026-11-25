@@ -1,11 +1,11 @@
 # Sequential release gate execution
 
-Owner instruction: G01 is the only active gate. Complete and verify it before G02; then proceed in order through G12. Existing work related to later gates is retained, but is not a pass. Dependencies needed for the current gate may be addressed only to enable its acceptance. Keep all work on PR #1, feat/company-simulator-v3. Never merge on partial work. A blocker must be recorded and resolved before promoting the active gate. Continue independent work within that gate.
+Owner update: implementation may proceed in gate order on explicit owner command even if earlier tests or blockers are unresolved. Record incomplete scope and defer verification to the final remediation phase; never label it PASS. G02 is now active for implementation. G01 remains incomplete; G03–G12 await owner instruction. Keep all work on PR #1, feat/company-simulator-v3. Do not merge until all gates pass. License/provenance permission remains a prerequisite to importing third-party material.
 
 | Gate | Status | Acceptance from MASTER_BUILD_SPEC.md section 10 |
 |---|---|---|
-| G01 | ACTIVE / NOT PASSED | All D01–D25 and E01–E34 mapped to implementation or expressly approved deferral; every M01–M15 panel tested; no silent omissions |
-| G02 | LOCKED | Pinned upstream commits, actual files, test evidence, dependencies/licenses, asset provenance |
+| G01 | PARTIAL / VERIFICATION DEFERRED | All D01–D25 and E01–E34 mapped to implementation or expressly approved deferral; every M01–M15 panel tested; no silent omissions |
+| G02 | ACTIVE IMPLEMENTATION / NOT PASSED | Pinned upstream commits, actual files, test evidence, dependencies/licenses, asset provenance |
 | G03 | LOCKED | Original approved UI baseline, screenshots of all panels, layout, touch and focus |
 | G04 | LOCKED | Balanced ledger, exactly-once posting, AR/AP/stock and financial reconciliation |
 | G05 | LOCKED | Manufacturing, inventory, quality and resource constraints |
@@ -65,3 +65,6 @@ D08/D10/D11: implemented capitalized timed upgrades, machine levels and service 
 
 ### G01 observed verification
 At c0d20aa: web/unit workflow 45597960788 succeeded; browser 45597960836 failed on obsolete procurement selector; Android QA build 45597960767 succeeded (not device verification). At b2b9abf: web/unit 45598050912 succeeded. At 27c2be0: web/unit 45598164190 succeeded. Corrected stale smoke test and expanded route traversal; latest evidence pending. Earlier successes do not pass G01 or later gates.
+
+### G02 implementation checkpoint
+G01 unresolved functional work and test evidence retained above; no pass inferred. G02: adapted MIT wall-time planning into live catch-up path, retained full upstream license, added three regression tests and installed-resolution/asset inventory command. ERPNext confirmed GPL-3.0 (reference only); Pluts README and package declare MIT but full notice not located at pin, so no code import. Economia order matching lacks a price-crossing guard and uses unseeded randomness; reject direct import. TeamDay economy is coupled to global state and office configuration; no renderer or SaaS logic import. Full dependency lock, actual audit output, upstream smoke tests, visual and audio assets and remaining selected modules still open. Tests deferred under owner instruction; CI may run automatically.

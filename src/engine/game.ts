@@ -1,3 +1,4 @@
+import {planElapsedTime} from './elapsed';
 import {config,type Material,type Difficulty,type SupplierId} from '../content/scenario';
 import {balance,post,transfer,money,profit,type Entry} from './ledger';
 export type Lot={id:string;item:Material|'biscuit';qty:number;cost:string;expiry:number;held:boolean;quality:number;source:string};
@@ -219,7 +220,7 @@ export function assertState(g:Game){
  check(balance(g.journal,'receivable')===g.jobs.filter(j=>j.kind==='collection').reduce((n,j)=>n+BigInt(j.cost),0n),'Receivables reconciliation failure');
 }
 export function catchUp(g:Game,now:number):Game{
- check(Number.isSafeInteger(now)&&now>=0,'Invalid timestamp');const elapsed=Math.max(0,Math.floor((now-g.wall)/60000));const minutes=Math.min(config.offlineCapMinutes,elapsed)*g.speed;
- const out=minutes>0&&g.accepted&&g.status!=='liquidated'?apply(g,{type:'advance',minutes}):clone(g);out.wall=elapsed>config.offlineCapMinutes||g.speed===0||!g.accepted?Math.max(now,g.wall):g.wall+elapsed*60000;return out;
+ check(Number.isSafeInteger(now)&&now>=0,'Invalid timestamp');const timing=planElapsedTime(g.wall,now,config.offlineCapMinutes),elapsed=timing.elapsedMinutes;const minutes=timing.simulatedMinutes*g.speed;
+ const out=minutes>0&&g.accepted&&g.status!=='liquidated'?apply(g,{type:'advance',minutes}):clone(g);out.wall=timing.wasCapped||g.speed===0||!g.accepted?Math.max(now,g.wall):g.wall+elapsed*60000;return out;
 }
 export function stage(g:Game){const debt=-balance(g.journal,'debt');return g.sold>=1000000&&debt===0n?5:g.sold>=250000&&g.reputation>=80?4:g.sold>=50000&&g.reputation>=50?3:g.sold>=5000&&profit(g.journal)>0n?2:1}

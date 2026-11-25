@@ -28,3 +28,11 @@ Five candidates' root MIT license files were read at their pinned commits (not j
 
 Pluts: recursive pinned tree confirms domain ledger and unit tests but no root LICENSE; no code reuse approved. ERPNext remains workflow reference only. Full transitive dependency and asset provenance audit, actual candidate smoke execution, golden-vector comparisons, and direct adoption decisions remain pending. RV-002 and RV-003 must not be marked verified.
 
+
+## G02 implementation checkpoint
+- Idle Game Template: adapted the elapsed/cap/anomaly planning fragment from pinned `src/game/engine/offline.ts` into `src/engine/elapsed.ts`; `catchUp` calls it. Full original MIT notice preserved in `docs/third-party/idle-game-template-LICENSE.txt`. No upstream state or tick runtime, and no skill-only uncapped progress. Tests authored in `tests/g02-elapsed.test.ts`; execution deferred.
+- ERPNext: pinned `license.txt` blob f288702d2fa16d3cdf0035b15a9fcbc552cd88e7 confirms GPL-3.0. Work order blob d555cfe06fa25bed690cead31c31e60e9ee1ef18 and purchase receipt blob 9ad9c7a8394b35c919d019194e1aa071436070f1 identify Frappe-coupled GPL modules. Reference workflows only; no source imported.
+- Pluts: pinned README blob 066355c1472b972dc5e7d42d4e40f2006b7c494b and package.json blob b7c43cce66c0ab781f6ea59143901b0c3af4c5498 declare MIT; ledger blob 466abd1081dc9c9b56321637677591cdd65449b2 has repository/schema dependencies. Full notice not located; retain original ledger and no direct code import pending clearance.
+- Economia: inspected resolveOffers/shuffle in pinned Economy.js; direct matching lacks a bid>=ask check and uses Math.random. Reject direct engine import; retain deterministic independent model; later market implementation must enforce clearing and conservation.
+- TeamDay: getWorkforceQuality/calculateFunnel depend on global G, map and event state; reference bounded workforce/marketing concepts only; no incompatible UI or SaaS funnel imported.
+- `npm run audit:resources` produces installed-resolution license/integrity/file-hash inventory and hashes known SVG assets. It is not an approval or vulnerability scan. Lockfile and actual audit output still pending; no third-party art downloaded or approved here.
