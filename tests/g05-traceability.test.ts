@@ -1,0 +1,11 @@
+import {describe,it,expect} from 'vitest';
+import {initialGame,apply,stock} from '../src/engine/game';
+import {config} from '../src/content/scenario';
+import {balance} from '../src/engine/ledger';
+import {decodeSave} from '../src/persistence/codec';
+function finished(){let g=apply(initialGame(),{type:'takeover',name:'Trace',ceo:'CEO',difficulty:'Realistic'});for(const item of config.audit)g=apply(g,{type:'audit',item});for(const machine of [2,4])g=apply(g,{type:'repair',machine});for(const item of config.materials)g=apply(g,{type:'purchase',item,qty:config.bom[item]*1000});g=apply(g,{type:'advance',minutes:180});g=apply(g,{type:'produce',qty:1000});return apply(g,{type:'advance',minutes:500})}
+describe('G05 genealogy and recalls',()=>{
+ it('records exact input quantity, output and loss with held stock',()=>{const g=finished(),b=g.batches[0];expect(b.input.filter(t=>t.item==='flour').reduce((n,t)=>n+t.qty,0)).toBe(75000);expect(b.good+b.rejected).toBe(1000);expect(g.waste.processLossGrams).toBe(15000+b.rejected*100);expect(stock(g,'biscuit')).toBe(0);expect(decodeSave(JSON.stringify(g))).toEqual(g)});
+ it('blocks recalled stock and reverses in-transit carrying value',()=>{let g=finished();g=apply(g,{type:'release',id:g.lots.find(l=>l.item==='biscuit')!.id});g=apply(g,{type:'sell',qty:100,credit:0});g=apply(g,{type:'recallBatch',id:g.batches[0].id,reason:'Inspection failure'});expect(stock(g,'biscuit')).toBe(0);expect(balance(g.journal,'wip')).toBe(0n);expect(g.waste.finishedPackets).toBe(100);expect(()=>apply(g,{type:'release',id:g.lots[0].id})).toThrow();expect(()=>apply(g,{type:'recallBatch',id:g.batches[0].id,reason:'Again'})).toThrow()});
+ it('links delivered sales to recall complaints and refund workflow',()=>{let g=finished();g=apply(g,{type:'release',id:g.lots.find(l=>l.item==='biscuit')!.id});g=apply(g,{type:'sell',qty:100,credit:15});g=apply(g,{type:'advance',minutes:120});g=apply(g,{type:'recallBatch',id:g.batches[0].id,reason:'Quality'});expect(g.sales[0].recalled).toBe(true);expect(g.sales[0].complaint).toBe('open');g=apply(g,{type:'refundSale',id:g.sales[0].id});expect(balance(g.journal,'receivable')).toBe(0n);expect(g.sales[0].status).toBe('refunded')});
+});

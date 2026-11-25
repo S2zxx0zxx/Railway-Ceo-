@@ -87,3 +87,5 @@ G04 final implementation increment for this session: bounded command receipt per
 
 ### G05 planning increment
 Added real persisted lot reservations, scheduling, cancellation, pause/resume and stage-boundary operating guard; accounting preserved. Three tests authored, execution pending. Continuous within-stage outage handling and complete traceability/waste still open.
+
+G05 traceability increment: new batches and shipments carry lot genealogy, incoming/finished holds and recall actions, in-transit expiry checks, linked customer complaints, waste/energy spend reporting. Tests authored. Legacy history cannot be reconstructed; recall compensation remains manual and whole order. Full supplier lifecycle, physical returns, granular recall and test evidence remain open.
