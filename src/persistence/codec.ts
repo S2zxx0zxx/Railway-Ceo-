@@ -19,10 +19,11 @@ export function decodeSave(text:string):Game{
  check(Array.isArray(g.machines)&&g.machines.length===config.machineNames.length&&g.machines.every((m,i)=>m.name===config.machineNames[i]&&int(m.condition,0,100)&&int(m.readyAt)));
  check(Array.isArray(g.employees)&&g.employees.length<=100&&g.employees.every(e=>str(e.id)&&str(e.name)&&['operator','manager'].includes(e.role)&&int(e.skill,0,100)&&int(e.morale,0,100)&&int(e.wage,1,100000)));
  check(Array.isArray(g.jobs)&&g.jobs.length<=10000&&g.jobs.every(j=>str(j.id)&&['receipt','batch','delivery','collection','repair','research'].includes(j.kind)&&int(j.due,g.minute+1)&&int(j.qty,0,100000000)&&decimal(j.cost)&&BigInt(j.cost)>=0n&&(j.quality===undefined||int(j.quality,0,100))&&(j.source===undefined||str(j.source))&&(j.kind!=='receipt'||(config.materials.includes(j.item!)&&[0,7,15].includes(j.credit??0)&&j.qty>0))&&(j.kind!=='repair'||int(j.machine,0,g.machines.length-1))&&(j.kind!=='batch'||(j.qty>0&&int(j.stage??0,0,4)))&&(j.kind!=='delivery'||(j.qty>0&&int(j.price,100,3000)&&[0,15,30].includes(j.credit!)))));
+ check(Array.isArray(g.sales)&&g.sales.length<=50000&&g.sales.every(s=>str(s.id)&&int(s.qty,1,10000)&&decimal(s.amount)&&BigInt(s.amount)>0n&&int(s.delivered,0,g.minute)&&['receivable','paid','refunded'].includes(s.status)&&['none','open','closed'].includes(s.complaint)&&(s.complaint==='none'?s.reason===undefined:['damaged','late','quality'].includes(s.reason!))&&(s.status!=='refunded'||s.complaint==='closed')));
  check(Array.isArray(g.payables)&&g.payables.length<=10000&&g.payables.every(p=>str(p.id)&&str(p.source)&&decimal(p.amount)&&BigInt(p.amount)>0n&&int(p.due)));
  check(Array.isArray(g.crises)&&g.crises.every(c=>str(c.id)&&['payroll','machine','liquidity','compliance','safety'].includes(c.kind)&&int(c.opened,0,g.minute)&&typeof c.resolved==='boolean'));
  check(Array.isArray(g.news)&&g.news.length<=100&&g.news.every(n=>str(n,1000))&&Array.isArray(g.history)&&g.history.every(h=>int(h.day)&&decimal(h.revenue)&&decimal(h.profit)));
- const ids=[...g.jobs,...g.lots,...g.employees,...g.crises,...g.payables,...g.journal].map(x=>x.id);
+ const ids=[...g.jobs,...g.lots,...g.employees,...g.crises,...g.payables,...g.sales,...g.journal].map(x=>x.id);
  check(new Set(ids).size===ids.length&&ids.every(i=>!/^e[0-9]+$/.test(i)||Number(i.slice(1))<g.next),'Conflicting object identifiers');
  assertState(g);return g;
 }
