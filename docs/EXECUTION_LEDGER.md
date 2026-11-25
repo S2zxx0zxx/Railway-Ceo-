@@ -82,3 +82,5 @@ Baseline V3.0. Status is evidence-based; no task is verified by documentation al
 - Operational follow-up: permit renewal, sanitation restrictions, rejected/disposed output, daily market commitment limit, corresponding controls and invariant tests. CI pending. Still missing full supplier/credit models, recalls, detailed safety/environment and balancing. All release gates open.
 
 - Supplier follow-up: three priced/reliable quality tiers, deterministic delayed receipts, committed warehouse capacity limits, lot quality/source, production quality scoring and failed-quality release guard. Credit suppliers and complete traceability/recall remain open. Tests authored, CI pending.
+
+- Owner requires strict G01 → G12 sequence. See docs/GATE_EXECUTION.md for the active gate and initial D01–D25 gap register. G01 is not passed; G02–G12 locked. Preserve all prior implementation; no merge until final verification.
