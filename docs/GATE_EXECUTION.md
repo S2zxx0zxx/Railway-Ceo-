@@ -1,13 +1,13 @@
 # Sequential release gate execution
 
-Owner update: implementation may proceed in gate order on explicit owner command even if earlier tests or blockers are unresolved. Record incomplete scope and defer verification to the final remediation phase; never label it PASS. G03 is now active for implementation. G01–G02 remain incomplete; G04–G12 await owner instruction. Keep all work on PR #1, feat/company-simulator-v3. Do not merge until all gates pass. License/provenance permission remains a prerequisite to importing third-party material.
+Owner update: implementation may proceed in gate order on explicit owner command even if earlier tests or blockers are unresolved. Record incomplete scope and defer verification to the final remediation phase; never label it PASS. G04 is now active for implementation. G01–G03 remain incomplete; G05–G12 await owner instruction. Keep all work on PR #1, feat/company-simulator-v3. Do not merge until all gates pass. License/provenance permission remains a prerequisite to importing third-party material.
 
 | Gate | Status | Acceptance from MASTER_BUILD_SPEC.md section 10 |
 |---|---|---|
 | G01 | PARTIAL / VERIFICATION DEFERRED | All D01–D25 and E01–E34 mapped to implementation or expressly approved deferral; every M01–M15 panel tested; no silent omissions |
 | G02 | PARTIAL / VERIFICATION DEFERRED | Pinned upstream commits, actual files, test evidence, dependencies/licenses, asset provenance |
-| G03 | ACTIVE IMPLEMENTATION / NOT PASSED | Original approved UI baseline, screenshots of all panels, layout, touch and focus |
-| G04 | LOCKED | Balanced ledger, exactly-once posting, AR/AP/stock and financial reconciliation |
+| G03 | PARTIAL / VERIFICATION DEFERRED | Original approved UI baseline, screenshots of all panels, layout, touch and focus |
+| G04 | ACTIVE IMPLEMENTATION / NOT PASSED | Balanced ledger, exactly-once posting, AR/AP/stock and financial reconciliation |
 | G05 | LOCKED | Manufacturing, inventory, quality and resource constraints |
 | G06 | LOCKED | Bounded markets, competition, reproducible events and economy |
 | G07 | LOCKED | Viable rescue for each difficulty; recovery and liquidation |
@@ -75,3 +75,6 @@ G02 additional increment: distributable license notice added under public/licens
 Original five-stage static SVG office scenes, stage-driven asset routing, compact real HUD, 12-button circular dock, distinct CEO dashboard, shared management dialog, status/feedback and destructive-action confirmation, landscape/portrait styles, PWA precache and asset inventory added. Existing command engine and save format unchanged. Art is authored vector illustration, not final photorealistic WebP; owner visual sign-off, physical touch/focus checks, full per-panel interactions, final artwork/sound and screenshot tests still pending. No gate passed.
 
 G03 follow-up: persistent reduced-motion preference, small landscape auto-collapse on initial load, legal notice access and browser acceptance/screenshot coverage for all 15 panels, six viewport sizes and offline office assets. Full interaction and visual review not yet executed; no pass.
+
+### G04 accounting increment
+Separate returns, depreciation/contra-asset, tax expense/payable and accrued interest accounts; daily straight-line depreciation, 30-day fictional tax assessment, tax settlement, interest-first repayments, net revenue, before/after-tax reports, aging and cash reconciliation. Legacy entries unchanged; future postings use new accounts. Six tests authored, existing refund tests updated to assert net revenue rather than gross account. Pending: full loan schedules, weighted-average allocation, idempotency and full verification. Scenario tax and useful-life defaults are fictional, not jurisdictional rules.

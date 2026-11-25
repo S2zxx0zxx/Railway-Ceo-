@@ -1,9 +1,9 @@
-import {balance,profit} from './ledger';
+import {balance,profit,totalDebt} from './ledger';
 import {throughput,demand,scheduledPayroll,type Game} from './game';
 import {financialReport} from './reports';
 export function executiveReview(g:Game){
  const cash=balance(g.journal,'cash'),payroll=scheduledPayroll(g);
- const arrears=-balance(g.journal,'payroll'),debt=-balance(g.journal,'debt'),report=financialReport(g);
+ const arrears=-balance(g.journal,'payroll'),debt=totalDebt(g.journal),report=financialReport(g);
  const issues=[
   {id:'cash',active:cash<payroll,label:'Cash below one day of scheduled wages'},
   {id:'arrears',active:arrears>0n,label:'Unsettled payroll liabilities'},

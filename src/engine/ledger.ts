@@ -1,4 +1,4 @@
-export const accounts = ['cash','raw','wip','finished','equipment','receivable','payable','payroll','debt','equity','revenue','cogs','wages','interest','expense','loss'] as const;
+export const accounts = ['cash','raw','wip','finished','equipment','receivable','payable','payroll','debt','equity','revenue','cogs','wages','interest','expense','loss','returns','accumulatedDepreciation','depreciation','taxExpense','taxPayable','interestPayable'] as const;
 export type Account=typeof accounts[number];
 export type Entry={id:string;minute:number;description:string;lines:{account:Account;amount:string}[]};
 export const money=(rupees:number):bigint=>{if(!Number.isSafeInteger(rupees)) throw Error('Whole rupees required');return BigInt(rupees)*100n};
@@ -12,4 +12,7 @@ export function transfer(journal:Entry[],id:string,minute:number,description:str
  if(amount<=0n||debit===credit) throw Error('Invalid transfer');
  post(journal,id,minute,description,[{account:debit,amount:amount.toString()},{account:credit,amount:(-amount).toString()}]);
 }
-export const profit=(j:Entry[])=>-balance(j,'revenue')-(['cogs','wages','interest','expense','loss'] as const).reduce((a,k)=>a+balance(j,k),0n);
+export const netRevenue=(j:Entry[])=>-balance(j,'revenue')-balance(j,'returns');
+export const profitBeforeTax=(j:Entry[])=>netRevenue(j)-(['cogs','wages','interest','expense','loss','depreciation'] as const).reduce((a,k)=>a+balance(j,k),0n);
+export const profit=(j:Entry[])=>profitBeforeTax(j)-balance(j,'taxExpense');
+export const totalDebt=(j:Entry[])=>-balance(j,'debt')-balance(j,'interestPayable');

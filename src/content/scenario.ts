@@ -14,6 +14,7 @@ export const config={
  rawCapacityPerItem:2000000,finishedCapacity:50000,
  repairCost:12000, repairMinutes:120, initialPrice:900, capacity:750,
  wagePerDay:800, dailyInterestBps:3, offlineCapMinutes:1440,
+ finance:{depreciationDays:1825,taxPeriodDays:30,taxBps:2500,loanLimitRupees:1800000,loanMaxRupees:200000,loanMinReputation:20,loanTermDays:180},
  audit:['Financial records','Machinery','Inventory','Employees','Buyers','Utilities and compliance'],
  machineNames:['Mixer','Former','Oven','Cooling conveyor','Wrapper','Quality station','Power supply','Water supply'],
  initialConditions:[62,48,22,71,35,75,65,80],
