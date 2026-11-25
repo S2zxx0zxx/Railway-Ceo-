@@ -39,3 +39,5 @@ Pluts: recursive pinned tree confirms domain ledger and unit tests but no root L
 
 - SimCorp `calculate_product_demand` uses a cost-based fair price, bounded elasticity, quality/reputation and seeded random noise. Its distress thresholds are absolute currency amounts. Do not substitute these parameters into the current INR game without scenario calibration; no Python code imported. Preserve existing single engine and record demand calibration under G06.
 - The adapted MIT notice is present under `public/licenses/` for web and Android packaging; final bundle inclusion verification remains deferred.
+
+- G06: original TS logit allocation, fixed daily market ceiling, integer commitment conservation, seed-driven competitor strategy and external supply/demand updates implemented in `src/engine/market.ts`; no upstream Economia.js or SimCorp code copied. These mechanisms follow the reviewed pricing/market concepts, not claimed source-port parity. Upstream golden-vector and license/dependency validation remain pending.

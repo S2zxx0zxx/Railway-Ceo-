@@ -98,3 +98,5 @@ G05 final increment: persisted materials/energy cost components and active opera
 Single market state with normalized integer quota, bounded rival agents, daily settlement and seeded price changes, sequential regional market entry and market UI. Four tests authored. No pass; complete verification and calibration pending.
 
 G06 economic increment: dynamic bounded commodity indices and procurement quote integration, seeded shocks with three-day duration and news, difficulty-specific shock rates, budgeted campaigns with uncertain bounded preference and cancellation. Four tests authored; verification deferred. No PASS.
+
+G06 regional increment: regional order routing and commitment conservation, actual freight/time, destination history and pre-dispatch expiry guard. Three tests authored. G06 incomplete: full buyer contracts, region-specific rival dynamics, accounting/recovery viability and comprehensive deterministic/balancing checks deferred. Parameters are fictional, uncalibrated; no gate passed or merge.

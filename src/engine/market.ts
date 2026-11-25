@@ -4,7 +4,7 @@ export type RegionId=typeof config.market.regions[number]['id'];
 export type Competitor={id:string;name:string;strategy:'value'|'balanced'|'premium';price:number;brand:number;quality:number;cash:number;stock:number;capacity:number;lastSold:number};
 export type Shock={kind:'inflation'|'shortage'|'slowdown'|'festival';day:number;untilDay:number};
 export type Campaign={id:string;budget:string;started:number;until:number;boostBps:number;stopped?:number};
-export type MarketState={day:number;total:number;commodity:Record<Material,number>;shock:Shock|null;shockHistory:Shock[];campaigns:Campaign[];regions:RegionId[];activeRegions:RegionId[];competitors:Competitor[];last:{day:number;total:number;player:number;rivals:number;unmet:number}|null};
+export type MarketState={day:number;total:number;commodity:Record<Material,number>;shock:Shock|null;shockHistory:Shock[];campaigns:Campaign[];regions:RegionId[];activeRegions:RegionId[];regionCommitted:Record<RegionId,number>;competitors:Competitor[];last:{day:number;total:number;player:number;rivals:number;unmet:number}|null};
 const clamp=(v:number,lo:number,hi:number)=>Math.max(lo,Math.min(hi,v));
 export const regionInfo=(id:RegionId)=>config.market.regions.find(r=>r.id===id);
 export function marketTotal(regions:RegionId[],difficulty:Difficulty,day:number,shock=100){
@@ -13,7 +13,7 @@ export function marketTotal(regions:RegionId[],difficulty:Difficulty,day:number,
  return Math.floor(base*config.market.difficulty[difficulty]*seasonal*shock/1000000);
 }
 export function initialMarket(day=0,difficulty:Difficulty='Realistic',legacyCommitted=0):MarketState{
- return {day,total:Math.max(legacyCommitted,marketTotal(['local'],difficulty,day)),commodity:{flour:100,sugar:100,oil:100,packaging:100},shock:null,shockHistory:[],campaigns:[],regions:['local'],activeRegions:['local'],last:null,competitors:[
+ return {day,total:Math.max(legacyCommitted,marketTotal(['local'],difficulty,day)),commodity:{flour:100,sugar:100,oil:100,packaging:100},shock:null,shockHistory:[],campaigns:[],regions:['local'],activeRegions:['local'],regionCommitted:{local:legacyCommitted,regional:0,national:0,export:0},last:null,competitors:[
  {id:'rival-value',name:'Value Bake',strategy:'value',price:750,brand:40,quality:74,cash:10000000,stock:3000,capacity:3000,lastSold:0},
  {id:'rival-balanced',name:'Union Biscuits',strategy:'balanced',price:900,brand:55,quality:85,cash:15000000,stock:3500,capacity:3500,lastSold:0},
  {id:'rival-premium',name:'Crown Bakery',strategy:'premium',price:1100,brand:65,quality:94,cash:20000000,stock:2500,capacity:2500,lastSold:0}
@@ -51,7 +51,7 @@ export function closeMarketDay(g:Game,day:number,random:()=>number){
   const production=Math.min(c.capacity,config.market.stockCap-c.stock,Math.floor(c.cash/config.market.unitCost));c.cash-=production*config.market.unitCost;c.stock+=production;
  }
  m.last={day:m.day,total:m.total,player:committed,rivals:sold,unmet:m.total-committed-sold};
- m.day=day;m.activeRegions=[...m.regions];m.total=marketTotal(m.activeRegions,g.difficulty,day);
+ m.day=day;m.activeRegions=[...m.regions];m.regionCommitted={local:0,regional:0,national:0,export:0};m.total=marketTotal(m.activeRegions,g.difficulty,day);
  g.competitorPrice=Math.round(m.competitors.reduce((n,c)=>n+c.price,0)/m.competitors.length);
 }
 export function validMarket(m:MarketState,minute:number){
@@ -79,4 +79,16 @@ export function validEconomy(m:MarketState,minute:number){
  const int=(n:number,min:number,max:number)=>Number.isSafeInteger(n)&&n>=min&&n<=max;
  const shock=(s:Shock)=>['inflation','shortage','slowdown','festival'].includes(s.kind)&&int(s.day,0,m.day)&&s.untilDay===s.day+3;
  return !!m.commodity&&config.materials.every(item=>int(m.commodity[item],75,150))&&(m.shock===null||shock(m.shock)&&m.shock.untilDay>m.day)&&Array.isArray(m.shockHistory)&&m.shockHistory.length<=120&&m.shockHistory.every(shock)&&Array.isArray(m.campaigns)&&m.campaigns.length<=10000&&new Set(m.campaigns.map(c=>c.id)).size===m.campaigns.length&&m.campaigns.every(c=>typeof c.id==='string'&&c.id.length>0&&/^[1-9][0-9]{0,12}$/.test(c.budget)&&BigInt(c.budget)>=BigInt(config.market.campaignMin)*100n&&BigInt(c.budget)<=BigInt(config.market.campaignMax)*100n&&int(c.started,0,minute)&&[1,3,7].includes((c.until-c.started)/1440)&&int(c.boostBps,500,4500)&&(c.stopped===undefined||int(c.stopped,c.started,Math.min(minute,c.until))))&&m.campaigns.filter(c=>c.stopped===undefined&&c.until>minute).length<=1;
+}
+
+export function regionAvailability(g:Game,region:RegionId){
+ if(!g.market.activeRegions.includes(region))return 0;
+ const ids=g.market.activeRegions,weights=ids.map(id=>Math.log(regionInfo(id)!.demand));
+ const quotas=allocate(g.market.total,weights),i=ids.indexOf(region);
+ return Math.max(0,Math.min(marketView(g).available,quotas[i]-g.market.regionCommitted[region]));
+}
+export function validRegionalCommitments(g:Game){
+ const m=g.market;if(!m.regionCommitted)return false;
+ const ids=m.activeRegions,quotas=allocate(m.total,ids.map(id=>Math.log(regionInfo(id)!.demand)));
+ return config.market.regions.every(r=>{const n=m.regionCommitted[r.id],i=ids.indexOf(r.id);return Number.isSafeInteger(n)&&n>=0&&(i<0?n===0:n<=quotas[i])})&&config.market.regions.reduce((n,r)=>n+m.regionCommitted[r.id],0)===g.operations.marketCommitted;
 }
