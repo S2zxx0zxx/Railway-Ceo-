@@ -1,0 +1,10 @@
+import {describe,it,expect} from 'vitest';
+import {initialGame,apply,throughput} from '../src/engine/game';
+import {config} from '../src/content/scenario';
+import {decodeSave} from '../src/persistence/codec';
+const start=()=>apply(initialGame(),{type:'takeover',name:'Operations',ceo:'CEO',difficulty:'Realistic'});
+describe('G05 supply and utility records',()=>{
+ it('retains canceled and completed orders and receipt linkage',()=>{let g=apply(start(),{type:'purchase',item:'flour',qty:1000});g=apply(g,{type:'cancelPurchase',id:g.jobs[0].id});expect(g.purchases[0].status).toBe('canceled');g=apply(g,{type:'purchase',item:'flour',qty:1000});g=apply(g,{type:'advance',minutes:180});expect(g.purchases[1].status).toBe('accepted');expect(g.purchases[1].lotId).toBe(g.lots[0].id);expect(decodeSave(JSON.stringify(g))).toEqual(g)});
+ it('retains service cost and elapsed time',()=>{let g=apply(start(),{type:'repair',machine:2});g=apply(g,{type:'advance',minutes:config.repairMinutes});expect(g.serviceHistory[0].machine).toBe(2);expect(g.serviceHistory[0].cost).toBe(String(config.repairCost*100));expect(g.serviceHistory[0].completed-g.serviceHistory[0].started).toBe(config.repairMinutes)});
+ it('isolates utilities and pauses a running batch immediately',()=>{let g=start();for(const item of config.audit)g=apply(g,{type:'audit',item});for(const machine of [2,4])g=apply(g,{type:'repair',machine});for(const item of config.materials)g=apply(g,{type:'purchase',item,qty:config.bom[item]*1000});g=apply(g,{type:'advance',minutes:180});g=apply(g,{type:'produce',qty:1000});g=apply(g,{type:'setUtility',utility:'power',enabled:false});expect(throughput(g)).toBe(0);expect(g.jobs.find(j=>j.kind==='batch')?.paused).toBe(true);g=apply(g,{type:'advance',minutes:500});expect(g.produced).toBe(0);g=apply(g,{type:'setUtility',utility:'power',enabled:true});g=apply(g,{type:'resumeBatch',id:g.jobs.find(j=>j.kind==='batch')!.id});g=apply(g,{type:'advance',minutes:500});expect(g.produced).toBeGreaterThan(0)});
+});
