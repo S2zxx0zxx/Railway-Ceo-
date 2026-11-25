@@ -1,6 +1,6 @@
 # Sequential release gate execution
 
-Owner update: implementation may proceed in gate order on explicit owner command even if earlier tests or blockers are unresolved. Record incomplete scope and defer verification to the final remediation phase; never label it PASS. G09 is now active for implementation. G01–G08 remain incomplete; G10–G12 await owner instruction. Keep all work on PR #1, feat/company-simulator-v3. Do not merge until all gates pass. License/provenance permission remains a prerequisite to importing third-party material.
+Owner update: implementation may proceed in gate order on explicit owner command even if earlier tests or blockers are unresolved. Record incomplete scope and defer verification to the final remediation phase; never label it PASS. G10 is now active for implementation. G01–G09 remain incomplete; G11–G12 await owner instruction. Keep all work on PR #1, feat/company-simulator-v3. Do not merge until all gates pass. License/provenance permission remains a prerequisite to importing third-party material.
 
 | Gate | Status | Acceptance from MASTER_BUILD_SPEC.md section 10 |
 |---|---|---|
@@ -12,8 +12,8 @@ Owner update: implementation may proceed in gate order on explicit owner command
 | G06 | PARTIAL / VERIFICATION DEFERRED | Bounded markets, competition, reproducible events and economy |
 | G07 | PARTIAL / VERIFICATION DEFERRED | Viable rescue for each difficulty; recovery and liquidation |
 | G08 | PARTIAL / VERIFICATION DEFERRED | Offline parity, time anomalies, save integrity, migration and updates |
-| G09 | ACTIVE IMPLEMENTATION / NOT PASSED | Manager validation, budget, authority, stop conditions and decision evidence |
-| G10 | LOCKED | Installable offline PWA, native APK device test, save transfer and no mandatory network |
+| G09 | PARTIAL / VERIFICATION DEFERRED | Manager validation, budget, authority, stop conditions and decision evidence |
+| G10 | ACTIVE IMPLEMENTATION / NOT PASSED | Installable offline PWA, native APK device test, save transfer and no mandatory network |
 | G11 | LOCKED | Signed AAB, metadata, Play policies, notices, no secrets or high-priority defects |
 | G12 | LOCKED | Exact revision and final evidence, all gates passed, authorized merge |
 
@@ -123,3 +123,6 @@ G09 UI increment: assigned authority controls, company/department limits, CEO ap
 G09 final increment: stale procurement approval rejection, explicit expiration records and documented authority/limits. Ten tests authored total; all runtime evidence deferred. Current supported delegation covers four departments, not complete automated corporate coverage. Future budgeted scheduling, detailed qualification and additional risk/authority scope remain incomplete. No G10 execution.
 
 G09 boundary review: stop on direct safety/permit/recall conditions at scheduler boundaries, corrected legacy test fixture audit, added three cases. Total 13 newly authored tests, unexecuted. No PASS.
+
+### G10 PWA increment
+Build-generated original PNG launcher icons (192/512/maskable), manifest and byte-hashed full dist precache including workers and public assets. Cache-first versioned app shell; failed install removes candidate cache; explicit waiting-worker activation, previous caches retained. Capacitor 8.0.0 baseline pinned for API 36 with matching plugins, not installed or tested here. Native and update UI integration follow. Cache pruning and multi-tab update compatibility remain open.

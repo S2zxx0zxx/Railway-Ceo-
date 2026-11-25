@@ -1,14 +1,26 @@
 import {defineConfig,type Plugin} from 'vite';
 import react from '@vitejs/plugin-react';
-function offline():Plugin{return {name:'ceo-offline',apply:'build',generateBundle(_options,bundle){
- const files=['./','./index.html','./manifest.webmanifest','./icon.svg','./office.svg',...Array.from({length:5},(_,i)=>'./offices/stage-'+(i+1)+'.svg'),'./licenses/THIRD_PARTY_NOTICES.txt','./licenses/idle-game-template.txt',...Object.keys(bundle).map(x=>'./'+x)];
- const version=Object.keys(bundle).sort().join('|');
- let hash=2166136261;for(const ch of version)hash=Math.imul(hash^ch.charCodeAt(0),16777619);
- const cache='the-ceo-'+(hash>>>0).toString(16);
- const source='const CACHE='+JSON.stringify(cache)+';const FILES='+JSON.stringify(files)+';\n'+
- "self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES))));\n"+
- "self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('the-ceo-')&&k!==CACHE).map(k=>caches.delete(k))))));\n"+
- "self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET'||new URL(r.url).origin!==self.location.origin)return;if(r.mode==='navigate'){e.respondWith(fetch(r).catch(()=>caches.match(new URL('./index.html',self.registration.scope)).then(x=>x||Response.error())));return;}e.respondWith(caches.match(r).then(x=>x||fetch(r)));});";
- this.emitFile({type:'asset',fileName:'sw.js',source});
+import {readdir,readFile,writeFile} from 'node:fs/promises';
+import {resolve,relative,sep} from 'node:path';
+import {createHash} from 'node:crypto';
+async function walk(dir:string):Promise<string[]>{const out:string[]=[];for(const entry of await readdir(dir,{withFileTypes:true})){const path=resolve(dir,entry.name);if(entry.isDirectory())out.push(...await walk(path));else if(entry.isFile())out.push(path)}return out}
+function offline():Plugin{return {name:'ceo-offline',apply:'build',enforce:'post',async closeBundle(){
+ const root=resolve('dist'),paths=(await walk(root)).filter(p=>!p.endsWith(sep+'sw.js')).sort(),hash=createHash('sha256');
+ const entries=[];for(const path of paths){const name=relative(root,path).split(sep).join('/');const bytes=await readFile(path);hash.update(name+'\0');hash.update(bytes);entries.push('./'+name)}
+ const version=hash.digest('hex').slice(0,24);
+ const source='const VERSION='+JSON.stringify(version)+';const FILES='+JSON.stringify(entries)+';\n'+
+ `const PREFIX='the-ceo-'+self.registration.scope+'-',CACHE=PREFIX+VERSION;
+ const url=p=>new URL(p,self.registration.scope).href;
+ self.addEventListener('install',e=>e.waitUntil((async()=>{const cache=await caches.open(CACHE);try{await cache.addAll(FILES.map(p=>new Request(url(p),{cache:'reload'})));for(const p of FILES)if(!await cache.match(url(p)))throw Error('Missing precache entry')}catch(err){await caches.delete(CACHE);throw err}})()));
+ // Do not skipWaiting automatically; existing clients must reach a safe boundary first.
+ self.addEventListener('message',e=>{if(e.data?.type==='ACTIVATE_UPDATE'&&e.source?.url?.startsWith(self.registration.scope))e.waitUntil(self.skipWaiting())});
+ // Keep previous caches until old clients exit; do not claim clients or delete caches on activate.
+ self.addEventListener('fetch',e=>{const r=e.request,u=new URL(r.url);if(r.method!=='GET'||u.origin!==self.location.origin||!u.href.startsWith(self.registration.scope))return;
+ if(r.mode==='navigate'){e.respondWith(caches.open(CACHE).then(c=>c.match(url('./index.html'))).then(x=>x||Response.error()));return}
+ if(FILES.some(p=>url(p)===u.href)){e.respondWith(caches.open(CACHE).then(c=>c.match(r)).then(x=>x||fetch(r)));return}
+ // An old tab can still request its old hashed chunk after activation.
+ if(u.pathname.includes('/assets/'))e.respondWith((async()=>{for(const k of await caches.keys()){if(k.startsWith(PREFIX)){const x=await(await caches.open(k)).match(r);if(x)return x}}return fetch(r)})());
+ });`;
+ await writeFile(resolve(root,'sw.js'),source);
  }}}
 export default defineConfig({plugins:[react(),offline()],base:'./'});
