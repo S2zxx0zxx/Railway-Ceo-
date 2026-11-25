@@ -84,3 +84,5 @@ Baseline V3.0. Status is evidence-based; no task is verified by documentation al
 - Supplier follow-up: three priced/reliable quality tiers, deterministic delayed receipts, committed warehouse capacity limits, lot quality/source, production quality scoring and failed-quality release guard. Credit suppliers and complete traceability/recall remain open. Tests authored, CI pending.
 
 - Owner requires strict G01 → G12 sequence. See docs/GATE_EXECUTION.md for the active gate and initial D01–D25 gap register. G01 is not passed; G02–G12 locked. Preserve all prior implementation; no merge until final verification.
+
+- G01 increment: added company/brand identity decision, backward-compatible brand save migration, executive metrics and internal risk indicators, and four regression tests. Full governance and corporate coverage remain open. CI not yet verified for this change.
