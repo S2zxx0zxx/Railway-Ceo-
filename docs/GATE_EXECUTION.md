@@ -78,3 +78,5 @@ G03 follow-up: persistent reduced-motion preference, small landscape auto-collap
 
 ### G04 accounting increment
 Separate returns, depreciation/contra-asset, tax expense/payable and accrued interest accounts; daily straight-line depreciation, 30-day fictional tax assessment, tax settlement, interest-first repayments, net revenue, before/after-tax reports, aging and cash reconciliation. Legacy entries unchanged; future postings use new accounts. Six tests authored, existing refund tests updated to assert net revenue rather than gross account. Pending: full loan schedules, weighted-average allocation, idempotency and full verification. Scenario tax and useful-life defaults are fictional, not jurisdictional rules.
+
+G04 banking increment: loan records and schedules reconcile to the debt account, repayments allocate after accrued interest, late principal blocks new borrowing and eligible facilities can restructure once. Banking UI displays installments. Tests authored, not verified; full banking scope remains partial.
