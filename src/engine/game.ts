@@ -1,3 +1,4 @@
+import {pooledValue,averageIssue,allocatePool} from './costing';
 import {makeLoan,loanSchedule,allocatePrincipal,type Loan} from './banking';
 import {depreciationForDay,taxForPeriod} from './finance';
 import {planElapsedTime} from './elapsed';
@@ -38,6 +39,7 @@ export type Command=
  | {type:'settlePayroll';rupees:number}
  | {type:'repay';rupees:number}
  | {type:'payTax';rupees:number}
+ | {type:'settleTax'}
  | {type:'restructureLoan';id:string}
  | {type:'loan';rupees:number}
  | {type:'campaign'}
@@ -71,13 +73,13 @@ export function initialGame(wall=0,seed=20261125):Game{
 export function stock(g:Game,item:Lot['item']){return g.lots.filter(l=>l.item===item&&!l.held&&l.expiry>g.minute).reduce((s,l)=>s+l.qty,0)}
 function take(g:Game,item:Lot['item'],qty:number):{cost:bigint;quality:number}{
  positive(qty,100_000_000);check(stock(g,item)>=qty,'Insufficient available '+item);
- let remaining=qty,total=0n,quality=0;
+ const pool=g.lots.filter(l=>l.item===item),value=pooledValue(pool).cost,total=averageIssue(pool,qty);let remaining=qty,quality=0;
  for(const l of g.lots.filter(l=>l.item===item&&!l.held&&l.expiry>g.minute).sort((a,b)=>a.expiry-b.expiry||a.id.localeCompare(b.id))){
   if(!remaining)break;
-  const n=Math.min(remaining,l.qty),cost=BigInt(l.cost)*BigInt(n)/BigInt(l.qty);
-  quality+=n*l.quality;l.qty-=n;l.cost=String(BigInt(l.cost)-cost);remaining-=n;total+=cost;
+  const n=Math.min(remaining,l.qty);
+  quality+=n*l.quality;l.qty-=n;remaining-=n;
  }
- g.lots=g.lots.filter(l=>l.qty>0);return {cost:total,quality:Math.floor(quality/qty)};
+ g.lots=g.lots.filter(l=>l.qty>0);allocatePool(g.lots.filter(l=>l.item===item),value-total);return {cost:total,quality:Math.floor(quality/qty)};
 }
 export function supplierQuote(item:Material,qty:number,supplier:SupplierId='standard'){const offer=config.suppliers.find(s=>s.id===supplier);check(offer,'Unknown supplier');positive(qty,10000000);return {...offer,cost:(BigInt(qty)*BigInt(config.prices[item])*BigInt(offer.pricePercent)+99n)/100n}}
 export function marketDemand(g:Game){return Math.max(0,Math.floor(6000*Math.pow(config.initialPrice/g.price,1.5)*(0.5+g.reputation/100)*(g.campaignUntil>g.minute?1.2:1)*Math.pow(g.competitorPrice/config.initialPrice,0.4)))}
@@ -87,7 +89,7 @@ export function employeeDailyPay(e:Employee):bigint{if(!e.present)return 0n;cons
 export function scheduledPayroll(g:Game):bigint{return g.employees.reduce((n,e)=>n+employeeDailyPay(e),0n)}
 export function laborAvailability(g:Game){const staff=g.employees.filter(e=>e.role==='operator'&&e.present&&e.fatigue<90);const effective=staff.reduce((n,e)=>n+Math.min(1.5,e.shiftHours/8)*(0.8+e.skill/500)*(1-e.fatigue/200)*(0.9+e.morale/1000),0);return {present:staff.length,effective,factor:Math.min(1,effective/12)}}
 export function throughput(g:Game){if(g.operations.permitUntil<=g.minute||g.operations.sanitation<40)return 0;if(g.machines.some(m=>m.condition<40||m.readyAt>g.minute)||!g.employees.some(e=>e.role==='operator'))return 0;return Math.floor(config.capacity*Math.min(...g.machines.map(m=>m.condition*(1+(m.level-1)*0.15)))/100*laborAvailability(g).factor)}
-function addLot(g:Game,item:Lot['item'],qty:number,cost:bigint,held=false,quality=90,source='opening'){if(qty>0)g.lots.push({id:id(g),item,qty,cost:String(cost),held,quality,source,expiry:g.minute+(item==='biscuit'?config.finishedShelfMinutes:config.shelfMinutes)})}
+function addLot(g:Game,item:Lot['item'],qty:number,cost:bigint,held=false,quality=90,source='opening'){if(qty>0){g.lots.push({id:id(g),item,qty,cost:String(cost),held,quality,source,expiry:g.minute+(item==='biscuit'?config.finishedShelfMinutes:config.shelfMinutes)});const pool=g.lots.filter(l=>l.item===item);allocatePool(pool,pooledValue(pool).cost)}}
 function enqueue(g:Game,job:Omit<Job,'id'>){g.jobs.push({...job,id:id(g)})}
 function runJob(g:Game,j:Job){
  const cost=BigInt(j.cost);
@@ -180,7 +182,8 @@ export function apply(source:Game,cmd:Command):Game{
  case 'hire':{check(g.employees.length<100&&['operator','manager'].includes(cmd.role),'Hiring limit');spend(g,'expense',money(2000),'Recruitment');g.employees.push({id:id(g),name:cmd.role==='manager'?'Production manager':'New operator',role:cmd.role,skill:65+Math.floor(rng(g)*25),morale:70,wage:cmd.role==='manager'?1500:800,shiftHours:8,fatigue:0,present:true,safetyTrained:false,grade:1});break}
  case 'settlePayroll':{positive(cmd.rupees);const amount=money(cmd.rupees);canPay(g,amount);check(amount<=-balance(g.journal,'payroll'),'Exceeds payroll payable');transfer(g.journal,id(g),g.minute,'Payroll settlement','payroll','cash',amount);break}
  case 'repay':{positive(cmd.rupees);const amount=money(cmd.rupees);canPay(g,amount);check(amount<=totalDebt(g.journal),'Exceeds debt');const accrued=-balance(g.journal,'interestPayable'),interest=amount<accrued?amount:accrued;if(interest>0n)transfer(g.journal,id(g),g.minute,'Interest payment','interestPayable','cash',interest);if(amount>interest){transfer(g.journal,id(g),g.minute,'Debt repayment','debt','cash',amount-interest);allocatePrincipal(g.loans,amount-interest)}break}
- case 'payTax':{positive(cmd.rupees);const amount=money(cmd.rupees);canPay(g,amount);check(amount<=-balance(g.journal,'taxPayable'),'Exceeds tax payable');transfer(g.journal,id(g),g.minute,'Tax payment','taxPayable','cash',amount);break}
+ case 'settleTax':
+ case 'payTax':{if(cmd.type==='payTax')positive(cmd.rupees);const amount=cmd.type==='settleTax'?-balance(g.journal,'taxPayable'):money(cmd.rupees);canPay(g,amount);check(amount<=-balance(g.journal,'taxPayable'),'Exceeds tax payable');transfer(g.journal,id(g),g.minute,'Tax payment','taxPayable','cash',amount);break}
  case 'loan':{positive(cmd.rupees,config.finance.loanMaxRupees);check(g.reputation>=config.finance.loanMinReputation&&!g.loans.some(l=>loanSchedule(l,g.minute).due>0n)&&totalDebt(g.journal)+money(cmd.rupees)<=money(config.finance.loanLimitRupees),'Loan not eligible');transfer(g.journal,id(g),g.minute,'Loan proceeds','cash','debt',money(cmd.rupees));g.loans.push(makeLoan(id(g),money(cmd.rupees),g.minute));break}
  case 'restructureLoan':{const loan=g.loans.find(l=>l.id===cmd.id);check(loan&&BigInt(loan.remaining)>0n&&!loan.restructured,'Restructuring unavailable');check(loanSchedule(loan,g.minute).due>0n||g.distressDays>0,'Restructuring requires overdue principal or liquidity distress');const updated=makeLoan(loan.id,BigInt(loan.remaining),g.minute,360);Object.assign(loan,updated,{restructured:true});note(g,'Loan restructured to 360 days; outstanding principal and interest unchanged');break}
  case 'campaign':check(g.campaignUntil<=g.minute,'Campaign active');spend(g,'expense',money(5000),'Marketing campaign');g.campaignUntil=g.minute+4320;break;

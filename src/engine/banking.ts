@@ -16,5 +16,5 @@ export function loanSchedule(loan:Loan,minute:number){
 }
 export function allocatePrincipal(loans:Loan[],amount:bigint){
  if(amount<0n||amount>loans.reduce((s,l)=>s+BigInt(l.remaining),0n))throw Error('Principal exceeds loan balances');
- let left=amount;for(const loan of [...loans].sort((a,b)=>a.opened-b.opened||a.id.localeCompare(b.id))){const remaining=BigInt(loan.remaining),paid=left<remaining?left:remaining;loan.remaining=String(remaining-paid);left-=paid;if(!left)break}
+ let left=amount;for(const loan of [...loans].sort((a,b)=>a.opened-b.opened)){const remaining=BigInt(loan.remaining),paid=left<remaining?left:remaining;loan.remaining=String(remaining-paid);left-=paid;if(!left)break}
 }
