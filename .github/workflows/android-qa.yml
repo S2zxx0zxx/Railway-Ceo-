@@ -1,10 +1,11 @@
-name: Android QA APK
+name: Android QA APK and unsigned AAB
 on:
   workflow_dispatch:
   pull_request:
     paths:
       - 'src/**'
       - 'public/**'
+      - 'scripts/**'
       - 'package.json'
       - 'capacitor.config.ts'
       - 'vite.config.ts'
@@ -14,7 +15,7 @@ permissions:
 jobs:
   qa-apk:
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -29,40 +30,44 @@ jobs:
           packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
           log-accepted-android-sdk-licenses: 'false'
       - run: npm install --no-audit --no-fund
-      - run: npm run build
-      - name: Generate and configure Android shell
-        shell: bash
-        run: |
-          if [ ! -d android ]; then npx cap add android; fi
-          npx cap sync android
-          python3 - <<'PY'
-          from pathlib import Path
-          import re
-          p=Path('android/variables.gradle')
-          text=p.read_text()
-          for name in ('compileSdkVersion','targetSdkVersion'):
-              text,n=re.subn(r'('+name+r'\s*=\s*)\d+',r'\g<1>36',text)
-              if n != 1: raise RuntimeError('Cannot locate '+name)
-          p.write_text(text)
-          p=Path('android/app/src/main/AndroidManifest.xml')
-          text=p.read_text()
-          text,n=re.subn(r'(<activity\b(?:(?!>).)*android:name="\.MainActivity")',r'\1 android:screenOrientation="sensorLandscape"',text,count=1,flags=re.S)
-          if n != 1: raise RuntimeError('Cannot configure MainActivity orientation')
-          p.write_text(text)
-          PY
+      - run: npm run android:sync
+      - run: npm run audit:bundle
       - name: Assemble debug APK
-        working-directory: android
         run: |
-          chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
-      - name: Record QA package hash
-        run: sha256sum android/app/build/outputs/apk/debug/app-debug.apk > android-qa-sha256.txt
+          chmod +x android/gradlew
+          node scripts/android-build.mjs assembleDebug
+      - name: Verify debug APK and record evidence
+        run: |
+          set -e
+          APK=android/app/build/outputs/apk/debug/app-debug.apk
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK" > android-apk-signature.txt
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" > android-apk-badging.txt
+          grep "targetSdkVersion:'36'" android-apk-badging.txt
+          sha256sum "$APK" > android-qa-sha256.txt
       - uses: actions/upload-artifact@v4
         with:
           name: android-qa-debug-apk
           path: |
             android/app/build/outputs/apk/debug/app-debug.apk
             android-qa-sha256.txt
+            android-apk-signature.txt
+            android-apk-badging.txt
+      - name: Assemble unsigned release bundle
+        run: node scripts/android-build.mjs bundleRelease
+      - name: Record unsigned AAB hash
+        run: sha256sum android/app/build/outputs/bundle/release/app-release.aab > android-aab-sha256.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-unsigned-aab-NOT-FOR-PUBLISHING
+          path: |
+            android/app/build/outputs/bundle/release/app-release.aab
+            android-aab-sha256.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: platform-build-evidence
+          path: |
+            audit-output/bundle.json
+            package-lock.json
       - name: Prepare generated native source evidence
         run: |
           tar --exclude=android/.gradle --exclude=android/app/build --exclude=android/build --exclude=android/app/src/main/assets/public --exclude=android/local.properties -czf android-source.tar.gz android

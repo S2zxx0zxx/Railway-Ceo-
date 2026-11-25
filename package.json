@@ -9,7 +9,10 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "android:sync": "npm run build && node scripts/prepare-android.mjs",
-    "audit:resources": "node scripts/resource-inventory.mjs"
+    "audit:resources": "node scripts/resource-inventory.mjs",
+    "audit:bundle": "node scripts/audit-bundle.mjs",
+    "android:apk": "npm run android:sync && node scripts/android-build.mjs assembleDebug",
+    "android:aab": "npm run android:sync && node scripts/android-build.mjs bundleRelease"
   },
   "dependencies": {
     "@capacitor/core": "8.0.0",
