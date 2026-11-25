@@ -1,3 +1,4 @@
+import {validMarket} from '../engine/market';
 import {assertState,migrateGame,type Game} from '../engine/game';
 import {accounts} from '../engine/ledger';
 import {config} from '../content/scenario';
@@ -11,6 +12,7 @@ export function decodeSave(text:string):Game{
  check(g.schema===1&&int(g.financeStart,0,g.minute)&&int(g.revision)&&int(g.minute)&&int(g.wall)&&int(g.seed,0,4294967295)&&int(g.next,1)&&str(g.name,60)&&str(g.brand,60)&&g.brand.trim().length>0&&str(g.ceo,60)&&config.difficulties.includes(g.difficulty));
  check(typeof g.accepted==='boolean'&&typeof g.manager==='boolean'&&[0,1,5,20,60].includes(g.speed)&&['distressed','recovering','stable','liquidated'].includes(g.status));
  check(int(g.price,100,3000)&&int(g.reputation,0,100)&&int(g.research,0,5)&&int(g.campaignUntil)&&int(g.produced)&&int(g.sold)&&g.sold<=g.produced&&int(g.competitorPrice,600,1200)&&int(g.distressDays));
+ check(validMarket(g.market,g.minute));
  check(g.operations&&int(g.operations.permitUntil)&&int(g.operations.sanitation,0,100)&&int(g.operations.rejected)&&int(g.operations.discarded)&&int(g.operations.marketDay)&&int(g.operations.marketCommitted));
  check(Array.isArray(g.audit)&&g.audit.every(a=>config.audit.some(x=>x===a))&&new Set(g.audit).size===g.audit.length);
  check(g.policy&&int(g.policy.batchSize,1,5000)&&int(g.policy.reorderBatches,1,5)&&int(g.policy.minCash,1,10000000)&&int(g.policy.minMargin,0,3000));

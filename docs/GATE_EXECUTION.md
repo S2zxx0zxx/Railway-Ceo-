@@ -1,6 +1,6 @@
 # Sequential release gate execution
 
-Owner update: implementation may proceed in gate order on explicit owner command even if earlier tests or blockers are unresolved. Record incomplete scope and defer verification to the final remediation phase; never label it PASS. G05 is now active for implementation. G01–G04 remain incomplete; G06–G12 await owner instruction. Keep all work on PR #1, feat/company-simulator-v3. Do not merge until all gates pass. License/provenance permission remains a prerequisite to importing third-party material.
+Owner update: implementation may proceed in gate order on explicit owner command even if earlier tests or blockers are unresolved. Record incomplete scope and defer verification to the final remediation phase; never label it PASS. G06 is now active for implementation. G01–G05 remain incomplete; G07–G12 await owner instruction. Keep all work on PR #1, feat/company-simulator-v3. Do not merge until all gates pass. License/provenance permission remains a prerequisite to importing third-party material.
 
 | Gate | Status | Acceptance from MASTER_BUILD_SPEC.md section 10 |
 |---|---|---|
@@ -8,8 +8,8 @@ Owner update: implementation may proceed in gate order on explicit owner command
 | G02 | PARTIAL / VERIFICATION DEFERRED | Pinned upstream commits, actual files, test evidence, dependencies/licenses, asset provenance |
 | G03 | PARTIAL / VERIFICATION DEFERRED | Original approved UI baseline, screenshots of all panels, layout, touch and focus |
 | G04 | PARTIAL / VERIFICATION DEFERRED | Balanced ledger, exactly-once posting, AR/AP/stock and financial reconciliation |
-| G05 | ACTIVE IMPLEMENTATION / NOT PASSED | Manufacturing, inventory, quality and resource constraints |
-| G06 | LOCKED | Bounded markets, competition, reproducible events and economy |
+| G05 | PARTIAL / VERIFICATION DEFERRED | Manufacturing, inventory, quality and resource constraints |
+| G06 | ACTIVE IMPLEMENTATION / NOT PASSED | Bounded markets, competition, reproducible events and economy |
 | G07 | LOCKED | Viable rescue for each difficulty; recovery and liquidation |
 | G08 | LOCKED | Offline parity, time anomalies, save integrity, migration and updates |
 | G09 | LOCKED | Manager validation, budget, authority, stop conditions and decision evidence |
@@ -93,3 +93,6 @@ G05 traceability increment: new batches and shipments carry lot genealogy, incom
 G05 operations increment: supplier constraints, purchase history, service history and explicit utility controls with immediate pause. Three tests authored; final verification deferred. Supplier quantities/limits and single-line operation are provisional scenario assumptions.
 
 G05 final increment: persisted materials/energy cost components and active operating minutes for new batches, UI yield and elapsed time, exact permit expiry interruption and post-command operating guard. Two tests authored. Complete labor/overhead allocation, stage-specific resource consumption and OEE, spares/replacement, supplier returns, finished-goods reservations independent of immediate dispatch, historical traceability and exhaustive accounting/operational tests remain incomplete. G05 not passed. All tests deferred under owner direction; no later gate started.
+
+### G06 market increment
+Single market state with normalized integer quota, bounded rival agents, daily settlement and seeded price changes, sequential regional market entry and market UI. Four tests authored. No pass; complete verification and calibration pending.

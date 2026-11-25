@@ -1,3 +1,4 @@
+import {initialMarket,marketView,closeMarketDay,validMarket,regionInfo,type MarketState,type RegionId} from './market';
 import type {PurchaseRecord,ServiceRecord,UtilityState} from './operations';
 import {emptyWaste,trackDisposal,type BatchRecord,type TracePortion,type WasteRecord} from './traceability';
 import {reserved,freeQuantity,reserveRecipe,type WorkPlan,type Reservation} from './planning';
@@ -17,7 +18,7 @@ export type ManagerPolicy={reorderBatches:number;batchSize:number;minCash:number
 export type Crisis={id:string;kind:'payroll'|'machine'|'liquidity'|'compliance'|'safety';opened:number;resolved:boolean};
 export type Operations={permitUntil:number;sanitation:number;rejected:number;discarded:number;marketDay:number;marketCommitted:number};
 const initialOps=():Operations=>({permitUntil:30*1440,sanitation:80,rejected:0,discarded:0,marketDay:0,marketCommitted:0});
-export type Game={schema:1;financeStart:number;plans:WorkPlan[];batches:BatchRecord[];waste:WasteRecord;purchases:PurchaseRecord[];serviceHistory:ServiceRecord[];utilities:UtilityState;loans:Loan[];operations:Operations;payables:SupplierPayable[];sales:DeliveredSale[];policy:ManagerPolicy;crises:Crisis[];competitorPrice:number;distressDays:number;status:'distressed'|'recovering'|'stable'|'liquidated';revision:number;minute:number;seed:number;next:number;name:string;brand:string;ceo:string;difficulty:Difficulty;accepted:boolean;audit:string[];journal:Entry[];lots:Lot[];machines:Machine[];employees:Employee[];jobs:Job[];price:number;reputation:number;research:number;campaignUntil:number;manager:boolean;produced:number;sold:number;news:string[];history:{day:number;revenue:string;profit:string}[];wall:number;speed:number};
+export type Game={schema:1;financeStart:number;market:MarketState;plans:WorkPlan[];batches:BatchRecord[];waste:WasteRecord;purchases:PurchaseRecord[];serviceHistory:ServiceRecord[];utilities:UtilityState;loans:Loan[];operations:Operations;payables:SupplierPayable[];sales:DeliveredSale[];policy:ManagerPolicy;crises:Crisis[];competitorPrice:number;distressDays:number;status:'distressed'|'recovering'|'stable'|'liquidated';revision:number;minute:number;seed:number;next:number;name:string;brand:string;ceo:string;difficulty:Difficulty;accepted:boolean;audit:string[];journal:Entry[];lots:Lot[];machines:Machine[];employees:Employee[];jobs:Job[];price:number;reputation:number;research:number;campaignUntil:number;manager:boolean;produced:number;sold:number;news:string[];history:{day:number;revenue:string;profit:string}[];wall:number;speed:number};
 export type Command=
  | {type:'takeover';name:string;ceo:string;difficulty:Difficulty}
  | {type:'audit';item:string}
@@ -46,6 +47,7 @@ export type Command=
  | {type:'recallBatch';id:string;reason:string}
  | {type:'sell';qty:number;credit:number}
  | {type:'price';price:number}
+ | {type:'expandRegion';region:RegionId}
  | {type:'hire';role:'operator'|'manager'}
  | {type:'settlePayroll';rupees:number}
  | {type:'repay';rupees:number}
@@ -77,7 +79,7 @@ function spend(g:Game,account:'expense'|'raw'|'wip',v:bigint,description:string)
 function note(g:Game,s:string){g.news.unshift('Day '+(Math.floor(g.minute/1440)+1)+': '+s);g.news=g.news.slice(0,100)}
 function rng(g:Game){g.seed=(Math.imul(g.seed,1664525)+1013904223)>>>0;return g.seed/4294967296}
 export function initialGame(wall=0,seed=20261125):Game{
- const g:Game={schema:1,financeStart:0,plans:[],batches:[],waste:emptyWaste(),purchases:[],serviceHistory:[],utilities:{power:true,water:true},loans:[makeLoan('inherited-loan',money(config.debt),0)],operations:initialOps(),payables:[],sales:[],policy:{reorderBatches:2,batchSize:1000,minCash:50000,minMargin:100},crises:[],competitorPrice:900,distressDays:0,status:'distressed',revision:0,minute:0,seed:seed>>>0,next:1,name:'Distressed Biscuit Industries',brand:'Plain Biscuit',ceo:'CEO',difficulty:'Realistic',accepted:false,audit:[],journal:[],lots:[],machines:config.machineNames.map((name,i)=>({name,condition:config.initialConditions[i],readyAt:0,level:1 as const,lastService:0})),employees:Array.from({length:24},(_,i)=>({id:'staff-'+i,name:'Employee '+(i+1),skill:65+i%20,morale:42,wage:config.wagePerDay,role:'operator',shiftHours:8,fatigue:0,present:true,safetyTrained:false,grade:1})),jobs:[],price:config.initialPrice,reputation:12,research:0,campaignUntil:0,manager:false,produced:0,sold:0,news:['Take over the distressed company to begin.'],history:[],wall,speed:0};
+ const g:Game={schema:1,financeStart:0,market:initialMarket(),plans:[],batches:[],waste:emptyWaste(),purchases:[],serviceHistory:[],utilities:{power:true,water:true},loans:[makeLoan('inherited-loan',money(config.debt),0)],operations:initialOps(),payables:[],sales:[],policy:{reorderBatches:2,batchSize:1000,minCash:50000,minMargin:100},crises:[],competitorPrice:900,distressDays:0,status:'distressed',revision:0,minute:0,seed:seed>>>0,next:1,name:'Distressed Biscuit Industries',brand:'Plain Biscuit',ceo:'CEO',difficulty:'Realistic',accepted:false,audit:[],journal:[],lots:[],machines:config.machineNames.map((name,i)=>({name,condition:config.initialConditions[i],readyAt:0,level:1 as const,lastService:0})),employees:Array.from({length:24},(_,i)=>({id:'staff-'+i,name:'Employee '+(i+1),skill:65+i%20,morale:42,wage:config.wagePerDay,role:'operator',shiftHours:8,fatigue:0,present:true,safetyTrained:false,grade:1})),jobs:[],price:config.initialPrice,reputation:12,research:0,campaignUntil:0,manager:false,produced:0,sold:0,news:['Take over the distressed company to begin.'],history:[],wall,speed:0};
  const cash=money(config.cash),equipment=money(config.equipment),debt=money(config.debt),payroll=money(config.arrears);
  post(g.journal,'opening',0,'Inherited assets and liabilities',[{account:'cash',amount:String(cash)},{account:'equipment',amount:String(equipment)},{account:'debt',amount:String(-debt)},{account:'payroll',amount:String(-payroll)},{account:'equity',amount:String(debt+payroll-cash-equipment)}]);
  return g;
@@ -94,8 +96,8 @@ function take(g:Game,item:Lot['item'],qty:number,allocation?:Reservation[]):{cos
  check(remaining===0,'Incomplete material issue');g.lots=g.lots.filter(l=>l.qty>0);allocatePool(g.lots.filter(l=>l.item===item),value-total);return {cost:total,quality:Math.floor(quality/qty),trace};
 }
 export function supplierQuote(item:Material,qty:number,supplier:SupplierId='standard'){const offer=config.suppliers.find(s=>s.id===supplier);check(offer,'Unknown supplier');positive(qty,10000000);return {...offer,cost:(BigInt(qty)*BigInt(config.prices[item])*BigInt(offer.pricePercent)+99n)/100n}}
-export function marketDemand(g:Game){return Math.max(0,Math.floor(6000*Math.pow(config.initialPrice/g.price,1.5)*(0.5+g.reputation/100)*(g.campaignUntil>g.minute?1.2:1)*Math.pow(g.competitorPrice/config.initialPrice,0.4)))}
-export function demand(g:Game){return Math.max(0,marketDemand(g)-(g.operations.marketDay===Math.floor(g.minute/1440)?g.operations.marketCommitted:0))}
+export function marketDemand(g:Game){return marketView(g).player}
+export function demand(g:Game){return marketView(g).available}
 /** Overtime is 1.5 times the base hourly wage, rounded up to whole paise. */
 export function employeeDailyPay(e:Employee):bigint{if(!e.present)return 0n;const base=money(e.wage);return base+(base*BigInt(e.shiftHours-8)*3n+15n)/16n}
 export function scheduledPayroll(g:Game):bigint{return g.employees.reduce((n,e)=>n+employeeDailyPay(e),0n)}
@@ -135,7 +137,7 @@ function runJob(g:Game,j:Job){
 function expire(g:Game){for(const l of g.lots.filter(l=>l.expiry<=g.minute)){const c=BigInt(l.cost);if(c>0n)transfer(g.journal,id(g),g.minute,'Expired inventory','loss',l.item==='biscuit'?'finished':'raw',c);trackDisposal(g.waste,l.item,l.qty);if(l.item==='biscuit')g.operations.discarded+=l.qty;note(g,'Expired '+l.item+' stock');}g.lots=g.lots.filter(l=>l.expiry>g.minute)}
 function alert(g:Game,kind:Crisis['kind'],message:string){if(!g.crises.some(c=>c.kind===kind&&!c.resolved)){g.crises.push({id:id(g),kind,opened:g.minute,resolved:false});note(g,message)}}
 function daily(g:Game){
- g.operations.marketDay=Math.floor(g.minute/1440);g.operations.marketCommitted=0;
+ closeMarketDay(g,Math.floor(g.minute/1440),()=>rng(g));g.operations.marketDay=Math.floor(g.minute/1440);g.operations.marketCommitted=0;
  if(g.loans.some(l=>loanSchedule(l,g.minute).due>0n)&&g.minute% (30*1440)===0)note(g,'Bank notice: scheduled principal overdue');
  if(g.operations.permitUntil<=g.minute)alert(g,'compliance','Operating permit expired; production suspended');
  if(g.operations.sanitation<40)alert(g,'safety','Factory sanitation below safe limit');
@@ -150,7 +152,7 @@ function daily(g:Game){
  if(cash(g)<wages){alert(g,'liquidity','Liquidity warning: payroll funding at risk');g.distressDays++}else g.distressDays=0;
  if(-balance(g.journal,'payroll')>money(config.arrears*2))alert(g,'payroll','Payroll arrears threaten operations');
  if(g.machines.some(m=>m.condition<40))alert(g,'machine','Machinery condition is below safe operating limits');
- g.competitorPrice=Math.min(1200,Math.max(600,g.competitorPrice+Math.floor(rng(g)*61)-30));
+ 
  if(g.status!=='liquidated'){
   if(g.distressDays>=(g.difficulty==='Hardcore'?10:g.difficulty==='Beginner'?45:30)){g.status='liquidated';note(g,'Company liquidated after sustained liquidity distress')}
   else if(g.distressDays>0)g.status='distressed';
@@ -190,7 +192,7 @@ function advance(g:Game,minutes:number){
 }
 export function apply(source:Game,cmd:Command):Game{
  const g=clone(source);
- if(cmd.type==='takeover'){check(!g.accepted,'Already acquired');check(cmd.name.trim().length>0&&cmd.name.length<=60&&cmd.ceo.trim().length>0&&cmd.ceo.length<=60&&config.difficulties.includes(cmd.difficulty),'Invalid company identity');g.name=cmd.name.trim();g.ceo=cmd.ceo.trim();g.difficulty=cmd.difficulty;g.accepted=true;note(g,'Takeover completed')}
+ if(cmd.type==='takeover'){check(!g.accepted,'Already acquired');check(cmd.name.trim().length>0&&cmd.name.length<=60&&cmd.ceo.trim().length>0&&cmd.ceo.length<=60&&config.difficulties.includes(cmd.difficulty),'Invalid company identity');g.name=cmd.name.trim();g.ceo=cmd.ceo.trim();g.difficulty=cmd.difficulty;g.market=initialMarket(Math.floor(g.minute/1440),cmd.difficulty);g.accepted=true;note(g,'Takeover completed')}
  else{
  check(g.accepted,'Accept takeover first');
  check(g.status!=='liquidated'||cmd.type==='speed','Company has been liquidated');
@@ -220,6 +222,7 @@ export function apply(source:Game,cmd:Command):Game{
  case 'complaint':{const sale=g.sales.find(s=>s.id===cmd.id);check(sale&&sale.status!=='refunded'&&sale.complaint==='none','Complaint unavailable');check(['damaged','late','quality'].includes(cmd.reason),'Invalid complaint reason');sale.complaint='open';sale.reason=cmd.reason;g.reputation=Math.max(0,g.reputation-2);note(g,'Customer complaint: '+cmd.reason);break}
  case 'closeComplaint':{const sale=g.sales.find(s=>s.id===cmd.id&&s.complaint==='open');check(sale&&sale.reason==='late','Only a delivery-delay complaint can close without refund');sale.complaint='closed';note(g,'Delivery complaint resolved');break}
  case 'refundSale':{const sale=g.sales.find(s=>s.id===cmd.id&&s.complaint==='open'&&s.status!=='refunded');check(sale,'No refundable complaint');const v=BigInt(sale.amount);if(sale.status==='receivable'){const pending=g.jobs.find(j=>j.kind==='collection'&&j.source===sale.id);check(pending&&BigInt(pending.cost)===v,'Invoice linkage missing');transfer(g.journal,id(g),g.minute,'Customer credit note','returns','receivable',v);g.jobs=g.jobs.filter(j=>j.id!==pending.id)}else{canPay(g,v);transfer(g.journal,id(g),g.minute,'Customer refund','returns','cash',v)}sale.status='refunded';sale.complaint='closed';note(g,'Full customer refund/credit issued; returned food not restocked');break}
+ case 'expandRegion':{const region=regionInfo(cmd.region);check(region&&config.market.regions[g.market.regions.length]?.id===region.id,'Region must unlock in sequence');check(g.reputation>=region.reputation&&g.sold>=region.sold,'Region prerequisites not met');spend(g,'expense',money(region.cost),'Distribution market entry');g.market.regions.push(region.id);note(g,'Distribution expanded to '+region.name+'; active next game day');break}
  case 'price':positive(cmd.price,3000);check(cmd.price>=100,'Price too low');g.price=cmd.price;break;
  case 'hire':{check(g.employees.length<100&&['operator','manager'].includes(cmd.role),'Hiring limit');spend(g,'expense',money(2000),'Recruitment');g.employees.push({id:id(g),name:cmd.role==='manager'?'Production manager':'New operator',role:cmd.role,skill:65+Math.floor(rng(g)*25),morale:70,wage:cmd.role==='manager'?1500:800,shiftHours:8,fatigue:0,present:true,safetyTrained:false,grade:1});break}
  case 'settlePayroll':{positive(cmd.rupees);const amount=money(cmd.rupees);canPay(g,amount);check(amount<=-balance(g.journal,'payroll'),'Exceeds payroll payable');transfer(g.journal,id(g),g.minute,'Payroll settlement','payroll','cash',amount);break}
@@ -262,9 +265,10 @@ function automate(g:Game){
 }
 export function migrateGame(g:Game):Game{
  const oldPrincipal=-balance(g.journal,'debt');
- return {...g,purchases:g.purchases??[],serviceHistory:g.serviceHistory??[],utilities:g.utilities??{power:true,water:true},batches:g.batches??[],waste:g.waste??emptyWaste(),plans:g.plans??[],loans:g.loans??(oldPrincipal>0n?[makeLoan('legacy-loan',oldPrincipal,g.minute)]:[]),financeStart:g.financeStart??g.minute,machines:g.machines.map(m=>({...m,level:m.level??1,lastService:m.lastService??0})),employees:g.employees.map(e=>({...e,shiftHours:e.shiftHours??8,fatigue:e.fatigue??0,present:e.present??true,safetyTrained:e.safetyTrained??false,grade:e.grade??1})),sales:g.sales??[],payables:g.payables??[],brand:g.brand??'Plain Biscuit',lots:g.lots.map(l=>({...l,quality:l.quality??90,source:l.source??'legacy'})),operations:g.operations??{...initialOps(),permitUntil:g.minute+30*1440,marketDay:Math.floor(g.minute/1440)},policy:g.policy??{reorderBatches:2,batchSize:1000,minCash:50000,minMargin:100},crises:g.crises??[],competitorPrice:g.competitorPrice??900,distressDays:g.distressDays??0,status:g.status??'distressed'};
+ return {...g,market:g.market??initialMarket(Math.floor(g.minute/1440),g.difficulty,g.operations?.marketCommitted??0),purchases:g.purchases??[],serviceHistory:g.serviceHistory??[],utilities:g.utilities??{power:true,water:true},batches:g.batches??[],waste:g.waste??emptyWaste(),plans:g.plans??[],loans:g.loans??(oldPrincipal>0n?[makeLoan('legacy-loan',oldPrincipal,g.minute)]:[]),financeStart:g.financeStart??g.minute,machines:g.machines.map(m=>({...m,level:m.level??1,lastService:m.lastService??0})),employees:g.employees.map(e=>({...e,shiftHours:e.shiftHours??8,fatigue:e.fatigue??0,present:e.present??true,safetyTrained:e.safetyTrained??false,grade:e.grade??1})),sales:g.sales??[],payables:g.payables??[],brand:g.brand??'Plain Biscuit',lots:g.lots.map(l=>({...l,quality:l.quality??90,source:l.source??'legacy'})),operations:g.operations??{...initialOps(),permitUntil:g.minute+30*1440,marketDay:Math.floor(g.minute/1440)},policy:g.policy??{reorderBatches:2,batchSize:1000,minCash:50000,minMargin:100},crises:g.crises??[],competitorPrice:g.competitorPrice??900,distressDays:g.distressDays??0,status:g.status??'distressed'};
 }
 export function assertState(g:Game){
+ check(validMarket(g.market,g.minute)&&g.operations.marketDay===g.market.day&&g.operations.marketCommitted<=g.market.total,'Market state or allocation integrity failure');
  check(typeof g.utilities.power==='boolean'&&typeof g.utilities.water==='boolean','Invalid utilities');
  check(g.purchases.length<=50000&&new Set(g.purchases.map(p=>p.id)).size===g.purchases.length&&g.purchases.every(p=>p.status==='inTransit'?g.jobs.some(j=>j.id===p.id&&j.kind==='receipt'&&j.item===p.item&&j.qty===p.qty&&j.cost===p.cost&&j.due===p.due):p.closed!==undefined&&p.closed<=g.minute),'Purchase history linkage failure');
  check(g.serviceHistory.length<=50000&&new Set(g.serviceHistory.map(s=>s.id)).size===g.serviceHistory.length&&g.serviceHistory.every(s=>s.started<=s.completed&&s.completed<=g.minute&&BigInt(s.cost)>0n),'Invalid service history');
