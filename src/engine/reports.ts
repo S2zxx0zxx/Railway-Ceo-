@@ -22,7 +22,7 @@ export function replenishment(g:Game,item:import('../content/scenario').Material
  const available=g.lots.filter(l=>l.item===item).reduce((s,l)=>s+freeQuantity(g,l),0);
  const daily=g.policy.batchSize*config.bom[item],leadDemand=Math.ceil(daily*config.leadMinutes/1440),safety=daily;
  // Indicative classical EOQ, not the manager's binding replenishment quantity.
- const eoq=Math.min(10000000,Math.ceil(economicOrderQuantity(100,config.prices[item]/100*0.2,daily*365).quantity));
+ const eoq=Math.min(10000000,Math.ceil(economicOrderQuantity(100,config.prices[item]*g.market.commodity[item]/10000*0.2,daily*365).quantity));
  return {available,incoming,leadDemand,safety,reorderPoint:leadDemand+safety,recommended:Math.max(0,daily*g.policy.reorderBatches-available-incoming),eoq};
 }
 import {config} from '../content/scenario';
