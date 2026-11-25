@@ -1,3 +1,4 @@
+import {unwrapPayload,wrapPayload} from './integrity';
 import {validGovernance,validCrisisDetails} from '../engine/governance';
 import {validRescue} from '../engine/rescue';
 import {validMarket,validEconomy,regionInfo} from '../engine/market';
@@ -9,8 +10,9 @@ const int=(v:unknown,min=0,max=Number.MAX_SAFE_INTEGER)=>typeof v==='number'&&Nu
 const str=(v:unknown,max=256)=>typeof v==='string'&&v.length>0&&v.length<=max;
 const decimal=(v:unknown)=>typeof v==='string'&&/^-?(0|[1-9][0-9]{0,29})$/.test(v);
 export function decodeSave(text:string):Game{
- check(text.length<=8_000_000,'Save exceeds import limit');
- const g=migrateGame(JSON.parse(text) as Game);
+ const raw=JSON.parse(unwrapPayload(text)) as Game;
+ check(raw&&typeof raw==='object'&&!Array.isArray(raw)&&raw.schema===1,'Unsupported game schema');
+ const g=migrateGame(raw);
  check(g.schema===1&&int(g.financeStart,0,g.minute)&&int(g.revision)&&int(g.minute)&&int(g.wall)&&int(g.seed,0,4294967295)&&int(g.next,1)&&str(g.name,60)&&str(g.brand,60)&&g.brand.trim().length>0&&str(g.ceo,60)&&config.difficulties.includes(g.difficulty));
  check(validRescue(g.rescue,g.minute,g.difficulty));
  check(typeof g.accepted==='boolean'&&typeof g.manager==='boolean'&&[0,1,5,20,60].includes(g.speed)&&['distressed','recovering','stable','liquidated'].includes(g.status));
@@ -42,3 +44,5 @@ export function decodeSave(text:string):Game{
  check(new Set(ids).size===ids.length&&ids.every(i=>!/^e[0-9]+$/.test(i)||Number(i.slice(1))<g.next),'Conflicting object identifiers');
  assertState(g);return g;
 }
+
+export function encodeSave(game:Game):string{assertState(game);return wrapPayload(JSON.stringify(game))}

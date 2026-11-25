@@ -110,3 +110,5 @@ G07 restart increment: fresh takeover allowed only after liquidation, old compan
 
 ### G08 clock increment
 Refactored elapsed planning and single-revision catch-up, in-place bounded simulation chunks, milestone evaluation at scheduler boundaries, bounded minimum-event scan, pure worker request/reply and chunked fallback when worker unavailable. Four tests authored, deferred. Worker proposal is not yet connected to persistence in this commit. Actual chunk parity, event ordering, worker precache and device performance remain unverified.
+
+G08 persistence increment: actual worker bridge integrated into open/command/resume, stale proposals rejected at atomic commit, bounded receipts preserved, portable envelope and database checksums, three rotating backups and explicit newest-valid recovery. Four tests authored; real IndexedDB concurrent tabs, crash recovery, quota and platform import/export verification pending. Legacy raw saves still accepted. No gate pass.
