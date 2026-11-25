@@ -49,11 +49,37 @@ jobs:
             }
             await dialog.getByRole('button',{name:'Close panel'}).click();
             await nav.getByRole('button',{name:'Procurement'}).click();
+            await dialog.getByLabel('Grams').fill('1000');
+            await dialog.getByLabel('Supplier payment terms').selectOption('7');
+            await dialog.getByRole('button',{name:'Place order',exact:true}).click();
+            const creditOrder=dialog.locator('.journal').filter({hasText:'flour · 1,000'});
+            await creditOrder.getByText('Credit',{exact:false}).waitFor();
+            await creditOrder.getByRole('button',{name:'Cancel order',exact:true}).click();
+            await creditOrder.waitFor({state:'detached'});
             await dialog.getByLabel('Grams').fill('75000');
-            await dialog.getByRole('button',{name:'Place prepaid order'}).click();
-            await dialog.getByText('receipt · 75,000').waitFor();
+            await dialog.getByLabel('Supplier payment terms').selectOption('0');
+            await dialog.getByRole('button',{name:'Place order',exact:true}).click();
+            await dialog.getByText('flour · 75,000',{exact:true}).waitFor();
             await page.screenshot({path:'browser-evidence/procurement.png'});
             await dialog.getByRole('button',{name:'Close panel'}).click();
+            // Reachability of the management routes; this is not full action coverage.
+            for(const name of ['Quick actions','Employees','Warehouse','Production','Sales','Market','Finance','Banking','Research','Business news']){
+              await nav.getByRole('button',{name,exact:true}).click();
+              await dialog.getByRole('heading',{name,exact:true}).first().waitFor();
+              if(name==='Production'){
+                for(const sub of ['Machinery','Quality']){
+                  await dialog.getByRole('button',{name:sub,exact:true}).click();
+                  await dialog.getByRole('heading',{name:sub,exact:true}).first().waitFor();
+                  await dialog.getByRole('button',{name:'Close panel'}).click();
+                  await nav.getByRole('button',{name:'Production',exact:true}).click();
+                }
+              }
+              if(name==='Market'){
+                await dialog.getByRole('button',{name:'Marketing',exact:true}).click();
+                await dialog.getByRole('heading',{name:'Marketing',exact:true}).first().waitFor();
+              }
+              await dialog.getByRole('button',{name:'Close panel'}).click();
+            }
             await page.evaluate(async()=>{await navigator.serviceWorker.ready});
             await page.reload();
             await nav.getByRole('button',{name:'Warehouse'}).waitFor();
@@ -68,7 +94,7 @@ jobs:
             await page.setViewportSize({width:360,height:800});
             await page.screenshot({path:'browser-evidence/portrait.png'});
             assert.deepEqual(errors,[]);
-            console.log('Browser smoke passed: takeover, 12 dock controls, audit, purchase, persistence, offline reload, portrait screenshot.');
+            console.log('Browser smoke passed: takeover, 12 dock controls, audit, credit purchase/cancellation, prepaid purchase, management route reachability, persistence, offline reload, portrait screenshot.');
           } finally { await browser.close(); }
           EOF
           node browser-smoke.mjs

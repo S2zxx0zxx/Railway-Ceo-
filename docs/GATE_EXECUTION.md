@@ -62,3 +62,6 @@ D14/D15/D22: real shifts, safety training, fatigue/attendance, overtime, promoti
 
 ### G01 engineering increment
 D08/D10/D11: implemented capitalized timed upgrades, machine levels and service timestamps, preventive service and active batch writeoff. UI in Machinery/Production, tests/g01-engineering.test.ts authored. Not a complete engineering/planning gate; remaining scope and tests still open.
+
+### G01 observed verification
+At c0d20aa: web/unit workflow 45597960788 succeeded; browser 45597960836 failed on obsolete procurement selector; Android QA build 45597960767 succeeded (not device verification). At b2b9abf: web/unit 45598050912 succeeded. At 27c2be0: web/unit 45598164190 succeeded. Corrected stale smoke test and expanded route traversal; latest evidence pending. Earlier successes do not pass G01 or later gates.
