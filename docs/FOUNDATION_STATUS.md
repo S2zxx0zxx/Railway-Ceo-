@@ -1,0 +1,3 @@
+# Foundation implementation
+
+Initial original TypeScript implementation, not an upstream adoption. Includes integer-paise ledger, opening scenario, audit, prepaid procurement, FEFO lots, staged batch, quality hold, delivery/credit collection, payroll, debt, marketing, research, seeded wear and offline catch-up. Simplifications: WIP is also used as prepaid/in-transit clearing; lot costing rather than moving weighted average; simplified staffing, banking, quality, market and maintenance. Automation flag has no execution yet. No full resource audit or original premium art. Tests authored but not yet run. Do not mark any release gate complete.
