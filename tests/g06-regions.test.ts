@@ -1,6 +1,6 @@
 import {describe,it,expect} from 'vitest';
 import {initialGame,apply} from '../src/engine/game';
-import {config} from '../content/scenario';
+import {config} from '../src/content/scenario';
 import {regionAvailability,validRegionalCommitments} from '../src/engine/market';
 import {balance} from '../src/engine/ledger';
 import {decodeSave} from '../src/persistence/codec';

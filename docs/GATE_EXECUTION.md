@@ -130,3 +130,5 @@ Build-generated original PNG launcher icons (192/512/maskable), manifest and byt
 G10 platform adapter increment: native App lifecycle/back, portable save and report export via cache/share, existing file picker, native scheme config and safe areas, UI save-before-update and multi-window activation guard. Device behavior, plugin resolution, update event/race and native file transfer tests pending. No PASS.
 
 G10 build increment: reproducible-in-intent native generation scripts and CI QA APK/unsigned AAB outputs, signature/target evidence, byte/hash budget audit and platform contract. No artifact generation claimed until CI/local evidence. Owner app ID/versionCode and signing, real device/transfer/update and lockfile verification remain open. No PASS.
+
+G10 observed CI evidence: runs 45610920923 (web), 45610920864 (G08 browser), 45610920840 (Android) on 6dffa7985c051dfb9764dcaaa471973b4ca01a35 failed before build due to TS2367 in offline.ts and TS2307 in g06-regions.test.ts. Corrected both source anchors and added update activation timeout; rerun confirmation pending. No APK/AAB from those failed runs. No PASS.

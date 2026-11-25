@@ -10,7 +10,8 @@ export async function chunkedCatchUp(source:Game,now:number,yieldControl:()=>Pro
  if(!Number.isSafeInteger(chunkMinutes)||chunkMinutes<1||chunkMinutes>1440)throw Error('Invalid simulation chunk');
  const plan=catchUpPlan(source,now),game=structuredClone(source);
  let left=plan.minutes;
- while(left>0&&game.status!=='liquidated'){const step=Math.min(left,chunkMinutes);advanceInPlace(game,step);left-=step;if(left>0&&game.status!=='liquidated')await yieldControl()}
+ const terminal=()=>game.status==='liquidated';
+ while(left>0&&!terminal()){const step=Math.min(left,chunkMinutes);advanceInPlace(game,step);left-=step;if(left>0&&!terminal())await yieldControl()}
  finishCatchUp(game,plan,source.minute);
  return {game,report:summarizeReturn(source,game,plan)};
 }
