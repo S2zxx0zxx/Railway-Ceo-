@@ -156,3 +156,5 @@ Owner-controlled external gates: visual approval, license/brand, publisher ident
 
 ### Subsequent evidence
 09c8f14: all five checks passed (124 tests; browser, offline, audit and Android package). 8c95f7d: 3 recovery paths failed; see remediation ledger. New research projects and market calibration require latest CI. No row passed automatically.
+
+8d9ba27 evidence: all 130 tests passed, three command-only recovery paths attained stable, three R&D tests passed; calibrated demand is provisional and needs broader seeds. Extended conservation and held-stock fixtures authored next. See G12_REMEDIATION.md for exact runs. Device, owner approvals, full feature acceptance remain open.
