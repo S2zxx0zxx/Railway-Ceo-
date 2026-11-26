@@ -16,7 +16,10 @@
       "passenger-coach",
       "freight-wagon"
     ],
-    "brandStudy": "generic rail symbol (not final trademark)"
+    "brandStudy": "generic rail symbol (not final trademark)",
+    "sha256": "4a39b4d03bc56529513d04df936572dab6c1f9e91ef0d62b66801199ced3624e",
+    "bytes": 3135,
+    "originalArchiveExactHashMatches": 0
   },
   "productArtwork": "none newly approved",
   "catalogIdentity": "R12 exact catalog/model revision and digest; no roster added",
