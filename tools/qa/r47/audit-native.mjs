@@ -13,3 +13,9 @@ assert.equal(native.android?.allowMixedContent,false);
 await mkdir('r47-native-evidence',{recursive:true});
 await writeFile('r47-native-evidence/r48-apk-permissions.txt',permissions);await writeFile('r47-native-evidence/r48-apk-badging.txt',badging);
 console.log('R48_NATIVE_PACKAGE PASS actual QA APK permission denylist and local Capacitor config; not final release');
+
+// Verify actual APK public payload preserves exact local software notices.
+for(const name of ['RUNTIME_LICENSES.txt','DEPENDENCY_INVENTORY.json','idle-game-template.txt','README.txt']){
+ const shipped=execFileSync('unzip',['-p',apk,'assets/public/licenses/'+name]);assert.deepEqual(shipped,await readFile('r47-qa-dist/licenses/'+name),'Missing or modified native notice '+name);
+}
+console.log('R51_NATIVE_NOTICES PASS four exact notice files in QA APK; native Maven inventory still pending');

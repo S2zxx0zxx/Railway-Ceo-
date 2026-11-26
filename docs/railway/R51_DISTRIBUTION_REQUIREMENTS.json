@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "disposition": "BLOCKED_NOT_RELEASE_CLEARED",
+  "data": {
+    "osm": {
+      "status": "NOT_SHIPPED",
+      "license": "ODbL-1.0",
+      "attribution": "© OpenStreetMap contributors",
+      "licenseUrl": "https://opendatacommons.org/licenses/odbl/1-0/",
+      "attributionUrl": "https://www.openstreetmap.org/copyright",
+      "required": [
+        "actual dated PBF and source hash",
+        "complete derived graph database or compliant alterations offer",
+        "visible map attribution and offline credits",
+        "actual graph/tile ID and version parity",
+        "no incompatible downstream restrictions",
+        "review actual distribution and jurisdiction"
+      ]
+    },
+    "boundary": {
+      "status": "NOT_SHIPPED",
+      "requires": "actual Survey of India layer rights, applicable precision and sensitive attribute review; separate rights and display layer"
+    },
+    "tiles": {
+      "status": "NOT_BUILT_R18",
+      "requires": "actual pinned build tool and transitives, local sprites/fonts/tiles rights and hashes"
+    }
+  },
+  "assets": {
+    "legacy": "7 PENDING_OWNER; legacy preserved not railway",
+    "preview": "R46 QA-only PENDING_OWNER",
+    "newBrand": "NOT_APPROVED"
+  },
+  "native": {
+    "status": "QA_ONLY",
+    "requires": "resolved Gradle/Maven dependencies SBOM and license/NOTICE review, exact final signed APK/AAB package inspection"
+  },
+  "projectLicense": "PENDING_OWNER",
+  "releaseAccepted": false
+}

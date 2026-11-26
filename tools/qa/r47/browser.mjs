@@ -30,6 +30,7 @@ try{
  await page.reload();await page.getByRole('button',{name:'Resume guest company'}).waitFor();
  await page.waitForFunction(()=>!!navigator.serviceWorker.controller);
  await ctx.setOffline(true);await page.reload();await page.getByRole('button',{name:'Resume guest company'}).click();await ready();
+ await page.getByRole('button',{name:'Read offline licenses'}).click();const notices=page.getByLabel('Runtime license notices');await notices.waitFor();assert.match(await notices.innerText(),/Installed|installed runtime dependency notices/);assert.match(await notices.innerText(),/react 19\.3\.1/);console.log('R51_OFFLINE_NOTICES PASS local notice UI after offline reload');
  const saved=await page.evaluate(()=>r47Qa.export());assert.ok(JSON.parse(saved.payload).journal.some(x=>x.requestId==='r47-qa-quote'));
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);await page.screenshot({path:'r47-evidence/guest-offline.png',fullPage:true});
  await ctx.setOffline(false);

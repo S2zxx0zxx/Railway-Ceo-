@@ -8,6 +8,7 @@ if(!/^[a-z0-9-]{1,48}$/.test(buildId))throw Error('Invalid build ID');
 const out=resolve(stress?'r50-qa-dist':qa?'r47-qa-dist':'railway-dist');
 async function walk(dir:string):Promise<string[]>{const result:string[]=[];for(const e of await readdir(dir,{withFileTypes:true})){const p=resolve(dir,e.name);if(e.isDirectory())result.push(...await walk(p));else if(e.isFile())result.push(p);else throw Error('Unexpected build entry');}return result;}
 function offline():Plugin{return {name:'railway-isolated-offline',apply:'build',enforce:'post',async closeBundle(){
+ const {writeRailwayNotices}=await import('./scripts/railway-r51-notices.mjs');await writeRailwayNotices(out);
  await writeFile(resolve(out,'build-id.json'),JSON.stringify({buildId,qa}));
  // QA icons are generated locally by the build helper; no final brand asserted.
  if(qa){const {qaIcon}=await import('./tools/qa/r47/icon.mjs');for(const n of [192,512])await writeFile(resolve(out,'qa-icon-'+n+'.png'),qaIcon(n));}
