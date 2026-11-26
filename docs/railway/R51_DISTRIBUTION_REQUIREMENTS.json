@@ -36,5 +36,20 @@
     "requires": "resolved Gradle/Maven dependencies SBOM and license/NOTICE review, exact final signed APK/AAB package inspection"
   },
   "projectLicense": "PENDING_OWNER",
-  "releaseAccepted": false
+  "releaseAccepted": false,
+  "reviewedReferences": [
+    "https://opendatacommons.org/licenses/odbl/1-0/",
+    "https://osmfoundation.org/wiki/Licence/Attribution_Guidelines",
+    "https://www.geospatial.dst.gov.in/Guidelines.aspx",
+    "https://dst.gov.in/news/list-featuresinstallations-and-their-sensitive-attributes-reference-guidelines-acquiring-and"
+  ],
+  "executableEvidence": {
+    "commit": "b99d06fc997618d6dce3bda6dd58f9d5d6197c92",
+    "runId": 45884209136,
+    "lockEntries": 238,
+    "runtimeEntries": 12,
+    "sourceEvidenceHashesMatched": 18,
+    "bundles": 3,
+    "finalReleaseAccepted": false
+  }
 }
