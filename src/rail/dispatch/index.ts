@@ -243,7 +243,7 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
       await validateTripQuote(graph,p.request,offer.quote,{quoteSha256:offer.quoteSha256,trainId:offer.quote.quote.trainId,stateVersion:base.state.revision,simTimeS:s.simTimeS,configurationSha256});
       if(s.pendingEvents.some(e=>e.simTimeS<=s.simTimeS))fail('process due movement events first');
       const queued=await scheduler.enqueue(s,[{kind:'dispatch.execute',simTimeS:s.simTimeS,payload:{commandId:q.commandId,...offer,baseVersion:base.state.revision}}]);
-      const out=await scheduler.advance(queued,s.simTimeS,cfg.maxPending);
+      const out=await scheduler.advance(queued,s.simTimeS,2);
       if(!out.complete)fail('dispatch event budget exhausted');
       const snapshot=await verify(out.snapshot),receipt=prior(snapshot,q)??fail('missing dispatch receipt');
       return {snapshot,receipt,replayed:false};
