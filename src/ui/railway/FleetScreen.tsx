@@ -3,6 +3,7 @@ import {TrainFront,Route,Warehouse,Wrench,ClipboardList,RefreshCw,ShieldCheck} f
 import type {createRailwayStore} from '../../rail/persistence';
 import {bindRailwayLifecycle,type createOfflineRunner} from '../../rail/offline/lifecycle';
 import './fleet.css';
+import {RailwayCatalogPanel} from './CatalogPanel';
 
 type Store=ReturnType<typeof createRailwayStore>;
 type Runner=ReturnType<typeof createOfflineRunner>;
@@ -132,7 +133,7 @@ export function RailwayFleetScreen({store,runner,onExit}:{store:Store;runner?:Ru
    <button type="button" onClick={()=>{reset();setTab('routes');}}>Relocate using a validated route</button>
   </section></>}</>}
   {tab==='receipts'&&<section><h2>Departure and settlement history</h2>{m!.trips.length?m!.trips.map(t=><TerminalCard key={t.receipt.tripId} t={t}/>):<p className="rf-card">No dispatch receipts yet.</p>}</section>}
-  {tab==='catalog'&&<section className="rf-card"><h2>Rolling stock catalogue</h2><p>Only models in the validated catalogue are listed.</p>{m!.models.map(x=><div key={x.model.id} className="rf-sub"><h3>{x.name}</h3><Pair label="Model">{x.model.id}</Pair><Pair label="Identity">{x.identity}</Pair>{'traction' in x.model&&<><Pair label="Traction">{x.model.traction}</Pair><Pair label="Speed">{x.model.maxSpeedKmh} km/h</Pair><Pair label="Seats / cargo">{x.model.capacitySeats} / {x.model.cargoCapacityKg} kg</Pair><Pair label="Configured purchase price">{money(x.model.purchasePriceMinor)}</Pair></>}<Pair label="Provenance">{x.model.provenance.sourceId}</Pair></div>)}<Disabled label="Choose starter / order or purchase" reason="Approved company onboarding and ownership acquisition authority are pending."/><Disabled label="Create company" reason="Approved region, base, difficulty and starter scenario are not yet available."/></section>}
+  {tab==='catalog'&&<section className="rf-card"><RailwayCatalogPanel models={m!.models} identity={m!.catalogIdentity}/><Disabled label="Choose starter / order or purchase" reason="Approved company onboarding and ownership acquisition authority are pending."/><Disabled label="Create company" reason="Approved region, base, difficulty and starter scenario are not yet available."/></section>}
   {checked&&<section className="rf-card rf-confirm" aria-label="Confirm validated action"><h2>Confirm {checked.label}</h2><p>Validated at durable revision {checked.cursor.revision}. No game state has changed.</p>
     {checked.command.kind==='quote'&&<QuoteCard offer={checked.result as Offer}/>}
     {checked.command.kind==='fleet'&&(()=>{const job=(checked.result as {job:Row['maintenance']['activeJob']}).job;return job?<div><Pair label="Actual service cost if committed">{money(job.job.costMinor)}</Pair><Pair label="Service duration">{duration(job.job.endS-job.job.startS)}</Pair><Pair label="Repair / scheduled cost">{money(job.repairCostMinor)} / {money(job.scheduledCostMinor)}</Pair></div>:null;})()}

@@ -44,7 +44,7 @@ R42,G5,NOT_STARTED,,R19 hard prerequisite blocked by R13-R20 owner deferral; rea
 R43,G5,IMPLEMENTED_UNVERIFIED,0b7daa13c5592361af0aeeda69be1f626f18c5fe; actual corrected Chromium seven acceptance groups PASS; 5/5 dedicated projection tests; DV-065 closed,DV-066 unavailable route editing and acquisition and approved scenario/root/device scope,R44 implemented
 R44,G5,IMPLEMENTED_UNVERIFIED,0b7daa13c5592361af0aeeda69be1f626f18c5fe; 7/7 R44; 1537/1537 repo; four actual Chromium acceptance groups PASS; exact CI 11/11; DV-067 closed,DV-068 approved finance and production scope pending,R45 provisional
 R45,G5,BLOCKED,b7bffe5c22a3ef2240c128dd61f0f99fd9b990a3; first 0b984e1211ec31f1519ee300f6387b399e32c335 Verify 45877541212 success; 4/4 R45 and 1541/1541 repo tests; hardened Verify success; Chromium 45877682344 failure execute claim handler corrected at R46 START; report R45_PROGRESSION_REPORT.md,DV-069 exact CI and browser; DV-070 missing approved event effects ranking IPO reward policy and root scope,START R46 independently on owner command; reconcile partial R45
-R46,G5,NOT_STARTED,,,Consult original V4 dependencies and acceptance
+R46,G5,BLOCKED,R46_ART_REPORT.md; actual R12 catalog presentation and QA-only original concept art; three test groups and browser workflow authored,DV-071 executable CI browser and art audit; DV-072 owner approved art roster branding rights and starter contract,R47 independent on owner START; reconcile R46 scope
 R47,G5,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R48,G5,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R49,G5,NOT_STARTED,,,Consult original V4 dependencies and acceptance

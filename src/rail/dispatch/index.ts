@@ -723,7 +723,7 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
         const postings=closure?accounting.journal.filter(j=>j.commandId===closure.accountingCommandId).flatMap(j=>j.postings):[];
         return {receipt:r,closure,revenue,energy,postings};
       });
-      return freeze({companyId:cfg.governance.companyId,simTimeS:current.simTimeS,stateRevision:s.revision,maxBulk:cfg.maxBulk,maxQuotes:cfg.maxQuotes,rows,templates,yards,trips,models:catalog.snapshot().entries,quotes:[...issued.values()],governance,liquidity:accounting.liquidityView,inventory:energyView.inventory});
+      return freeze({companyId:cfg.governance.companyId,simTimeS:current.simTimeS,stateRevision:s.revision,maxBulk:cfg.maxBulk,maxQuotes:cfg.maxQuotes,rows,templates,yards,trips,models:catalog.snapshot().entries,catalogIdentity:{catalogId:catalog.snapshot().id,catalogRevision:catalog.snapshot().revision,catalogSha256:catalog.sha256},quotes:[...issued.values()],governance,liquidity:accounting.liquidityView,inventory:energyView.inventory});
     });}
     async function advance(target:unknown,budget:unknown,expectedChecksum:unknown){
       const t=integer(target),n=limit(budget),expected=sha256(expectedChecksum);
