@@ -154,8 +154,29 @@ async function replay(s:Book,c:Sources,append?:{commandId:string;action:Action},
         const op=c.operations.receipts.find(x=>x.type==='trip'&&x.tripId===a.tripId);
         evidence.push(r,er);
         if(t.status==='released'){
-          if(en.outcome!=='released'||op||closed.evidence.arrivalSimS!==null)fail('cancellation sources mismatch');
-          liquid({type:'close',atSimS:now,reservationId:a.tripId,outcome:'released',actualMinor:'0'});
+          if(closed.evidence.arrivalSimS!==null)fail('cancellation sources mismatch');
+          if(en.outcome==='released'&&!op){
+            liquid({type:'close',atSimS:now,reservationId:a.tripId,outcome:'released',actualMinor:'0'});
+          }else{
+            // R35 safe-node abort: no realized delivery/revenue, but actual
+            // traveled prefix, energy, access and crew cannot be erased.
+            const oe=c.o.events.find(x=>x.type==='trip'&&x.trip.tripId===a.tripId);
+            if(en.outcome!=='consumed'||!op||op.type!=='trip'||!oe||oe.type!=='trip')return fail('partial cancellation sources mismatch');
+            if(oe.trip.departureSimS!==t.dispatchSimS||oe.trip.arrivalSimS!==now||oe.trip.settledAtSimS!==now||!same(oe.trip.stopIds,t.stopIds)||BigInt(oe.trip.distanceM)>=r.terms.segmentDistancesM.reduce((n,x)=>n+BigInt(x),0n))fail('invalid partial cancellation evidence');
+            const tr=assets.get(op.trainId);if(!tr||tr.disposed)fail('train asset not registered or disposed');
+            evidence.push(op,oe);
+            const costs:[Expense,bigint][]=[['track',BigInt(op.trackMinor)],['terminal',BigInt(op.terminalMinor)],['crew',BigInt(op.crewMinor)]];
+            const actual=costs.reduce((n,x)=>n+x[1],0n);
+            liquid({type:'close',atSimS:now,reservationId:a.tripId,outcome:'settled',actualMinor:money(actual)});
+            for(const [account,n] of costs)post(legs,account,'cash',n);
+            flows.operating.out+=actual;
+            for(const x of en.consumed){
+              const l=lots.get(x.lotId)??fail('consumed lot not purchased in journal');
+              l.usedCost+=BigInt(x.costMinor);l.usedQuantity+=BigInt(x.quantity);
+              if(l.usedCost>l.cost||l.usedQuantity>l.quantity)fail('inventory consumption exceeds carrying lot');
+            }
+            post(legs,'energy-expense','energy-inventory',BigInt(en.totalCostMinor));
+          }
         }else{
           if(t.status!=='served'||en.outcome!=='consumed'||!op||op.type!=='trip'||closed.evidence.arrivalSimS===null)return fail('trip sources not completed');
           const oe=c.o.events.find(x=>x.type==='trip'&&x.trip.tripId===a.tripId);
