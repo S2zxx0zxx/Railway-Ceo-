@@ -94,7 +94,7 @@ function lifecycle(p:GovernancePolicy,x:Timeline,c:AccountingSources,policyHash:
         if(a.type!=='repay'||!next||!nextPoint||next.commandId!==tag('refinance-loan',t.id)||next.action.type!=='borrow'||next.action.atSimS!==at)return fail('refinance must be an atomic payoff and replacement loan');
         const old=x.view.liquidityView.loans.find(l=>l.loan.id===a.loanId);
         const payment=x.view.liquidityView.receipts.find(r=>r.type==='repay'&&r.commandId.startsWith('r29-'+j+'-'));
-        if(!old||old.closedAtSimS!==at||!payment||payment.type!=='repay'||BigInt(next.action.principalMinor)>BigInt(payment.principalPaidMinor)||next.action.maturityS<=old.loan.maturityS)fail('refinance must close debt and extend maturity without principal increase');
+        if(point.repaymentClosed!==true||!old||old.closedAtSimS!==at||!payment||payment.type!=='repay'||BigInt(next.action.principalMinor)>BigInt(payment.principalPaidMinor)||next.action.maturityS<=old.loan.maturityS)fail('refinance must close debt and extend maturity without principal increase');
         borrow=next.action;j++;
       }
       if(borrow.type!=='borrow'||borrow.loanId!==tag('loan',t.id)||borrow.interestBps!==p.rescueInterestBps||BigInt(borrow.maturityS)!==BigInt(at)+BigInt(p.rescueTermS)||borrow.principalMinor==='0')return fail('recovery terms not authorized');

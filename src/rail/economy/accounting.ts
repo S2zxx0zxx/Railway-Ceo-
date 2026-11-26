@@ -74,7 +74,7 @@ type LotRuntime={cost:bigint;quantity:bigint;usedCost:bigint;usedQuantity:bigint
 type Flow='operating'|'investing'|'financing';
 const key=(...xs:(string|number)[])=>JSON.stringify(xs);
 type FinancialSnapshot={atSimS:number;availableCashMinor:string;reservedCashMinor:string;activeReservations:number;payoffAdjustedEquityMinor:string;overdueLoans:number};
-type FinancialPoint={revision:number;commandId:string;type:Action['type'];before:FinancialSnapshot;after:FinancialSnapshot};
+type FinancialPoint={revision:number;commandId:string;type:Action['type'];before:FinancialSnapshot;after:FinancialSnapshot;repaymentClosed:boolean|null};
 async function replay(s:Book,c:Sources,append?:{commandId:string;action:Action},captureTimeline=false){
   if(s.revision!==s.transactions.length)fail('revision mismatch');
   let liquidity:LiquidityBook=createLiquidityBook(s.openingCashMinor,s.startSimS,s.policy);
@@ -277,7 +277,7 @@ async function replay(s:Book,c:Sources,append?:{commandId:string;action:Action},
     commands.set(row.commandId,tx);
     if(legs.length)journal.push(decodeJournalEntry({eventId:'r29-'+idx,commandId:row.commandId,simTimeS:now,postings:legs,payloadSha256:digestValue}));
     const l=inspectLiquidityBook(liquidity);
-    if(before)timeline.push({revision:idx+1,commandId:row.commandId,type:a.type,before,after:snapshot(l)});
+    if(before)timeline.push({revision:idx+1,commandId:row.commandId,type:a.type,before,after:snapshot(l),repaymentClosed:a.type==='repay'?l.loans.find(x=>x.loan.id===a.loanId)?.status==='repaid':null});
     if(balance('cash')!==BigInt(l.cashMinor)||-balance('loan-principal')!==BigInt(l.principalOutstandingMinor)||-balance('interest-payable')!==BigInt(l.interestOutstandingMinor))fail('liquidity and journal mismatch');
     if(balance('energy-inventory')!==[...lots.values()].reduce((n,x)=>n+x.cost-x.usedCost,0n))fail('energy carrying value mismatch');
     const active=[...assets.values()].filter(x=>!x.disposed);

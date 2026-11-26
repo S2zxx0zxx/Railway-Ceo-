@@ -134,3 +134,23 @@ describe('R31 recovery exploit layers',()=>{
  it('raw unpaired replacement loan rejected even with valid bound policy',async()=>{const {c,b}=await acquired(),a=await governed(b,c,distress(),clock(0)),d=await apply(a.accounting,c,loan('100',0,300,'r31:loan:raw'),'r31:refinance-loan:raw');await expect(gov(d,c,distress())).rejects.toThrow('unpaired');});
  it('cumulative rescue budget exhausted even when count remains',async()=>{const {c,b}=await acquired(),p=gp({minOperatingCashMinor:'9000',rescueBudgetMinor:'150',maxRescues:5}),a=await recover(b,c,p,rescue('100'),'first');await expect(recover(a.accounting,c,p,rescue('51'),'second')).rejects.toThrow('exhausted');});
 });
+
+describe('R31 exact refinance closure and time-boundary invariants',()=>{
+ it('later same-time payoff cannot validate an earlier partial refinance',async()=>{
+   const c=await initial(),p=gp({minOperatingCashMinor:'9900'});let b=await create(c);
+   b=await apply(b,c,loan('1000',0,100,'old'));b=await apply(b,c,timed('acquire-asset',0,{trainId:'train'}));b=await apply(b,c,timed('buy-energy',0,{lotId:'lot'}));
+   const bound=await governed(b,c,p,clock(0));expect(bound.governance.stage).toBe('GRACE');
+   b=await apply(bound.accounting,c,repayLoan('500',0),'r31:refinance:attack');
+   b=await apply(b,c,loan('500',0,300,'r31:loan:attack'),'r31:refinance-loan:attack');
+   b=await apply(b,c,repayLoan('500',0),'later-payoff');
+   expect((await view(b,c)).liquidityView.loans.find(l=>l.loan.id==='old')?.closedAtSimS).toBe(0);
+   await expect(gov(b,c,p)).rejects.toThrow('close debt');
+ });
+ it('explicit grace duration boundary grid remains deterministic',async()=>{
+   const {c,b}=await acquired();for(const n of [1,2,10,20,99,100]){
+     const p=gp({minOperatingCashMinor:'9000',gracePeriodS:n});
+     expect((await gov(await apply(b,c,clock(n-1)),c,p)).stage).toBe('GRACE');
+     expect((await gov(await apply(b,c,clock(n)),c,p)).stage).toBe('LIQUIDATION');
+   }
+ });
+});
