@@ -2,6 +2,7 @@ import {chromium} from 'playwright';
 import assert from 'node:assert/strict';
 import {cpSync,mkdirSync,writeFileSync} from 'node:fs';
 const b=await chromium.launch({headless:true}),ctx=await b.newContext({viewport:{width:360,height:800}}),page=await ctx.newPage(),errors=[];
+const external=[];ctx.on('request',r=>{const u=new URL(r.url());if(u.protocol==='http:'||u.protocol==='https:'){if(!['http://127.0.0.1:4187','http://127.0.0.1:4188'].includes(u.origin))external.push(r.url());}});
 mkdirSync('r47-evidence',{recursive:true});page.on('pageerror',e=>errors.push(String(e)));
 const origin='http://127.0.0.1:4187/',ready=()=>page.getByText('Guest company ready',{exact:true}).waitFor();
 try{
@@ -12,6 +13,14 @@ try{
  await page.evaluate(async()=>{const c=await caches.open('the-ceo-legacy-sentinel');await c.put(new Request(location.origin+'/legacy-test'),new Response('retained'));});
  await page.getByRole('button',{name:'Start guest company'}).click();await ready();
  await page.evaluate(()=>r47Qa.quote());
+ const optional=page.getByLabel('Optional service availability');assert.equal(await optional.getByText('Disabled',{exact:true}).count(),9);
+ const pre=await page.evaluate(()=>r47Qa.export());
+ for(const kind of ['reward-ad','purchase','billing','online-login','join-alliance','reward-callback'])await assert.rejects(page.evaluate(k=>r47Qa.rejectOptional(k),kind));
+ assert.deepEqual(await page.evaluate(()=>r47Qa.export()),pre);
+ // CSP must block external egress before a network request is attempted.
+ const probe=await page.evaluate(async()=>{const violations=[];const on=e=>violations.push(e.effectiveDirective);document.addEventListener('securitypolicyviolation',on);let rejected=false;try{await fetch('https://r48-egress-probe.invalid/no-data');}catch{rejected=true;}await new Promise(r=>setTimeout(r,100));document.removeEventListener('securitypolicyviolation',on);return {rejected,violations};});
+ assert.equal(probe.rejected,true);assert.ok(probe.violations.includes('connect-src'));assert.deepEqual(external,[]);
+ console.log('R48_BROWSER PASS nine disabled services, six unauthorized commands rejected with unchanged authenticated save, external CSP probe blocked');
  await assert.rejects(page.evaluate(()=>r47Qa.duplicate()),/existing or incomplete/);
  const first=await page.evaluate(()=>r47Qa.export());assert.ok(JSON.parse(first.payload).journal.some(x=>x.requestId==='r47-qa-quote'));
  await page.getByRole('button',{name:'Operations',exact:true}).click();await page.getByRole('heading',{name:'Operations control'}).waitFor();
@@ -40,7 +49,7 @@ try{
  await next.waitForFunction(async()=>{const r=await navigator.serviceWorker.getRegistration();return !r?.waiting&&r?.active?.state==='activated';});
  await next.reload();await next.getByRole('button',{name:'Resume guest company'}).click();await next.getByText('Guest company ready',{exact:true}).waitFor();
  const final=await next.evaluate(async()=>({body:JSON.parse((await r47Qa.export()).payload),build:(await(await fetch('./build-id.json')).json()).buildId,legacy:await caches.has('the-ceo-legacy-sentinel')}));
- assert.equal(final.build,'update');assert.equal(final.legacy,true);assert.ok(final.body.journal.some(x=>x.requestId==='r47-qa-quote'));assert.deepEqual(errors,[]);
- writeFileSync('r47-evidence/browser.json',JSON.stringify({initialRevision:JSON.parse(first.payload).revision,finalRevision:final.body.revision,build:final.build,legacyPreserved:final.legacy},null,2));
+ assert.equal(final.build,'update');assert.equal(final.legacy,true);assert.ok(final.body.journal.some(x=>x.requestId==='r47-qa-quote'));assert.deepEqual(errors,[]);assert.deepEqual(external,[]);
+ writeFileSync('r47-evidence/browser.json',JSON.stringify({initialRevision:JSON.parse(first.payload).revision,finalRevision:final.body.revision,build:final.build,legacyPreserved:final.legacy,externalRequests:external.length,optionalCommandsRejected:6,cspProbe:probe},null,2));
  console.log('R47_BROWSER PASS explicit guest creation and duplicate rejection, actual operations finance progression, offline reload and save retention, both-copy recovery, waiting update and legacy cache isolation');
 }finally{await ctx.close();await b.close();}

@@ -8,6 +8,7 @@ import {RailwayFleetScreen} from './FleetScreen';
 import {RailwayFinanceScreen} from './FinanceScreen';
 import {RailwayProgressionScreen} from './ProgressionScreen';
 import './fleet.css';
+import {OPTIONAL_SERVICES,OPTIONAL_SERVICE_REASON} from '../../rail/optional';
 type View=Awaited<ReturnType<GuestSession['store']['open']>>;
 type Tab='home'|'fleet'|'finance'|'progression';
 export function RailwayGuestShell({session,qa=false,updateReady=false,offlineReady=false}:{session?:GuestSession;qa?:boolean;updateReady?:boolean;offlineReady?:boolean}){
@@ -53,6 +54,6 @@ export function RailwayGuestShell({session,qa=false,updateReady=false,offlineRea
  {(status==='present'||status==='incomplete')&&<><label>Restore matching recovery file<input type="file" accept="application/json,.json" disabled={busy} onChange={e=>{const f=e.target.files?.[0];e.target.value='';if(f)void restoreFile(f);}}/></label><p>Recovery is bound to this installation and latest trusted save. Cross-device transfer is not enabled.</p></>}
  </section><section className="rf-card"><h2>Offline availability</h2><p>{Capacitor.isNativePlatform()?'Bundled Android application':offlineReady?'Offline cache ready':'Offline cache not confirmed'}</p>
  {updateReady&&<p role="status">Update downloaded. Return to this screen, finish any active actions, close all railway tabs, then reopen. No forced reload.</p>}
- <h2>Help</h2><p>Use the guest company without signing in. Save recovery does not create a new company. Available language: English. Other languages and account linking are not configured.</p></section>
+ <h2>Optional services</h2><p>{OPTIONAL_SERVICE_REASON}</p><dl aria-label="Optional service availability">{Object.entries(OPTIONAL_SERVICES).map(([key,value])=><div key={key} className="rf-pair"><dt>{key}</dt><dd>{value?'Enabled':'Disabled'}</dd></div>)}</dl><p>No advertising or tracking consent is requested. Simulated company finances are not real-money purchases.</p><h2>Help</h2><p>Use the guest company without signing in. Save recovery does not create a new company. Available language: English. Other languages and account linking are not configured.</p></section>
  {error&&<p role="alert">{error}</p>}{notice&&<p role="status">{notice}</p>}</main>;
 }

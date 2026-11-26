@@ -1,0 +1,15 @@
+import {execFileSync} from 'node:child_process';
+import {readFile,mkdir,writeFile} from 'node:fs/promises';
+import assert from 'node:assert/strict';
+import {join} from 'node:path';
+const root='r47-native-qa/android/app',apk=root+'/build/outputs/apk/debug/app-debug.apk';
+const sdk=process.env.ANDROID_SDK_ROOT||process.env.ANDROID_HOME;if(!sdk)throw Error('Missing Android SDK');
+const aapt=join(sdk,'build-tools','36.0.0','aapt');
+const permissions=execFileSync(aapt,['dump','permissions',apk],{encoding:'utf8'}),badging=execFileSync(aapt,['dump','badging',apk],{encoding:'utf8'}),native=JSON.parse(await readFile(root+'/src/main/assets/capacitor.config.json','utf8'));
+assert.match(badging,/package: name='app\.railway\.qa\.r47'/);
+assert.doesNotMatch(permissions,/com\.android\.vending\.BILLING|com\.google\.android\.gms\.permission\.AD_ID|ACCESS_ADSERVICES|GET_ACCOUNTS|USE_CREDENTIALS|READ_CONTACTS|ACCESS_FINE_LOCATION|ACCESS_COARSE_LOCATION/i);
+assert.equal(native.server?.hostname,'railway-qa.localhost');assert.equal(native.server?.cleartext,false);assert.equal(native.server?.url,undefined);assert.deepEqual(native.server?.allowNavigation,[]);
+assert.equal(native.android?.allowMixedContent,false);
+await mkdir('r47-native-evidence',{recursive:true});
+await writeFile('r47-native-evidence/r48-apk-permissions.txt',permissions);await writeFile('r47-native-evidence/r48-apk-badging.txt',badging);
+console.log('R48_NATIVE_PACKAGE PASS actual QA APK permission denylist and local Capacitor config; not final release');
