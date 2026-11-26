@@ -1,6 +1,6 @@
 # Railway Manager V5 execution state
 Date: 2026-11-26 IST. Working title only; final identity pending.
-R01 (G0) PASS — baseline audit only. 1/54 PASS; 53 NOT_STARTED. G0 remains not passed. Next authorized command START R02; R05 also dependency-eligible.
+R01 (G0) PASS — baseline audit only. 1/54 PASS; 53 NOT_STARTED. G0 remains not passed. R02 active: quarantine controls committed pending CI; R03/R04 not eligible until R02 PASS. R05 also dependency-eligible.
 Repository: S2zxx0zxx/The-CEO-Company-Simulator-
 Isolated branch: feat/railway-manager-v5
 Source baseline: fefd995fd189506502ae59230b9ee9c408faa544, tree f0a6d2d577284f13dc2be45b0b8c3d306ea07a48
@@ -10,4 +10,4 @@ Source custody: private original Train_Manager_Final_V4_Agent_Implementation_Pac
 Read immutable V4 task_ledger.csv and private V5 master plan, full GP/E/UI and resource registers. Working status: EXECUTION_LEDGER.csv. Full acceptance text remains in private original ledger, not replaced by this status index. All GP/E/UI implementation and 21 resource decisions not started.
 Current baseline evidence: fresh Verify game 45769168839 (job 139737371167) passed 134/134 tests in 35 files, typecheck and production build, tested PR head ed2e4eedbad97b3b036b4d8c4bcfe1d293d33744, merge checkout a4c10fc; all executable source identical to protected baseline. Fresh CI observed: Verify game (45769168839): completed / success; Browser and offline smoke (45769168853): in_progress; Release dependency and license audit (45769168781): completed / success; G08 save and worker acceptance (45769168899): completed / success. Python archive prototype independently rerun 20/20, exit 0 (not production). Local checkout DNS blocked (exit 128). See R01_BASELINE.md.
 Unresolved: tax period cutoff, save retention, liquidation ordering in legacy source; exact reusable modules audited in R05; licensing in R02; data and resource pins in R03/R04; final brand, assets, map coverage and device QA later. No merge/publish without explicit approval and G6 acceptance.
-Resume: inspect actual branch HEAD and CI, reopen private V4/V5 evidence, proceed only on authorized START R02. Draft PR #2 targets protected legacy feature branch for isolated review; do not merge into it. Never mark unverified work PASS.
+Resume: inspect actual branch HEAD and CI, reopen private V4/V5 evidence, finish R02 verification; proceed only on authorized next command. Draft PR #2 targets protected legacy feature branch for isolated review; do not merge into it. Never mark unverified work PASS.

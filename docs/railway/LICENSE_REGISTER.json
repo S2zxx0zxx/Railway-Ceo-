@@ -1,0 +1,207 @@
+{
+  "schema": 1,
+  "source": "V4 contracts/resource_registry.json; claims not independently verified at R02",
+  "archive": "REJECT_PRODUCT",
+  "screenshots": "REFERENCE_ONLY",
+  "legacy": {
+    "elapsed": {
+      "source": "ciefa/idle-game-template@a91cd5f8a26cdffd3f1803297c9a92c0a7f850c4",
+      "license": "MIT",
+      "notice": "docs/third-party/idle-game-template-LICENSE.txt",
+      "distributionNotice": "public/licenses/idle-game-template.txt"
+    },
+    "runtime": "Existing lockfile and scripts/runtime-licenses.mjs; recheck on R03/R51",
+    "projectLicense": "PENDING_OWNER"
+  },
+  "resources": [
+    {
+      "id": "A01",
+      "resource": "OpenTTD",
+      "licenseClaim": "GPL-2.0",
+      "role": "REFERENCE_ONLY",
+      "pin": null,
+      "decision": "NOT_PRODUCTION_ACCEPTED",
+      "reviewTask": "R03 or subsequent task per V4 ledger"
+    },
+    {
+      "id": "A02",
+      "resource": "Simutrans",
+      "licenseClaim": "Artistic-1.0",
+      "role": "REFERENCE_ONLY",
+      "pin": null,
+      "decision": "NOT_PRODUCTION_ACCEPTED",
+      "reviewTask": "R03 or subsequent task per V4 ledger"
+    },
+    {
+      "id": "A03",
+      "resource": "World Bank toolkit",
+      "licenseClaim": "publication; check reuse",
+      "role": "REFERENCE_ONLY",
+      "pin": null,
+      "decision": "NOT_PRODUCTION_ACCEPTED",
+      "reviewTask": "R03 or subsequent task per V4 ledger"
+    },
+    {
+      "id": "A04",
+      "resource": "Rail demand research",
+      "licenseClaim": "publication; check reuse",
+      "role": "REFERENCE_ONLY",
+      "pin": null,
+      "decision": "NOT_PRODUCTION_ACCEPTED",
+      "reviewTask": "R03 or subsequent task per V4 ledger"
+    },
+    {
+      "id": "B01",
+      "resource": "Geofabrik/OSM",
+      "licenseClaim": "ODbL-1.0",
+      "role": "DATA_CANDIDATE",
+      "pin": null,
+      "decision": "NOT_PRODUCTION_ACCEPTED",
+      "reviewTask": "R04"
+    },
+    {
+      "id": "B02",
+      "resource": "Osmium",
+      "licenseClaim": "verify pinned tool license",
+      "role": "BUILD_TOOL_CANDIDATE",
+      "pin": null,
+      "decision": "NOT_PRODUCTION_ACCEPTED",
+      "reviewTask": "R03 or subsequent task per V4 ledger"
+    },
+    {
+      "id": "B03",
+      "resource": "OpenRailRouting",
+      "licenseClaim": "Apache-2.0",
+      "role": "ORACLE_CANDIDATE",
+      "pin": null,
+      "decision": "NOT_PRODUCTION_ACCEPTED",
+      "reviewTask": "R03 or subsequent task per V4 ledger"
+    },
+    {
+      "id": "B04",
+      "resource": "Graphology",
+      "licenseClaim": "MIT",
+      "role": "RUNTIME_CANDIDATE",
+      "pin": null,
+      "decision": "NOT_PRODUCTION_ACCEPTED",
+      "reviewTask": "R03 or subsequent task per V4 ledger"
+    },
+    {
+      "id": "B05",
+      "resource": "MapLibre GL JS",
+      "licenseClaim": "BSD-3-Clause",
+      "role": "RUNTIME_CANDIDATE",
+      "pin": null,
+      "decision": "NOT_PRODUCTION_ACCEPTED",
+      "reviewTask": "R03 or subsequent task per V4 ledger"
+    },
+    {
+      "id": "B06",
+      "resource": "Planetiler",
+      "licenseClaim": "Apache-2.0",
+      "role": "BUILD_TOOL_CANDIDATE",
+      "pin": null,
+      "decision": "NOT_PRODUCTION_ACCEPTED",
+      "reviewTask": "R03 or subsequent task per V4 ledger"
+    },
+    {
+      "id": "B07",
+      "resource": "PMTiles",
+      "licenseClaim": "BSD-3-Clause implementation",
+      "role": "RUNTIME_CANDIDATE",
+      "pin": null,
+      "decision": "NOT_PRODUCTION_ACCEPTED",
+      "reviewTask": "R03 or subsequent task per V4 ledger"
+    },
+    {
+      "id": "B08",
+      "resource": "Transitland Atlas",
+      "licenseClaim": "CC-BY-4.0 catalog; feed-specific",
+      "role": "OPTIONAL",
+      "pin": null,
+      "decision": "NOT_PRODUCTION_ACCEPTED",
+      "reviewTask": "R04"
+    },
+    {
+      "id": "C01",
+      "resource": "ALTRIOS",
+      "licenseClaim": "BSD-style 3 conditions",
+      "role": "ORACLE_CANDIDATE",
+      "pin": null,
+      "decision": "NOT_PRODUCTION_ACCEPTED",
+      "reviewTask": "R03 or subsequent task per V4 ledger"
+    },
+    {
+      "id": "C02",
+      "resource": "OSRD",
+      "licenseClaim": "LGPL-3.0 README",
+      "role": "ORACLE_CANDIDATE",
+      "pin": null,
+      "decision": "NOT_PRODUCTION_ACCEPTED",
+      "reviewTask": "R03 or subsequent task per V4 ledger"
+    },
+    {
+      "id": "C03",
+      "resource": "Eclipse SUMO",
+      "licenseClaim": "EPL-2.0 / GPL secondary",
+      "role": "OPTIONAL",
+      "pin": null,
+      "decision": "NOT_PRODUCTION_ACCEPTED",
+      "reviewTask": "R03 or subsequent task per V4 ledger"
+    },
+    {
+      "id": "C04",
+      "resource": "Salabim",
+      "licenseClaim": "MIT",
+      "role": "OPTIONAL",
+      "pin": null,
+      "decision": "NOT_PRODUCTION_ACCEPTED",
+      "reviewTask": "R03 or subsequent task per V4 ledger"
+    },
+    {
+      "id": "C05",
+      "resource": "MATSim",
+      "licenseClaim": "not checked",
+      "role": "DEFER",
+      "pin": null,
+      "decision": "NOT_PRODUCTION_ACCEPTED",
+      "reviewTask": "R03 or subsequent task per V4 ledger"
+    },
+    {
+      "id": "D01",
+      "resource": "Capacitor",
+      "licenseClaim": "verify pinned release",
+      "role": "OPTIONAL",
+      "pin": null,
+      "decision": "NOT_PRODUCTION_ACCEPTED",
+      "reviewTask": "R03 or subsequent task per V4 ledger"
+    },
+    {
+      "id": "D02",
+      "resource": "Vitest",
+      "licenseClaim": "verify pinned release",
+      "role": "OPTIONAL",
+      "pin": null,
+      "decision": "NOT_PRODUCTION_ACCEPTED",
+      "reviewTask": "R03 or subsequent task per V4 ledger"
+    },
+    {
+      "id": "D03",
+      "resource": "Playwright",
+      "licenseClaim": "verify pinned release",
+      "role": "OPTIONAL",
+      "pin": null,
+      "decision": "NOT_PRODUCTION_ACCEPTED",
+      "reviewTask": "R03 or subsequent task per V4 ledger"
+    },
+    {
+      "id": "D04",
+      "resource": "fast-check",
+      "licenseClaim": "verify pinned release",
+      "role": "OPTIONAL",
+      "pin": null,
+      "decision": "NOT_PRODUCTION_ACCEPTED",
+      "reviewTask": "R03 or subsequent task per V4 ledger"
+    }
+  ]
+}
