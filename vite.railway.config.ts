@@ -3,9 +3,9 @@ import react from '@vitejs/plugin-react';
 import {readdir,readFile,writeFile} from 'node:fs/promises';
 import {resolve,relative,sep} from 'node:path';
 import {createHash} from 'node:crypto';
-const qa=process.env.R47_QA==='1',buildId=process.env.R47_BUILD_ID??'development';
+const stress=process.env.R50_QA==='1',qa=stress||process.env.R47_QA==='1',buildId=process.env.R47_BUILD_ID??'development';
 if(!/^[a-z0-9-]{1,48}$/.test(buildId))throw Error('Invalid build ID');
-const out=resolve(qa?'r47-qa-dist':'railway-dist');
+const out=resolve(stress?'r50-qa-dist':qa?'r47-qa-dist':'railway-dist');
 async function walk(dir:string):Promise<string[]>{const result:string[]=[];for(const e of await readdir(dir,{withFileTypes:true})){const p=resolve(dir,e.name);if(e.isDirectory())result.push(...await walk(p));else if(e.isFile())result.push(p);else throw Error('Unexpected build entry');}return result;}
 function offline():Plugin{return {name:'railway-isolated-offline',apply:'build',enforce:'post',async closeBundle(){
  await writeFile(resolve(out,'build-id.json'),JSON.stringify({buildId,qa}));
@@ -26,4 +26,4 @@ function offline():Plugin{return {name:'railway-isolated-offline',apply:'build',
  });`;
  await writeFile(resolve(out,'railway-sw.js'),source);
 }};}
-export default defineConfig({root:resolve(qa?'tools/qa/r47':'railway-app'),publicDir:false,base:'./',plugins:[react(),offline()],build:{outDir:out,emptyOutDir:true,target:'esnext'}});
+export default defineConfig({root:resolve(stress?'tools/qa/r50':qa?'tools/qa/r47':'railway-app'),publicDir:false,base:'./',plugins:[react(),offline()],build:{outDir:out,emptyOutDir:true,target:'esnext'}});
