@@ -1,6 +1,6 @@
 # Railway Manager V5 execution state
 Date: 2026-11-26 IST. Working title only; final identity pending.
-R01–R12 PASS — 12/54 accepted; R13 BLOCKED; R21 IMPLEMENTED_UNVERIFIED; 40 NOT_STARTED (R14–R20 dependency-blocked). G0/G1 accepted; G2 deferred; G3 in progress. Next R21 verification then eligible R22.
+R01–R12 PASS — 12/54 accepted; R13 BLOCKED; R21/R22 IMPLEMENTED_UNVERIFIED; 39 NOT_STARTED (R14–R20 dependency-blocked). G0/G1 accepted; G2 deferred; G3 in progress. Next R22 verification then eligible R23.
 Repository: S2zxx0zxx/Railway-Ceo- (same GitHub repository ID 1471611501; renamed during R09)
 Isolated branch: feat/railway-manager-v5
 Source baseline: fefd995fd189506502ae59230b9ee9c408faa544, tree f0a6d2d577284f13dc2be45b0b8c3d306ea07a48
@@ -88,3 +88,8 @@ Implementation 83cfe410845fb17712a2bae14f5e9bda8f179f3a; 8/8 readback checks pas
 
 ## Actual executable CI evidence
 Verify game run 45823142320 job 139920312088 on implementation 83cfe410845fb17712a2bae14f5e9bda8f179f3a: npm ci, typecheck, Vitest and production build all success; 61/61 R21 tests, 43/43 suites, 811/811 total tests, build 1.92s from actual logs. Fresh implementation CI observed Verify game 45823142320: completed/success; Release dependency and license audit 45823142394: completed/success; Browser and offline smoke 45823142298: in_progress/pending; Android QA APK and unsigned AAB 45823142388: in_progress/pending; G08 save and worker acceptance 45823142377: in_progress/pending. DV-027 remains open for remaining CI. DV-026 exact immutable original E01–E03 comparison still open; R21 IMPLEMENTED_UNVERIFIED despite executable pass. R22 can proceed provisionally only after reconciling available CI and confirming no known correctness defect. R13–R20 remain deferred. No merge.
+
+## R21 reconciliation at R22
+Implementation 83cfe410845fb17712a2bae14f5e9bda8f179f3a CI 45823142320 45823142394 45823142298 45823142377 45823142388 all completed success; docs-only 885658c12f04962b4e6a38413336c0692b187a8e CI 45823324409 45823324477 45823324452 45823324444 45823324520 all success. Prior actual Verify job 139920312088 logs 61/61 R21, 811/811 tests, 43/43 suites, strict typecheck/build. DV-027 closed; no known executable failure. DV-026 exact V4/V5 archive CSV comparison still open (runtime ClientError before shell execution; ZIP file reader no readable content). R21 remains IMPLEMENTED_UNVERIFIED; owner protocol permits R22 provisional dependency, no final acceptance until original source reconciliation. R13–R20 deferred unchanged.
+
+R22: implemented exact integer fare, paid-class revenue/refund/unpaid diagnostic, cargo tonne-km and capped delay, immutable versioned terms bound to R21 reservations and one-time settlement. 81 tests authored; no local execution. Original E04–E07 CSV comparison DV-028 open; fresh CI DV-029. No new dependencies, legacy/UI/real-data edits. R23 independent R06/R12 accepted. No merge.
