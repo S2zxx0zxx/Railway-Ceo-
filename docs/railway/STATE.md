@@ -1,6 +1,6 @@
 # Railway Manager V5 execution state
 Date: 2026-11-26 IST. Working title only; final identity pending.
-R01–R12 PASS — 12/54 accepted; R13 BLOCKED; R21/R22/R23/R24/R25/R26/R27/R28 IMPLEMENTED_UNVERIFIED; 33 NOT_STARTED (R14–R20 dependency-blocked). G0/G1 accepted; G2 deferred; G3 in progress. Next R28 verification then eligible R29.
+R01–R12 PASS — 12/54 accepted; R13 BLOCKED; R21/R22/R23/R24/R25/R26/R27/R28/R29 IMPLEMENTED_UNVERIFIED; 32 NOT_STARTED (R14–R20 dependency-blocked). G0/G1 accepted; G2 deferred; G3 in progress. Next R29 verification then eligible R30.
 Repository: S2zxx0zxx/Railway-Ceo- (same GitHub repository ID 1471611501; renamed during R09)
 Isolated branch: feat/railway-manager-v5
 Source baseline: fefd995fd189506502ae59230b9ee9c408faa544, tree f0a6d2d577284f13dc2be45b0b8c3d306ea07a48
@@ -171,3 +171,8 @@ Implementation 74fa6c44a393eb52a66fc5013f1eba0d9e867cb0: 8/8 readback checks pas
 
 ## Actual executable CI evidence
 Verify game run 45842662913 job 139988120291 on implementation 74fa6c44a393eb52a66fc5013f1eba0d9e867cb0: npm ci, strict typecheck, Vitest and production build all success; 45/45 R28, 50/50 suites, 1184/1184 total tests, build 2.92s. Fresh CI Android QA APK and unsigned AAB 45842662966: in_progress/pending; Release dependency and license audit 45842662992: completed/success; Verify game 45842662913: completed/success; Browser and offline smoke 45842663143: completed/success; G08 save and worker acceptance 45842663072: completed/success. DV-041 remains open for remaining workflows. DV-040 exact original E20–E21 comparison remains open; R28 IMPLEMENTED_UNVERIFIED despite actual executable pass. R29 provisional R22/R23/R25/R28 dependencies; reconcile outstanding CI and repair known defects before starting. R13–R20 deferred unchanged. No merge.
+
+## R28 reconciliation at R29
+Exact 74fa6c44a393eb52a66fc5013f1eba0d9e867cb0 CI 45842662966 45842662992 45842662913 45842663143 45842663072 all completed success. Verify job 139988120291 45/45 R28; 1184/1184 full tests; 50/50 suites; strict typecheck/build. Docs-only 741352e765977fd8bba2989223c666fff1568965 observed G08 save and worker acceptance 45843055104: completed/success; Browser and offline smoke 45843054813: completed/success; Verify game 45843054770: completed/success; Android QA APK and unsigned AAB 45843054778: completed/success; Release dependency and license audit 45843054861: completed/success. DV-041 closed on exact implementation evidence. DV-040 original archive source recovered and exact formula review now recorded in R29_SOURCE_RECONCILIATION.md; final detailed policy/integration acceptance remains explicit. R28 status remains IMPLEMENTED_UNVERIFIED pending final reconciliation; R29 provisional dependency. R13–R20 unchanged.
+
+R29: exact original archives recovered and formula-level review recorded; source-backed balanced journal, liquidity, P&L, inventory/asset/debt reconciliation, one-time trip settlement and safe reclassification reversal; 33 tests authored; fresh CI DV-042; legacy tax DV-006 retained with explicit railway period test. All prior deferred tasks retained. No merge.
