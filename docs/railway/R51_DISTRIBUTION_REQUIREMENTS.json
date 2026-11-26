@@ -33,7 +33,13 @@
   },
   "native": {
     "status": "QA_ONLY",
-    "requires": "resolved Gradle/Maven dependencies SBOM and license/NOTICE review, exact final signed APK/AAB package inspection"
+    "requires": "resolved Gradle/Maven dependencies SBOM and license/NOTICE review, exact final signed APK/AAB package inspection",
+    "qaEvidence": {
+      "commit": "e59c529b4e61929c1c72de1e579ea64397ad9441",
+      "runId": 45884553888,
+      "exactEmbeddedNpmNotices": 4
+    },
+    "qaClasspathInventory": "New offline Gradle collector and cached POM declaration evidence; pending actual CI; no clearance inferred."
   },
   "projectLicense": "PENDING_OWNER",
   "releaseAccepted": false,

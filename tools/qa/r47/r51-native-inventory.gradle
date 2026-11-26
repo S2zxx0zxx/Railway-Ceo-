@@ -1,0 +1,29 @@
+// Read-only inventory task on the disposable QA Android project; never a release task.
+import groovy.json.JsonOutput
+import java.security.MessageDigest
+gradle.projectsEvaluated {
+ def app=gradle.rootProject.findProject(':app')
+ if(app==null) throw new GradleException('Expected QA :app project')
+ app.tasks.register('r51QaRuntimeInventory') {
+  doLast {
+   def cfg=app.configurations.getByName('debugRuntimeClasspath')
+   def digest={ File file ->
+    def md=MessageDigest.getInstance('SHA-256')
+    file.withInputStream { stream -> byte[] buf=new byte[65536]; int n; while((n=stream.read(buf))>0)md.update(buf,0,n) }
+    md.digest().encodeHex().toString()
+   }
+   def components=cfg.incoming.resolutionResult.allComponents.collect { comp ->
+    [component:comp.id.displayName,group:comp.moduleVersion?.group,name:comp.moduleVersion?.name,version:comp.moduleVersion?.version]
+   }.sort { it.component }
+   def artifacts=cfg.resolvedConfiguration.resolvedArtifacts.collect { art ->
+    def id=art.moduleVersion.id
+    [group:id.group,name:id.name,version:id.version,artifact:art.name,type:art.type,file:art.file.name,sha256:digest(art.file),bytes:art.file.length()]
+   }.sort { a,b -> (a.group+':'+a.name+':'+a.file)<=>(b.group+':'+b.name+':'+b.file) }
+   if(artifacts.isEmpty()) throw new GradleException('Empty resolved QA runtime inventory')
+   def dest=System.getenv('R51_NATIVE_INVENTORY_PATH')
+   if(!dest) throw new GradleException('Missing evidence destination')
+   new File(dest).text=JsonOutput.prettyPrint(JsonOutput.toJson([configuration:'debugRuntimeClasspath',scope:'QA_ONLY_NOT_RELEASE_CLEARANCE',components:components,artifacts:artifacts]))
+   println('R51_NATIVE_CLASSPATH '+components.size()+' components; '+artifacts.size()+' resolved artifacts')
+  }
+ }
+}

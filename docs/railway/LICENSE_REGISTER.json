@@ -345,5 +345,12 @@
       "productionAccepted": false,
       "blocker": "Manifest 4.11.0 (blob 844ccbe17f325a93152d60d81c0992ebfae6741e); dev-only candidate; no install; lock tarball and pure-rand at acceptance."
     }
-  ]
+  ],
+  "r51Review": {
+    "status": "PARTIAL_NOT_RELEASE_CLEARED",
+    "evidence": "docs/railway/R51_LICENSE_REPORT.md",
+    "requirements": "docs/railway/R51_DISTRIBUTION_REQUIREMENTS.json",
+    "actualNpmNoticeScope": "R51 bundle and actual QA APK PASS",
+    "nativeMaven": "QA_RESOLVED_INVENTORY_PENDING_CI_FINAL_NOTICES_UNCLEARED"
+  }
 }

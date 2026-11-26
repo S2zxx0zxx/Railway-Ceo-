@@ -19,3 +19,9 @@ for(const name of ['RUNTIME_LICENSES.txt','DEPENDENCY_INVENTORY.json','idle-game
  const shipped=execFileSync('unzip',['-p',apk,'assets/public/licenses/'+name]);assert.deepEqual(shipped,await readFile('r47-qa-dist/licenses/'+name),'Missing or modified native notice '+name);
 }
 console.log('R51_NATIVE_NOTICES PASS four exact notice files in QA APK; native Maven inventory still pending');
+
+// Capture actual resolved native dependencies after the existing QA build. No network fallback.
+const {resolve}=await import('node:path');
+const inventoryPath=resolve('r47-native-evidence/r51-native-classpath.json');
+execFileSync('bash',['gradlew','--offline','--no-daemon','-I',resolve('tools/qa/r47/r51-native-inventory.gradle'),':app:r51QaRuntimeInventory'],{cwd:'r47-native-qa/android',env:{...process.env,R51_NATIVE_INVENTORY_PATH:inventoryPath},stdio:'inherit',timeout:180000});
+execFileSync('python',['tools/qa/r47/r51-native-pom-audit.py',inventoryPath],{stdio:'inherit'});
