@@ -6,7 +6,7 @@ R04,G0,PASS,docs/railway/R04_DATA_ACQUISITION_PLAN.md; 3cb5595 four CI success; 
 R05,G0,PASS,docs/railway/R05_MODULE_REVIEW.md; dbf82a4 and eefc7f5 CI 5/5 each,,START R06
 R06,G1,PASS,src/domain; tests/railway-r06.test.ts; b2c13be and d67fbe5 CI 5/5 each; 206/206 local cases,,START R07
 R07,G1,PASS,src/rail/graph/index.ts; tests/railway-r07.test.ts; 980e708 and e0e5776 CI 5/5 each; 56/56 local cases,,START R08
-R08,G1,IMPLEMENTED_UNVERIFIED,src/rail/compatibility/index.ts; tests/railway-r08.test.ts; R08_COMPATIBILITY_REPORT.md; 66/66 local cases,Readback and full CI pending,START R09 provisionally
+R08,G1,IMPLEMENTED_UNVERIFIED,src/rail/compatibility/index.ts; tests/railway-r08.test.ts; R08_COMPATIBILITY_REPORT.md; fc637c57f47badddc7e3c07f53e55e6288e74328; 66/66 local cases; 3/3 exact blobs; CI 45804409417 45804409595 45804409310 45804409345 45804409871,Full repository CI pending,START R09 provisionally
 R09,G1,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R10,G1,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R11,G1,NOT_STARTED,,,Consult original V4 dependencies and acceptance

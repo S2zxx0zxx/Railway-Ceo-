@@ -26,3 +26,6 @@ Both exit 0. Node ran compiled shared cases 66/66 passed, unique names 66, exit 
 
 ## R07 closure
 Implementation 980e708fdc6375e37f0f69e1d92e7e12117f8df6 CI 45802848165 45802848155 45802848255 45802848179 45802848222 all success. Checkpoint e0e5776e4da24018a686e2c2ffdd985478de8324 CI 45802938769 45802938807 45802938840 45802938869 45802938786 all success. R07 PASS; DV-014 closed. R08 IMPLEMENTED_UNVERIFIED pending full CI/readback. Next R09 provisionally; no merge.
+
+## Repository verification checkpoint
+Implementation fc637c57f47badddc7e3c07f53e55e6288e74328; 7/7 readback assertions passed (PR head, protected refs, draft, exact three tested blobs, ten-file diff, resource ledger and register). CI observed 5/5: G08 save and worker acceptance 45804409417: in_progress/pending; Browser and offline smoke 45804409595: in_progress/pending; Release dependency and license audit 45804409310: in_progress/pending; Android QA APK and unsigned AAB 45804409345: in_progress/pending; Verify game 45804409871: in_progress/pending. R08 IMPLEMENTED_UNVERIFIED; DV-015 open. R09 next under owner protocol. No merge.
