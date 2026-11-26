@@ -48,7 +48,7 @@ function canonical(v:unknown,depth=0):unknown{
 const fingerprint=(v:unknown)=>JSON.stringify(canonical(v));
 const same=(a:unknown,b:unknown)=>JSON.stringify(a)===JSON.stringify(b);
 function validKey(k:CryptoKey){
-  if(!k||k.type!=='secret'||k.extractable||k.algorithm.name!=='HMAC'||(k.algorithm as HmacKeyAlgorithm).hash.name!=='SHA-256'||!k.usages.includes('sign')||!k.usages.includes('verify'))fail('missing or invalid installation key');
+  if(!k||k.type!=='secret'||k.extractable||k.algorithm.name!=='HMAC'||(k.algorithm as HmacKeyAlgorithm).hash.name!=='SHA-256'||(k.algorithm as HmacKeyAlgorithm).length!==256||k.usages.length!==2||!k.usages.includes('sign')||!k.usages.includes('verify'))fail('missing or invalid installation key');
   return k;
 }
 export async function createRailwaySaveKey(){return crypto.subtle.generateKey({name:'HMAC',hash:'SHA-256',length:256},false,['sign','verify']);}

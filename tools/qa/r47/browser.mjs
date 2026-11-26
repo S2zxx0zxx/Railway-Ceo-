@@ -37,6 +37,13 @@ try{
  // Actual IDB corruption of both copies: retain the authenticated head and key.
  await page.close();const recovery=await ctx.newPage();await recovery.goto(origin);await recovery.getByRole('button',{name:'Resume guest company'}).waitFor();
  const latest=await recovery.evaluate(()=>r47Qa.export());
+ // Actual import rejection with intact trusted head, then corruption and valid recovery below.
+ const input=recovery.getByLabel('Restore matching recovery file');
+ const invalid=[{label:'malformed',raw:'{'},{label:'unknown-field',raw:JSON.stringify({...latest,extra:true})},{label:'tampered',raw:JSON.stringify({...latest,payload:latest.payload+' '})},{label:'wrong-tag',raw:JSON.stringify({...latest,tag:'0'.repeat(64)})}];
+ for(const item of invalid){await input.setInputFiles({name:item.label+'.json',mimeType:'application/json',buffer:Buffer.from(item.raw)});await recovery.locator('main[aria-busy="false"]').waitFor();await recovery.getByRole('alert').waitFor();assert.deepEqual(await recovery.evaluate(()=>r47Qa.export()),latest);}
+ // A separate browser context has a separate local key and storage.
+ const foreign=await b.newContext();try{const fp=await foreign.newPage();await fp.goto(origin);await fp.getByRole('button',{name:'Start guest company'}).click();await fp.getByText('Guest company ready',{exact:true}).waitFor();const own=await fp.evaluate(()=>r47Qa.export());await assert.rejects(fp.evaluate(s=>r47Qa.recover(s),latest),/not latest|authentication/);assert.deepEqual(await fp.evaluate(()=>r47Qa.export()),own);}finally{await foreign.close();}
+ console.log('R52_IMPORT PASS four invalid file imports and cross-install recovery rejected with unchanged trusted saves');
  await recovery.evaluate(()=>new Promise((resolve,reject)=>{const q=indexedDB.open('r47-qa-guest');q.onerror=()=>reject(q.error);q.onsuccess=()=>{const db=q.result,tx=db.transaction('slots','readwrite'),store=tx.objectStore('slots'),rows=store.getAll();rows.onsuccess=()=>{for(const row of rows.result)store.put({...row,seal:{...row.seal,payload:'corrupt'}});};tx.oncomplete=()=>{db.close();resolve(true);};tx.onerror=()=>reject(tx.error);};}));
  await recovery.getByRole('button',{name:'Resume guest company'}).click();await recovery.getByRole('alert').filter({hasText:/no valid latest copy/}).waitFor();
  await recovery.getByLabel('Restore matching recovery file').setInputFiles({name:'save.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(latest))});
