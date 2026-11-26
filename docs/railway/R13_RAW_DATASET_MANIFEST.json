@@ -125,8 +125,8 @@
       "R19",
       "R20"
     ],
-    "nextIndependent": null,
-    "nextAuthorized": "R13"
+    "nextIndependent": "R21",
+    "nextAuthorized": "R21"
   },
   "ownerHandoff": {
     "filenames": [
@@ -138,8 +138,8 @@
     "actualBytesReadable": null,
     "readAttempts": "Files service read sidecar and rematerialized PBF and sidecar; container and Python runtime ClientError before executing commands; full PBF hash not computed.",
     "windowsInstallerExecuted": false,
-    "sequence": "R13 then R14 onward; no skip",
-    "next": "RESUME R13",
+    "sequence": "R13–R20 deferred as blocked chain; proceed independent R21; finish original G2 dependency order at final reconciliation",
+    "next": "START R21",
     "uploadMetadata": {
       "pbfBytes": 247546068,
       "sidecarBytes": 62,
@@ -148,6 +148,12 @@
       "sidecarOrigin": "Owner-uploaded provider-named sidecar, not independently retrieved from provider in this retry",
       "materializedPbfBytes": 247546068,
       "materializedSidecarBytes": 62
+    },
+    "pcDeferral": {
+      "ownerAuthorized": true,
+      "when": "final reconciliation unless approved execution recovers earlier",
+      "requiredOutput": "R13_VERIFICATION.json",
+      "noCodexRequired": true
     }
   },
   "historicalDirectDownloadReceivedBytes": 0
