@@ -228,6 +228,10 @@ export function createRailwayStore(runtime:Runtime,limitsInput:unknown,options:{
         result={observation:observed?{creditedSimS:observed.creditedSimS,creditedWallMs:observed.creditedWallMs,discardedWallMs:observed.discardedWallMs,rollback:observed.rollback,monotonicAnomaly:observed.monotonicAnomaly}:null,...await runCatchupBatch(c,clock,p)};
         break;
       }
+      case 'achievement':{
+        if(c.snapshot().pendingEvents.some(e=>e.simTimeS<=c.snapshot().simTimeS))fail('process due events before achievement claim');
+        const f=await c.inspectFinance();result=claimAchievement(f.governance.missions,l.body.journal,f.governance.policySha256,f.simTimeS,captured);break;
+      }
       case 'finance':result=(await c.finance(captured,checksum)).result;break;
       case 'quote':result=await c.quoteTrip(captured,checksum);break;
       case 'dispatch':{const {snapshot,...r}=await c.dispatch(captured,checksum);result=r;break;}
@@ -238,6 +242,7 @@ export function createRailwayStore(runtime:Runtime,limitsInput:unknown,options:{
       case 'advance':{const a=object({target:integer,budget:pos})(captured),{snapshot,...r}=await c.advance(a.target,a.budget,checksum);result=r;break;}
     }
     const revision=checkedAdd(l.body.revision,1),journal=[...l.body.journal,{requestId:q.requestId,kind:q.kind,payload,committedRevision:revision,result}];
+    if(q.kind==='achievement'){const f=await c.inspectFinance();projectAchievements(f.governance.missions,journal,f.governance.policySha256,f.simTimeS);}
     const body=bodyFor(l,c.snapshot(),c.issuedQuotes(),journal,clock),seal=await sealRailwaySave(body,l.read.key!.key);
     // Revalidate production state and persisted quote registry before publishing.
     await runtime.openPersisted(body.snapshot,body.quotes);
