@@ -14,17 +14,20 @@
     {
       "id": "R49-Q01",
       "scope": "Chromium and Firefox integrated synthetic guest loop",
-      "status": "PENDING_CI"
+      "status": "PENDING_CORRECTED_RUN",
+      "runId": 45881400844
     },
     {
       "id": "R49-Q02",
       "scope": "320/360/800/1024 viewport and five screens",
-      "status": "PENDING_CI"
+      "status": "PENDING_CORRECTED_RUN",
+      "runId": 45881400844
     },
     {
       "id": "R49-Q03",
       "scope": "Android emulator offline navigation and native back",
-      "status": "PENDING_CI"
+      "status": "PENDING_CI",
+      "runId": 45881400823
     },
     {
       "id": "R49-Q04",
@@ -56,5 +59,292 @@
       "scope": "Cross-device transfer and key policy",
       "status": "BLOCKED_DV060_DV074"
     }
-  ]
+  ],
+  "uiTraceability": [
+    {
+      "id": "UI-01",
+      "screen": "Guest/login",
+      "tasks": [
+        "R45",
+        "R47"
+      ],
+      "availableScope": "Offline guest/recovery verified in R47; language/help incomplete",
+      "blockers": "DV-074",
+      "status": "PARTIAL_OR_BLOCKED_NOT_FINAL_ACCEPTANCE"
+    },
+    {
+      "id": "UI-02",
+      "screen": "Create company",
+      "tasks": [
+        "R12",
+        "R31",
+        "R43",
+        "R47"
+      ],
+      "availableScope": "No approved starter name/base/difficulty",
+      "blockers": "DV-066 DV-072 DV-074",
+      "status": "PARTIAL_OR_BLOCKED_NOT_FINAL_ACCEPTANCE"
+    },
+    {
+      "id": "UI-03",
+      "screen": "Electric starter",
+      "tasks": [
+        "R12",
+        "R43",
+        "R46"
+      ],
+      "availableScope": "Synthetic catalogue only; acquisition blocked",
+      "blockers": "DV-072",
+      "status": "PARTIAL_OR_BLOCKED_NOT_FINAL_ACCEPTANCE"
+    },
+    {
+      "id": "UI-04",
+      "screen": "Diesel starter",
+      "tasks": [
+        "R12",
+        "R43",
+        "R46"
+      ],
+      "availableScope": "Synthetic catalogue only; acquisition blocked",
+      "blockers": "DV-072",
+      "status": "PARTIAL_OR_BLOCKED_NOT_FINAL_ACCEPTANCE"
+    },
+    {
+      "id": "UI-05",
+      "screen": "Map home",
+      "tasks": [
+        "R19",
+        "R42",
+        "R44"
+      ],
+      "availableScope": "Real map unavailable",
+      "blockers": "R19 R42",
+      "status": "PARTIAL_OR_BLOCKED_NOT_FINAL_ACCEPTANCE"
+    },
+    {
+      "id": "UI-06",
+      "screen": "Destination selection",
+      "tasks": [
+        "R09",
+        "R10",
+        "R42",
+        "R43"
+      ],
+      "availableScope": "Configured route only; map unavailable",
+      "blockers": "R42 DV-066",
+      "status": "PARTIAL_OR_BLOCKED_NOT_FINAL_ACCEPTANCE"
+    },
+    {
+      "id": "UI-07",
+      "screen": "Passenger route",
+      "tasks": [
+        "R09",
+        "R10",
+        "R21",
+        "R27",
+        "R42"
+      ],
+      "availableScope": "Domain/configured routes only; map UI incomplete",
+      "blockers": "R42 DV-066",
+      "status": "PARTIAL_OR_BLOCKED_NOT_FINAL_ACCEPTANCE"
+    },
+    {
+      "id": "UI-08",
+      "screen": "Alternate track preview",
+      "tasks": [
+        "R09",
+        "R10",
+        "R42"
+      ],
+      "availableScope": "Map path preview blocked",
+      "blockers": "R42",
+      "status": "PARTIAL_OR_BLOCKED_NOT_FINAL_ACCEPTANCE"
+    },
+    {
+      "id": "UI-09",
+      "screen": "New route modal",
+      "tasks": [
+        "R10",
+        "R28",
+        "R34",
+        "R43"
+      ],
+      "availableScope": "Durable arbitrary route creation absent",
+      "blockers": "DV-066",
+      "status": "PARTIAL_OR_BLOCKED_NOT_FINAL_ACCEPTANCE"
+    },
+    {
+      "id": "UI-10",
+      "screen": "Ticketing continued",
+      "tasks": [
+        "R22",
+        "R27",
+        "R43"
+      ],
+      "availableScope": "Editing/inspection controls incomplete",
+      "blockers": "DV-066",
+      "status": "PARTIAL_OR_BLOCKED_NOT_FINAL_ACCEPTANCE"
+    },
+    {
+      "id": "UI-11",
+      "screen": "Departure summary",
+      "tasks": [
+        "R29",
+        "R34",
+        "R35",
+        "R43",
+        "R44"
+      ],
+      "availableScope": "Synthetic itemized receipt tested R43",
+      "blockers": "DV-066 DV-068",
+      "status": "PARTIAL_OR_BLOCKED_NOT_FINAL_ACCEPTANCE"
+    },
+    {
+      "id": "UI-12",
+      "screen": "Active map",
+      "tasks": [
+        "R33",
+        "R42"
+      ],
+      "availableScope": "Map position display blocked",
+      "blockers": "R42",
+      "status": "PARTIAL_OR_BLOCKED_NOT_FINAL_ACCEPTANCE"
+    },
+    {
+      "id": "UI-13",
+      "screen": "Train management",
+      "tasks": [
+        "R36",
+        "R43"
+      ],
+      "availableScope": "Configured dispatch/service/park/settle tested",
+      "blockers": "DV-066",
+      "status": "PARTIAL_OR_BLOCKED_NOT_FINAL_ACCEPTANCE"
+    },
+    {
+      "id": "UI-14",
+      "screen": "Company highscore",
+      "tasks": [
+        "R30",
+        "R31",
+        "R45"
+      ],
+      "availableScope": "No approved rival dataset",
+      "blockers": "DV-070",
+      "status": "PARTIAL_OR_BLOCKED_NOT_FINAL_ACCEPTANCE"
+    },
+    {
+      "id": "UI-15",
+      "screen": "Checklist top",
+      "tasks": [
+        "R31",
+        "R45"
+      ],
+      "availableScope": "Recognition claim tested; reward policy pending",
+      "blockers": "DV-070",
+      "status": "PARTIAL_OR_BLOCKED_NOT_FINAL_ACCEPTANCE"
+    },
+    {
+      "id": "UI-16",
+      "screen": "Checklist continued",
+      "tasks": [
+        "R31",
+        "R45"
+      ],
+      "availableScope": "Synthetic milestones tested",
+      "blockers": "DV-070",
+      "status": "PARTIAL_OR_BLOCKED_NOT_FINAL_ACCEPTANCE"
+    },
+    {
+      "id": "UI-17",
+      "screen": "Yard",
+      "tasks": [
+        "R12",
+        "R36",
+        "R43"
+      ],
+      "availableScope": "Yard/service fixture tested; acquisition incomplete",
+      "blockers": "DV-066 DV-072",
+      "status": "PARTIAL_OR_BLOCKED_NOT_FINAL_ACCEPTANCE"
+    },
+    {
+      "id": "UI-18",
+      "screen": "Electricity capacity",
+      "tasks": [
+        "R23",
+        "R24",
+        "R44"
+      ],
+      "availableScope": "Inventory domain only; approved electric scope pending",
+      "blockers": "DV-068",
+      "status": "PARTIAL_OR_BLOCKED_NOT_FINAL_ACCEPTANCE"
+    },
+    {
+      "id": "UI-19",
+      "screen": "Fuel price history",
+      "tasks": [
+        "R24",
+        "R44"
+      ],
+      "availableScope": "Simulated history/lock; consultant absent",
+      "blockers": "DV-068",
+      "status": "PARTIAL_OR_BLOCKED_NOT_FINAL_ACCEPTANCE"
+    },
+    {
+      "id": "UI-20",
+      "screen": "Fuel capacity",
+      "tasks": [
+        "R23",
+        "R24",
+        "R44"
+      ],
+      "availableScope": "Synthetic purchase tested; expansion absent",
+      "blockers": "DV-068",
+      "status": "PARTIAL_OR_BLOCKED_NOT_FINAL_ACCEPTANCE"
+    },
+    {
+      "id": "UI-21",
+      "screen": "Spot price history",
+      "tasks": [
+        "R24",
+        "R44"
+      ],
+      "availableScope": "Synthetic contract tested; approved scenario pending",
+      "blockers": "DV-068",
+      "status": "PARTIAL_OR_BLOCKED_NOT_FINAL_ACCEPTANCE"
+    },
+    {
+      "id": "UI-22",
+      "screen": "IPO eligibility",
+      "tasks": [
+        "R30",
+        "R31",
+        "R44",
+        "R45"
+      ],
+      "availableScope": "IPO disabled; policy absent",
+      "blockers": "DV-068 DV-070",
+      "status": "PARTIAL_OR_BLOCKED_NOT_FINAL_ACCEPTANCE"
+    },
+    {
+      "id": "UI-23",
+      "screen": "Finance summary",
+      "tasks": [
+        "R29",
+        "R30",
+        "R44"
+      ],
+      "availableScope": "Ledger and cash/profit projection; approved full history pending",
+      "blockers": "DV-068",
+      "status": "PARTIAL_OR_BLOCKED_NOT_FINAL_ACCEPTANCE"
+    }
+  ],
+  "originalUIRegister": "Railway_Manager_Master_V5/traceability/UI_TRACEABILITY.csv",
+  "originalUIRows": 23,
+  "executableRevision": "2c27e5f493a4d2d3ff7c018d6b14c5adf810e3bf",
+  "observedCI": {
+    "passed": 4,
+    "total": 16,
+    "pending": "R45 railway progression UI acceptance 45881400789 in_progress/pending; R46 railway catalogue UI acceptance 45881400748 in_progress/pending; R40 Android WebView replay acceptance 45881400918 in_progress/pending; R43 railway fleet UI acceptance 45881400908 in_progress/pending; R47 railway guest PWA acceptance 45881400781 in_progress/pending; R47 separate Android guest acceptance 45881400823 in_progress/pending; Android QA APK and unsigned AAB 45881400715 in_progress/pending; R41 seeded economy balance research 45881400800 in_progress/pending; R49 integrated cross-browser gameplay QA 45881400844 in_progress/pending; Browser and offline smoke 45881400763 in_progress/pending; G08 save and worker acceptance 45881400889 in_progress/pending; Verify game 45881400868 in_progress/pending"
+  }
 }
