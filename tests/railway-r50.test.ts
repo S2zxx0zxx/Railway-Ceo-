@@ -3,6 +3,10 @@ import {stressFleet} from '../tools/stress/railway-stress';
 import {writeFileSync,mkdirSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {runScenario} from '../tools/balance/railway-lab';
+import {createScheduler,type EventRequest} from '../src/rail/scheduler';
+import {integer} from '../src/domain/units';
+import {object} from '../src/domain/validation';
+import {performance} from 'node:perf_hooks';
 describe('R50 synthetic stress and deterministic replay',()=>{
  it('four-train shared demand/cash/stock and event cap; partition-equivalent replay',async()=>{
   const a=await stressFleet(4,1),b=await stressFleet(4,64);
@@ -19,3 +23,19 @@ if(process.env.R50_STRESS_EVIDENCE){
   expect(failures).toEqual([]);expect(rows).toHaveLength(6);expect(replays).toHaveLength(3);
  },900000);
 }
+
+// Actual production scheduler, not an alternative simulation engine.
+async function schedulerStress(n:number){
+ const t=performance.now(),state=object({total:integer,rngSum:integer}),payload=object({amount:integer});
+ const engine=createScheduler({policySha256:'a'.repeat(64),graphSha256s:[],maxPending:n,decodeState:state,events:{add:payload},reduce:(s,e,r)=>({state:{total:s.total+payload(e.payload).amount,rngSum:s.rngSum+r()%1000}})});
+ const start=await engine.initialize(0,123,{total:0,rngSum:0});
+ const req:EventRequest[]=Array.from({length:n},(_,i)=>({simTimeS:1+(i*37)%101,kind:'add',payload:{amount:1}}));
+ const q=await engine.enqueue(start,req);await expect(engine.enqueue(q,[req[0]])).rejects.toThrow();
+ const full=await engine.advance(q,200,n);let s=q,done:string[]=[],batches=0;
+ while(s.pendingEvents.length||s.simTimeS<200){const r=await engine.advance(await engine.restore(JSON.parse(JSON.stringify(s))),200,257);expect(r.processed.length).toBeLessThanOrEqual(257);done.push(...r.processed);s=r.snapshot;if(!r.complete)expect(s.simTimeS).toBeLessThanOrEqual(s.pendingEvents[0].simTimeS);expect(++batches).toBeLessThanOrEqual(Math.ceil(n/257)+2);}
+ expect(s).toEqual(full.snapshot);expect(done).toEqual(full.processed);expect(new Set(done).size).toBe(n);expect(s.state.total).toBe(n);expect(s.pendingEvents).toHaveLength(0);
+ const result={events:n,batches,checksum:s.checksum,queuedBytes:Buffer.byteLength(JSON.stringify(q)),snapshotBytes:Buffer.byteLength(JSON.stringify(s)),elapsedMs:performance.now()-t,productionAccepted:false};
+ const dir=process.env.R50_STRESS_EVIDENCE;if(dir){mkdirSync(dir,{recursive:true});writeFileSync(dir+'/scheduler-'+n+'.json',JSON.stringify(result,null,2));}console.log('R50_SCHEDULER PASS '+JSON.stringify(result));
+}
+it('1000 actual scheduled events drain in bounded deterministic partitions',async()=>schedulerStress(1000),120000);
+if(process.env.R50_STRESS_EVIDENCE)it('10000 actual scheduled events drain and replay without backlog',async()=>schedulerStress(10000),600000);
