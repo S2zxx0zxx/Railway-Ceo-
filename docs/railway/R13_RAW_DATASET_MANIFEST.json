@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "task": "R13",
+  "status": "BLOCKED_NOT_ACQUIRED",
+  "observedDate": "2026-11-26",
+  "source": {
+    "resource": "B01",
+    "provider": "Geofabrik",
+    "region": "Eastern Zone",
+    "listing": "https://download.geofabrik.de/asia/india/eastern-zone/",
+    "filename": "eastern-zone-261101.osm.pbf",
+    "url": "https://download.geofabrik.de/asia/india/eastern-zone/eastern-zone-261101.osm.pbf",
+    "sidecarUrl": "https://download.geofabrik.de/asia/india/eastern-zone/eastern-zone-261101.osm.pbf.md5",
+    "filenameDate": "2026-11-01",
+    "listedSize": "236 MB (rounded provider display)",
+    "sidecarListedSize": "62.0 B",
+    "listingConfirmed": true,
+    "license": "ODbL-1.0",
+    "attribution": "© OpenStreetMap contributors",
+    "attributionUrl": "https://www.openstreetmap.org/copyright"
+  },
+  "actual": {
+    "retrievedAtUtc": null,
+    "bytes": null,
+    "receivedBytesThisAttempt": 0,
+    "publishedMd5": null,
+    "computedMd5": null,
+    "sha256": null,
+    "snapshotUtc": null,
+    "header": null,
+    "bbox": null,
+    "counts": null,
+    "rawFileRetained": false,
+    "parserExit": null
+  },
+  "tool": {
+    "resource": "B02",
+    "pin": "v1.19.0",
+    "source": "https://github.com/osmcode/osmium-tool",
+    "fileinfoManualBlob": "6d92e5eb47a2d67d2e00d82248d01b84ff60f0e9",
+    "fileinfoImplementationBlob": "c6d9dc66f151afa9f10827e8b67c7069ef13609c",
+    "fileinfoExampleBlob": "71d1da972c7fd452a3933c13b88e6337907ba486",
+    "binaryAvailable": false,
+    "binarySha256": null
+  },
+  "attempts": [
+    {
+      "check": "curl exact sidecar URL",
+      "exit": 6,
+      "result": "Could not resolve host"
+    },
+    {
+      "check": "curl HEAD exact PBF URL",
+      "exit": 6,
+      "result": "Could not resolve host"
+    },
+    {
+      "check": "web provider links",
+      "result": "application/octet-stream unsupported for both files"
+    },
+    {
+      "check": "alternate binary download sidecar",
+      "result": "Download failed"
+    },
+    {
+      "check": "command -v osmium",
+      "exit": 1,
+      "result": "Unavailable"
+    },
+    {
+      "check": "python import spec osmium",
+      "result": "None"
+    }
+  ],
+  "workspace": {
+    "freeSpaceObserved": "30G rounded df display",
+    "approvedIndiaLocatedWorkspaceVerified": false,
+    "actualAccuracyAndAttributeReview": null,
+    "rawInGit": false
+  },
+  "helper": {
+    "path": "tools/railway/acquire_pbf.py",
+    "gitBlob": "f6be5d19dc6fa3834a1ff3fa5a64c61d377eef81",
+    "sha256": "5c8ccba511371c12f1d1cd18a04f336c689a833186de23fa5d53df6d5609d288",
+    "tests": 6,
+    "passed": 6,
+    "liveRun": false
+  },
+  "acceptance": {
+    "actualPbfValidated": false,
+    "hashRecorded": false,
+    "readyForExtraction": false,
+    "blockedDependents": [
+      "R14",
+      "R15",
+      "R16",
+      "R17",
+      "R18",
+      "R19",
+      "R20"
+    ],
+    "nextIndependent": "R21"
+  }
+}

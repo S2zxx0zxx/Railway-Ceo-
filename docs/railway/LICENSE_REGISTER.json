@@ -76,13 +76,13 @@
       "licenseClaim": "ODbL-1.0",
       "role": "DATA_CANDIDATE",
       "pin": null,
-      "decision": "CANDIDATE_PIN_REVIEW_ONLY",
-      "reviewTask": "R04",
+      "decision": "LISTED_ACQUISITION_BLOCKED",
+      "reviewTask": "R13",
       "licenseReviewed": "ODbL-1.0 (OSM data)",
       "licenseEvidence": null,
       "licenseBlob": null,
       "productionAccepted": false,
-      "blocker": "https://download.geofabrik.de/asia/india/index.html ; https://www.openstreetmap.org/copyright ; R04 provenance/boundary policy; R13 actual dated PBF, checksum and byte hash. No downloaded dataset or public tile scraping.",
+      "blocker": "Exact dated source listed; network DNS failure; published and computed hashes missing; approved private workspace/data review.",
       "r04Review": {
         "policy": "docs/railway/R04_DATA_ACQUISITION_POLICY.json",
         "licenseUrl": "https://opendatacommons.org/licenses/odbl/1-0/",
@@ -90,6 +90,11 @@
         "disposition": "DATA_CANDIDATE_REVIEWED_NOT_ACQUIRED",
         "actualDataRightsAndBoundary": "Pending actual-data review R13/R18/R51",
         "snapshotSha256": null
+      },
+      "r13Review": {
+        "evidence": "docs/railway/R13_ACQUISITION_REPORT.md",
+        "actualBytes": false,
+        "actualParser": false
       }
     },
     {
@@ -98,13 +103,18 @@
       "licenseClaim": "verify pinned tool license",
       "role": "BUILD_TOOL_CANDIDATE",
       "pin": "v1.19.0",
-      "decision": "CANDIDATE_PIN_REVIEW_ONLY",
-      "reviewTask": "R03 or subsequent task per V4 ledger",
+      "decision": "PINNED_TOOL_UNAVAILABLE",
+      "reviewTask": "R13",
       "licenseReviewed": "GPL-3.0 license text",
       "licenseEvidence": "https://github.com/osmcode/osmium-tool/blob/v1.19.0/LICENSE.txt",
       "licenseBlob": "ae0725d8014cb2722268be0a882b1a4eba35fc87",
       "productionAccepted": false,
-      "blocker": "Standalone build-time CLI only; not shipped; verify exact binary/source checksum, libosmium and dependency licenses before R14."
+      "blocker": "Pinned v1.19.0 manual/source checked; no binary or trusted SHA; actual full parse pending.",
+      "r13Review": {
+        "evidence": "docs/railway/R13_ACQUISITION_REPORT.md",
+        "actualBytes": false,
+        "actualParser": false
+      }
     },
     {
       "id": "B03",

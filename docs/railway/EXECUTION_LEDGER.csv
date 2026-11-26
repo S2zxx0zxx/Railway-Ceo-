@@ -10,15 +10,15 @@ R08,G1,PASS,src/rail/compatibility/index.ts; fc637c5 and 4ef5106 CI 5/5 each; 66
 R09,G1,PASS,src/rail/routing/index.ts; src/worker/rail-routing.ts; R09_ROUTING_REPORT.md; f97aa926ff79bb94ca2552cd4a1be12d8804a313; 34/34 local; 2/2 Node thread; 496/496 CI tests; 7/7 exact blobs; CI 45806966966 45806967040 45806966964 45806966938 45806966930; checkpoint 6eb30f9 CI 45807054230 45807054236 45807054728 45807054224 45807054741,,START R10
 R10,G1,PASS,src/rail/routing/index.ts; src/rail/quotes/index.ts; R10_QUOTE_REPORT.md; a93ef65 CI 5/5; 560/560 repository tests; docs-only 54c5411 Android HTTP429 tracked DV-020,,START R11
 R11,G1,PASS,tests/fixtures/railway-synthetic.ts; R11_SYNTHETIC_REPORT.md; 768a4db and 4b90f53 CI 5/5 each; 671/671 repository tests,,START R12
-R12,G1,IMPLEMENTED_UNVERIFIED,src/rail/catalog/index.ts; tests/railway-r12.test.ts; R12_CATALOG_REPORT.md; d3e1348ad360888b2a4482a11f321d91b00452a4; 79/79 local; 616/616 rail regressions; 3/3 exact blobs; CI 45814601245 45814601254 45814601236 45814601347 45814601294,Full repository CI pending,START R13
-R13,G2,NOT_STARTED,,,Consult original V4 dependencies and acceptance
-R14,G2,NOT_STARTED,,,Consult original V4 dependencies and acceptance
-R15,G2,NOT_STARTED,,,Consult original V4 dependencies and acceptance
-R16,G2,NOT_STARTED,,,Consult original V4 dependencies and acceptance
-R17,G2,NOT_STARTED,,,Consult original V4 dependencies and acceptance
-R18,G2,NOT_STARTED,,,Consult original V4 dependencies and acceptance
-R19,G2,NOT_STARTED,,,Consult original V4 dependencies and acceptance
-R20,G2,NOT_STARTED,,,Consult original V4 dependencies and acceptance
+R12,G1,PASS,src/rail/catalog/index.ts; R12_CATALOG_REPORT.md; d3e1348 and 5790505 CI 5/5 each; 750/750 repo tests,,START R13
+R13,G2,BLOCKED,R13_ACQUISITION_REPORT.md; R13_RAW_DATASET_MANIFEST.json; tools/railway/acquire_pbf.py; 6/6 synthetic helper tests,DNS exit6; Osmium unavailable; approved workspace review unverified; actual bytes/hash/header absent,Resume R13 in approved connected workspace; next independent START R21
+R14,G2,NOT_STARTED,,R13 actual dataset prerequisite blocked directly or transitively,Resume in original dependency order after R13
+R15,G2,NOT_STARTED,,R13 actual dataset prerequisite blocked directly or transitively,Resume in original dependency order after R13
+R16,G2,NOT_STARTED,,R13 actual dataset prerequisite blocked directly or transitively,Resume in original dependency order after R13
+R17,G2,NOT_STARTED,,R13 actual dataset prerequisite blocked directly or transitively,Resume in original dependency order after R13
+R18,G2,NOT_STARTED,,R13 actual dataset prerequisite blocked directly or transitively,Resume in original dependency order after R13
+R19,G2,NOT_STARTED,,R13 actual dataset prerequisite blocked directly or transitively,Resume in original dependency order after R13
+R20,G2,NOT_STARTED,,R13 actual dataset prerequisite blocked directly or transitively,Resume in original dependency order after R13
 R21,G3,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R22,G3,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R23,G3,NOT_STARTED,,,Consult original V4 dependencies and acceptance
