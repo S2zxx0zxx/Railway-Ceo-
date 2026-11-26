@@ -41,6 +41,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Install explicit compatibility toolchain
+        shell: bash
+        working-directory: _r37_oracle
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.85.1 --profile minimal
+          rustup override set 1.85.1
+          test "$(rustc --version | cut -d ' ' -f 2)" = 1.85.1
       - name: Record exact toolchain and pinned sources
         shell: bash
         run: |
