@@ -16,3 +16,6 @@ R04 implementation 3cb55955bf9c0d25cf624299b5625b10ce51b68e: 4/5 workflows succe
 
 ## R05 repository verification
 Implementation commit dbf82a42ac06e059568ba1d7e6f2a38e5dceb750; 14/14 readback checks pass (protected refs, exact 34 source and 35 test blob hashes, CSV counts, risk and execution/deferred ledger consistency). CI: Android QA APK and unsigned AAB 45795215066: in_progress/pending; Release dependency and license audit 45795215087: in_progress/pending; G08 save and worker acceptance 45795215351: in_progress/pending; Browser and offline smoke 45795215086: in_progress/pending; Verify game 45795215029: in_progress/pending. Pending checks tracked DV-005; not a PASS claim. Next R06 provisionally; no merge.
+
+## R05 closure at R06
+Implementation dbf82a42ac06e059568ba1d7e6f2a38e5dceb750: 45795215086 45795215087 45795215029 45795215351 45795215066 all completed success. Closure checkpoint eefc7f5d075bd8cd4f3dd134a887c261825fb73c: 45795275133 45795275142 45795275233 45795275171 45795275140 all completed success. R05 PASS; G0 accepted for foundation scope only. DV-005 closed, source risks remain tracked.
