@@ -38,8 +38,8 @@ R36,G4,IMPLEMENTED_UNVERIFIED,fb8f0e4 and e09d5da CI 5/5 each; 21/21 dedicated; 
 R37,G4,IMPLEMENTED_UNVERIFIED,12/12 synthetic; 1481/1481 repo tests; ordinary CI 5/5; locked Rust tests and wheel PASS; actual Python import failed; corrected import retry,DV-055 actual Python demo/holdout and Indian approval pending; DV-056 closed,Retain actual retry evidence
 R38,G4,IMPLEMENTED_UNVERIFIED,12/12 synthetic; 1493/1493 full tests; both ordinary CI 5/5; native OSRD actual artifact verified; median 3.163266%; 0 false negatives and 3 false positives across 18 probes,DV-057 matched Indian and routing scope pending; DV-058 closed,START R39 provisionally
 R39,G4,IMPLEMENTED_UNVERIFIED,889f8a4 and bb5c942 both 6/6 CI; 8/8 codec; 1501/1501 full; 8 Chromium groups; DV-059 closed,DV-060 portable transfer archive and physical device scope; R35/R36 provisional,START R40 provisionally
-R40,G4,IMPLEMENTED_UNVERIFIED,src/rail/offline policy and worker/lifecycle; R39 authenticated v3 clock; 11 authored tests and real Chromium parity workflow,DV-061 executable CI pending; DV-062 policy approval and native lifecycle device acceptance; predecessor provisional,START R41 provisionally after verification
-R41,G4,NOT_STARTED,,,Consult original V4 dependencies and acceptance
+R40,G4,IMPLEMENTED_UNVERIFIED,f15622d4ee6f7fa68e898a0bdcac8a540215ec65; 12/12 R40 and 1513/1513 full tests; six actual Chromium groups PASS; isolated Android emulator replay harness authored,DV-061 Android CI HTTP429 retry; DV-062 actual emulator/native lifecycle and production policy approval; predecessor provisional,HOLD R41 until R40 full acceptance
+R41,G4,NOT_STARTED,,Owner hold until R40 required acceptance; R31/R35/R40 dependencies,Do not start
 R42,G5,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R43,G5,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R44,G5,NOT_STARTED,,,Consult original V4 dependencies and acceptance
