@@ -9,7 +9,7 @@ R07,G1,PASS,src/rail/graph/index.ts; tests/railway-r07.test.ts; 980e708 and e0e5
 R08,G1,PASS,src/rail/compatibility/index.ts; fc637c5 and 4ef5106 CI 5/5 each; 66/66 local cases,,START R09
 R09,G1,PASS,src/rail/routing/index.ts; src/worker/rail-routing.ts; R09_ROUTING_REPORT.md; f97aa926ff79bb94ca2552cd4a1be12d8804a313; 34/34 local; 2/2 Node thread; 496/496 CI tests; 7/7 exact blobs; CI 45806966966 45806967040 45806966964 45806966938 45806966930; checkpoint 6eb30f9 CI 45807054230 45807054236 45807054728 45807054224 45807054741,,START R10
 R10,G1,PASS,src/rail/routing/index.ts; src/rail/quotes/index.ts; R10_QUOTE_REPORT.md; a93ef65 CI 5/5; 560/560 repository tests; docs-only 54c5411 Android HTTP429 tracked DV-020,,START R11
-R11,G1,IMPLEMENTED_UNVERIFIED,tests/fixtures/railway-synthetic.ts; tests/railway-r11.test.ts; R11_SYNTHETIC_REPORT.md; 111/111 local; 537/537 railway regressions,Fresh readback and full CI pending,START R12
+R11,G1,IMPLEMENTED_UNVERIFIED,tests/fixtures/railway-synthetic.ts; tests/railway-r11.test.ts; R11_SYNTHETIC_REPORT.md; 768a4dbfa0711b460d972b20bc72c260151b3807; 111/111 local; 537/537 rail regressions; 3/3 exact blobs; CI 45810989053 45810988231 45810988211 45810988281 45810988195,Full repository CI pending,START R12
 R12,G1,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R13,G2,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R14,G2,NOT_STARTED,,,Consult original V4 dependencies and acceptance
