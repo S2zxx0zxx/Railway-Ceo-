@@ -8,7 +8,7 @@ R06,G1,PASS,src/domain; tests/railway-r06.test.ts; b2c13be and d67fbe5 CI 5/5 ea
 R07,G1,PASS,src/rail/graph/index.ts; tests/railway-r07.test.ts; 980e708 and e0e5776 CI 5/5 each; 56/56 local cases,,START R08
 R08,G1,PASS,src/rail/compatibility/index.ts; fc637c5 and 4ef5106 CI 5/5 each; 66/66 local cases,,START R09
 R09,G1,PASS,src/rail/routing/index.ts; src/worker/rail-routing.ts; R09_ROUTING_REPORT.md; f97aa926ff79bb94ca2552cd4a1be12d8804a313; 34/34 local; 2/2 Node thread; 496/496 CI tests; 7/7 exact blobs; CI 45806966966 45806967040 45806966964 45806966938 45806966930; checkpoint 6eb30f9 CI 45807054230 45807054236 45807054728 45807054224 45807054741,,START R10
-R10,G1,IMPLEMENTED_UNVERIFIED,src/rail/routing/index.ts; src/rail/quotes/index.ts; tests/railway-r10.test.ts; R10_QUOTE_REPORT.md; 64/64 local; 426/426 rail regressions,Readback and full CI pending,START R11
+R10,G1,IMPLEMENTED_UNVERIFIED,src/rail/routing/index.ts; src/rail/quotes/index.ts; tests/railway-r10.test.ts; R10_QUOTE_REPORT.md; a93ef65f287af1c0264e61d5106fba137f8c574f; 64/64 local; 426/426 rail regressions; 4/4 exact blobs; CI 45809806675 45809806621 45809806558 45809806705 45809806573,Full repository CI pending,START R11
 R11,G1,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R12,G1,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R13,G2,NOT_STARTED,,,Consult original V4 dependencies and acceptance
