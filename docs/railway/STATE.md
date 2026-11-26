@@ -1,6 +1,6 @@
 # Railway Manager V5 execution state
 Date: 2026-11-26 IST. Working title only; final identity pending.
-R01–R12 PASS — 12/54 accepted; R13 BLOCKED; R21/R22/R23/R24/R25/R26/R27/R28/R29 IMPLEMENTED_UNVERIFIED; 32 NOT_STARTED (R14–R20 dependency-blocked). G0/G1 accepted; G2 deferred; G3 in progress. Next R29 verification then eligible R30.
+R01–R12 PASS — 12/54 accepted; R13 BLOCKED; R21/R22/R23/R24/R25/R26/R27/R28/R29/R30 IMPLEMENTED_UNVERIFIED; 31 NOT_STARTED (R14–R20 dependency-blocked). G0/G1 accepted; G2 deferred; G3 in progress. Next R30 verification then eligible R31.
 Repository: S2zxx0zxx/Railway-Ceo- (same GitHub repository ID 1471611501; renamed during R09)
 Isolated branch: feat/railway-manager-v5
 Source baseline: fefd995fd189506502ae59230b9ee9c408faa544, tree f0a6d2d577284f13dc2be45b0b8c3d306ea07a48
@@ -185,3 +185,8 @@ Corrected cc9cdea2093b60a0e1cfc8189da77f7764c1d249; exact corrected liquidity re
 
 ## Corrected executable CI evidence
 Verify game 45844667899 job 139995114693 on corrected cc9cdea2093b60a0e1cfc8189da77f7764c1d249: npm ci, strict typecheck, Vitest and production build steps all successful; logs 33/33 R29, 45/45 R28, 51/51 suites, 1217/1217 total tests, build 2.36s. Corrected CI Release dependency and license audit 45844667279: completed/success; Android QA APK and unsigned AAB 45844667507: in_progress/pending; G08 save and worker acceptance 45844667109: in_progress/pending; Verify game 45844667899: completed/success; Browser and offline smoke 45844667320: in_progress/pending. DV-042 remains open for remaining workflows. Initial TypeScript failure and recovery retained. Exact original archives and CSV verified; detailed prior policy acceptance and integrated R34/R35/R39 checks still pending. DV-006 nonaligned half-open reporting tests passed in R29 suite; legacy tax not reused and R32 scheduler/tax policy pending. R29 IMPLEMENTED_UNVERIFIED under provisional predecessor/final acceptance rules. R30 eligible provisionally after reconciling available CI and repair of any known defects. R13–R20 deferred unchanged. No merge.
+
+## R29 reconciliation at R30
+Corrected cc9cdea2093b60a0e1cfc8189da77f7764c1d249 workflows 45844667899 45844667279 45844667109 45844667320 45844667507 all completed success. Checkpoint d6987ad79bb56cb8327505ca572ba697c0d775cd workflows 45844886273 45844886320 45844886359 45844886256 45844886152 all completed success. Verify job 139995114693 logs 33/33 R29 and 45/45 R28; 1217/1217 total tests; 51/51 suites; strict typecheck/build. Initial TS2367/TS2339 failure evidence retained; DV-042 CLOSED. Prior source-policy acceptance and DV-006 scheduler/tax boundary remain OPEN; R29 IMPLEMENTED_UNVERIFIED; R30 provisional dependency under owner protocol. R13–R20 deferred unchanged.
+
+R30: regional inflation index/version and immutable contract locks; explicit scenario capex/ROI/payback with losses; R29 ledger-backed company assets/liabilities/equity and optional bounded fictional price; 50 tests authored; archive SHA CRC and formula source verified. DV-043 fresh CI. R31 provisional R30/R26/R27. No merge.
