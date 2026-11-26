@@ -95,12 +95,16 @@ export async function runScenario(seed:number,days:30|90,kind:Case,partition:'wi
   // a durable R35 command. Verify the loan is a liability, not free cash.
   const s=c.snapshot(),ctx=sources(f,s),v=await evaluateSolvency(s.state.accounting,ctx,f.config.governance);
   ensure(v.stage==='GRACE','expected overdue-loan grace');
-  const rec=await applyRecoveryCommand(s.state.accounting,ctx,f.config.governance,{id:'lab-rescue',expectedAccountingRevision:s.state.accounting.revision,expectedSources:v.sourceVersions,action:{type:'rescue',principalMinor:'100'}});
+  const recovery={expectedAccountingRevision:s.state.accounting.revision,expectedSources:v.sourceVersions};
+  await rejected('overdue-rescue-guard',()=>applyRecoveryCommand(s.state.accounting,ctx,f.config.governance,{...recovery,id:'lab-rescue',action:{type:'rescue',principalMinor:'100'}}),/overdue debt/);
+  const original=await inspectAccountingBook(s.state.accounting,ctx);
+  const oldLoan=original.liquidityView.loans.find(x=>x.loan.id==='loan')??fail('missing overdue loan');
+  const rec=await applyRecoveryCommand(s.state.accounting,ctx,f.config.governance,{...recovery,id:'lab-refi',action:{type:'refinance',loanId:'loan',replacementPrincipalMinor:'100'}});
   const restored=await inspectAccountingBook(rec.accounting,{...ctx,operations:rec.operations,energy:rec.energy});
-  ensure(BigInt(restored.liquidityView.cashMinor)===BigInt((await inspectAccountingBook(s.state.accounting,ctx)).liquidityView.cashMinor)+100n,'rescue cash');
-  ensure(restored.liquidityView.loans.length===2&&BigInt(restored.liquidityView.totalPayoffMinor)===BigInt((await inspectAccountingBook(s.state.accounting,ctx)).liquidityView.totalPayoffMinor)+100n,'rescue debt');
-  ensure(c.snapshot().checksum===s.checksum,'isolated rescue changed aggregate');
-  await record('isolated-r31-rescue','VERIFIED_NOT_COMMITTED',{cashMinor:restored.liquidityView.cashMinor,debtMinor:restored.liquidityView.totalPayoffMinor});
+  ensure(BigInt(restored.liquidityView.cashMinor)===BigInt(original.liquidityView.cashMinor)-BigInt(oldLoan.payoffMinor)+100n,'refinance cash');
+  ensure(restored.liquidityView.loans.find(x=>x.loan.id==='loan')?.status==='repaid'&&restored.liquidityView.loans.find(x=>x.loan.id==='r31:loan:lab-refi')?.loan.remainingMinor==='100'&&restored.liquidityView.totalDebtMinor==='100','refinance debt');
+  ensure(rec.governance.stage==='HEALTHY'&&c.snapshot().checksum===s.checksum,'isolated refinance authority');
+  await record('isolated-r31-refinance','VERIFIED_NOT_COMMITTED',{cashMinor:restored.liquidityView.cashMinor,debtMinor:restored.liquidityView.totalPayoffMinor});
   await advance(35);
   await rejected('liquidation-dispatch',()=>quote('qblocked','t1'),/liquidation/);
  }else if(kind!=='idle-offline'){
