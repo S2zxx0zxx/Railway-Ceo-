@@ -28,3 +28,6 @@ Implementation a93ef65f287af1c0264e61d5106fba137f8c574f; 8/8 readback assertions
 
 ## R10 closure at R11
 Original a93ef65f287af1c0264e61d5106fba137f8c574f five CI completed success (45809806621 45809806558 45809806573 45809806675 45809806705); Verify game job 139874386954 560/560 tests 40/40 suites and typecheck/build. Docs-only 54c54117d174bd3fc8ec155755bcc550154e79c5 diff four docs; four workflow success; Android 45809886182 job 139874665059 failed Maven Central HTTP429 during assembleDebug, exit1, subsequent APK/AAB verification skipped. R10 PASS on exact original successful implementation; DV-019 closed, checkpoint failure preserved as DV-020 open. DV-018 future UI/economy integration remains. No merge.
+
+## Android retry closure at R12
+Original docs-only checkpoint 54c5411 Android 45809886182 job 139874665059 Maven HTTP429 retained. R11 768a4db and 4b90f53 Android 45810989053 and 45811059163 success; compare from 54c5411 only test/docs changes, executable production equivalent. DV-020 closed; actual physical device and signed release evidence remains required. No merge.
