@@ -1,6 +1,6 @@
 # Railway Manager V5 execution state
 Date: 2026-11-26 IST. Working title only; final identity pending.
-R01–R12 PASS — 12/54 accepted; R13 BLOCKED; R21/R22/R23/R24/R25/R26 IMPLEMENTED_UNVERIFIED; 35 NOT_STARTED (R14–R20 dependency-blocked). G0/G1 accepted; G2 deferred; G3 in progress. Next R26 verification then eligible R27.
+R01–R12 PASS — 12/54 accepted; R13 BLOCKED; R21/R22/R23/R24/R25/R26/R27 IMPLEMENTED_UNVERIFIED; 34 NOT_STARTED (R14–R20 dependency-blocked). G0/G1 accepted; G2 deferred; G3 in progress. Next R27 verification then eligible R28.
 Repository: S2zxx0zxx/Railway-Ceo- (same GitHub repository ID 1471611501; renamed during R09)
 Isolated branch: feat/railway-manager-v5
 Source baseline: fefd995fd189506502ae59230b9ee9c408faa544, tree f0a6d2d577284f13dc2be45b0b8c3d306ea07a48
@@ -149,3 +149,8 @@ Implementation 3a7e35205dc33a27ccd250d59f28f3e12b34eba7; 8/8 readback passed: br
 
 ## Actual executable CI evidence
 Verify game run 45836323406 job 139966030579 on implementation 3a7e35205dc33a27ccd250d59f28f3e12b34eba7: npm ci, strict typecheck, Vitest and production build all success; 40/40 R26, 62/62 R25 backward regression, 48/48 suites, 1106/1106 total tests, build 2.08s. Fresh CI Browser and offline smoke 45836322740: in_progress/pending; G08 save and worker acceptance 45836322713: in_progress/pending; Android QA APK and unsigned AAB 45836322758: in_progress/pending; Verify game 45836323406: completed/success; Release dependency and license audit 45836322966: completed/success. DV-037 remains open for remaining workflows. DV-036 exact original E15–E16 comparison and predecessor DV-034 remain open; R26 IMPLEMENTED_UNVERIFIED despite actual executable pass. R27 provisional R21/R22 dependencies; reconcile outstanding CI and repair any known defect before starting. R13–R20 deferred unchanged. No merge.
+
+## R26 reconciliation at R27
+Exact implementation 3a7e35205dc33a27ccd250d59f28f3e12b34eba7 CI 45836323406 45836322966 45836322740 45836322713 45836322758 all completed success. Verify job 139966030579 logs 40/40 R26 and 1106/1106 repository tests; 62/62 R25; 48/48 suites; strict typecheck/build pass. Docs-only checkpoint 415f55e48f8a42ecf74efa2cd37e4cbc0837f942 observed Release dependency and license audit 45836515063: completed/success; G08 save and worker acceptance 45836515135: completed/success; Verify game 45836515221: completed/success; Browser and offline smoke 45836514967: completed/success; Android QA APK and unsigned AAB 45836514998: completed/success. DV-037 closed on exact successful implementation CI; checkpoint results retained for final regression. DV-036 E15–E16 and DV-034 R25 original archive comparison open. R26 IMPLEMENTED_UNVERIFIED. R27 dependencies R21/R22 have successful prior executable CI but source comparisons DV-026/DV-028 open; provisional per owner protocol. R13–R20 unchanged.
+
+R27: E17 capped eligible trip subsidy, E18 seeded class inspection with R22 reconciliation and collected capped fines, E19 immutable paid campaigns and population-bounded new R21 demand. 33 tests authored; local runtime unavailable. Exact source DV-038 and CI DV-039. R28 independent R06 PASS. No merge.
