@@ -15,4 +15,6 @@ manifest=manifest.replace(/\sandroid:(?:allowBackup|usesCleartextTraffic|screenO
 if(!manifest.includes('android:screenOrientation="portrait"'))throw Error('MainActivity anchor missing');await writeFile(mp,manifest);
 const native=JSON.parse(await readFile(root+'/assets/capacitor.config.json','utf8'));if(native.appId!==config.appId||native.server?.url||native.server?.hostname!==config.server.hostname||native.server?.cleartext!==false)throw Error('Native configuration mismatch');
 const gradle=await readFile(dir+'/android/app/build.gradle','utf8');if(!gradle.includes(config.appId))throw Error('QA application ID mismatch');
-run('bash',['gradlew','assembleDebug','--no-daemon'],dir+'/android');
+// R53 explicitly builds an unsigned QA-identity release variant, never a store release.
+const tasks=process.env.R53_PACKAGE_QA==='1'?['assembleDebug','bundleRelease']:['assembleDebug'];
+run('bash',['gradlew',...tasks,'--no-daemon'],dir+'/android');
