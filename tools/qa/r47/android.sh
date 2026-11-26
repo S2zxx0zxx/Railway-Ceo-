@@ -3,21 +3,28 @@ set -euo pipefail
 pkg=app.railway.qa.r47
 apk=r47-native-qa/android/app/build/outputs/apk/debug/app-debug.apk
 mkdir -p r47-native-evidence
+adb wait-for-device
+adb shell input keyevent KEYCODE_WAKEUP
+adb shell wm dismiss-keyguard
 adb install "$apk"
+adb shell pm clear "$pkg" | grep -x Success
 adb shell cmd connectivity airplane-mode enable
 adb shell svc wifi disable
 adb shell svc data disable
 adb shell settings get global airplane_mode_on | tr -d '\r' | grep -x 1
-adb shell am start -n "$pkg/.MainActivity"
+adb shell am start -W -n "$pkg/.MainActivity"
+trap 'adb logcat -d >r47-native-evidence/logcat.txt || true; adb shell dumpsys activity activities >r47-native-evidence/activities.txt || true; adb exec-out screencap -p >r47-native-evidence/final-screen.png || true' EXIT
 tap_text(){
  for i in $(seq 1 60); do
-  adb shell uiautomator dump /sdcard/r47-window.xml >/dev/null 2>&1 || true
-  adb pull /sdcard/r47-window.xml r47-native-evidence/window.xml >/dev/null 2>&1 || true
+  rm -f r47-native-evidence/window.xml
+  adb shell rm -f /sdcard/r47-window.xml
+  if ! adb shell uiautomator dump /sdcard/r47-window.xml >/dev/null 2>&1; then sleep 1; continue; fi
+  if ! adb pull /sdcard/r47-window.xml r47-native-evidence/window.xml >/dev/null 2>&1; then sleep 1; continue; fi
   if coords=$(python - "$1" <<'PY'
 import sys,re,xml.etree.ElementTree as E
 try:
  for e in E.parse('r47-native-evidence/window.xml').iter('node'):
-  if e.get('text')==sys.argv[1] or e.get('content-desc')==sys.argv[1]:
+  if e.get('package')=='app.railway.qa.r47' and (e.get('text')==sys.argv[1] or e.get('content-desc')==sys.argv[1]):
    a,b,c,d=map(int,re.findall(r'\d+',e.get('bounds','')))
    if c>a and d>b: print((a+c)//2,(b+d)//2);sys.exit(0)
 except Exception: pass

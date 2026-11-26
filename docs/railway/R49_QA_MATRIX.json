@@ -14,19 +14,19 @@
     {
       "id": "R49-Q01",
       "scope": "Chromium and Firefox integrated synthetic guest loop",
-      "status": "PENDING_CORRECTED_RUN",
+      "status": "PASS_SYNTHETIC_BROWSER",
       "runId": 45881400844
     },
     {
       "id": "R49-Q02",
       "scope": "320/360/800/1024 viewport and five screens",
-      "status": "PENDING_CORRECTED_RUN",
+      "status": "PASS_SYNTHETIC_BROWSER",
       "runId": 45881400844
     },
     {
       "id": "R49-Q03",
       "scope": "Android emulator offline navigation and native back",
-      "status": "PENDING_CI",
+      "status": "FAILED_GUEST_CONTROL",
       "runId": 45881400823
     },
     {
@@ -343,8 +343,8 @@
   "originalUIRows": 23,
   "executableRevision": "2c27e5f493a4d2d3ff7c018d6b14c5adf810e3bf",
   "observedCI": {
-    "passed": 4,
+    "passed": 15,
     "total": 16,
-    "pending": "R45 railway progression UI acceptance 45881400789 in_progress/pending; R46 railway catalogue UI acceptance 45881400748 in_progress/pending; R40 Android WebView replay acceptance 45881400918 in_progress/pending; R43 railway fleet UI acceptance 45881400908 in_progress/pending; R47 railway guest PWA acceptance 45881400781 in_progress/pending; R47 separate Android guest acceptance 45881400823 in_progress/pending; Android QA APK and unsigned AAB 45881400715 in_progress/pending; R41 seeded economy balance research 45881400800 in_progress/pending; R49 integrated cross-browser gameplay QA 45881400844 in_progress/pending; Browser and offline smoke 45881400763 in_progress/pending; G08 save and worker acceptance 45881400889 in_progress/pending; Verify game 45881400868 in_progress/pending"
+    "pending": "native failure; retry required"
   }
 }
