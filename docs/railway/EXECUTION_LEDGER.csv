@@ -1,5 +1,5 @@
 id,gate,status,evidence,blocker,next_action
-R01,G0,IMPLEMENTED_UNVERIFIED,docs/railway/R01_BASELINE.md,Fresh CI pending,Inspect fresh logs and verify exact diff
+R01,G0,PASS,docs/railway/R01_BASELINE.md; run 45769168839; tested ed2e4eedbad97b3b036b4d8c4bcfe1d293d33744,,START R02
 R02,G0,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R03,G0,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R04,G0,NOT_STARTED,,,Consult original V4 dependencies and acceptance
