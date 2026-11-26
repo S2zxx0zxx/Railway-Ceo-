@@ -154,3 +154,37 @@ describe('R31 exact refinance closure and time-boundary invariants',()=>{
    }
  });
 });
+
+import {createScheduler} from '../src/rail/scheduler';
+import {record} from '../src/domain/validation';
+describe('R32 scheduler integration with real R31 governance',()=>{
+ it('exclusive grace deadline runs before same-time rescue; failed batch leaves old book intact',async()=>{
+  const {c,b}=await acquired(),p=distress();
+  const engine=createScheduler<{book:AccountingBook}>({
+   policySha256:'a'.repeat(64),graphSha256s:[],maxPending:20,
+   decodeState:v=>record(v,'fixture state') as {book:AccountingBook},events:{review:v=>v,rescue:v=>v},
+   nextBoundary:async s=>{const v=await gov(s.book,c,p);return v.nextActionDueSimS===null?null:{simTimeS:v.nextActionDueSimS,kind:'review'};},
+   reduce:async(s,e)=>({state:{book:e.kind==='review'?(await governed(s.book,c,p,clock(e.simTimeS),e.id)).accounting:(await recover(s.book,c,p,rescue(),e.id)).accounting}})
+  });
+  const start=await engine.initialize(0,1,{book:b});
+  const wrong=await engine.enqueue(start,[{simTimeS:20,kind:'rescue',payload:null},{simTimeS:20,kind:'review',payload:null}]);
+  await expect(engine.advance(wrong,20,2)).rejects.toThrow('mandatory boundary');
+  const q=await engine.enqueue(start,[{simTimeS:20,kind:'review',payload:null},{simTimeS:20,kind:'rescue',payload:null}]);
+  const pre=JSON.stringify(q);
+  await expect(engine.advance(q,20,2)).rejects.toThrow();
+  expect(JSON.stringify(q)).toBe(pre);
+  const first=await engine.advance(q,20,1);
+  expect(first.complete).toBe(false);
+  expect(await gov(first.snapshot.state.book,c,p)).toMatchObject({stage:'LIQUIDATION',liquidatedAt:20});
+  await expect(engine.advance(first.snapshot,20,1)).rejects.toThrow();
+ });
+ it('actual review boundary cannot be crossed by idle scheduler clock',async()=>{
+  const {c,b}=await acquired(),p=gp({reviewPeriodS:10});
+  const engine=createScheduler<{book:AccountingBook}>({policySha256:'a'.repeat(64),graphSha256s:[],maxPending:20,decodeState:v=>record(v,'fixture') as {book:AccountingBook},events:{review:v=>v},
+   nextBoundary:async s=>{const v=await gov(s.book,c,p);return v.nextActionDueSimS===null?null:{simTimeS:v.nextActionDueSimS,kind:'review'};},
+   reduce:async(s,e)=>({state:{book:(await governed(s.book,c,p,clock(e.simTimeS),e.id)).accounting}})});
+  const s=await engine.initialize(0,1,{book:b});await expect(engine.advance(s,11,1)).rejects.toThrow('mandatory boundary');
+  const q=await engine.enqueue(s,[{simTimeS:10,kind:'review',payload:null}]);
+  const x=await engine.advance(q,11,1);expect(await gov(x.snapshot.state.book,c,p)).toMatchObject({nextReviewSimS:20});
+ });
+});

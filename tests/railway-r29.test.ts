@@ -100,3 +100,26 @@ describe('R29 explicit nonaligned reporting boundary (DV-006 railway side)',()=>
  it('nonaligned half-open period and all same-time events in next interval',async()=>{const c=await initial(),a=await createAccountingBook('1000',7,policy,c);let b=await apply(a,c,timed('borrow',7,{loanId:'l',principalMinor:'10000',maturityS:307,interestBps:100}));b=await apply(b,c,timed('advance',107));b=await apply(b,c,timed('repay',107,{loanId:'l',amountMinor:'100'}));b=await apply(b,c,timed('advance',207));const first=await reportAccountingPeriod(b,c,{startSimS:7,endSimS:107}),next=await reportAccountingPeriod(b,c,{startSimS:107,endSimS:207});expect(first).toMatchObject({complete:true,openingCashMinor:'1000',closingCashMinor:'11000',cashFlowNetMinor:'10000',interestMinor:'0',accountingProfitMinor:'0'});expect(next).toMatchObject({complete:true,openingCashMinor:'11000',closingCashMinor:'10900',cashFlowNetMinor:'-100',interestMinor:'100',accountingProfitMinor:'-100'});});
  it('partial period flagged and invalid interval rejected',async()=>{const {c,b}=await settled(),x=await reportAccountingPeriod(b,c,{startSimS:0,endSimS:100});expect(x).toMatchObject({complete:false,asOfSimS:30,openingCashMinor:'10000',closingCashMinor:'11545',accountingProfitMinor:'2665'});await expect(reportAccountingPeriod(b,c,{startSimS:10,endSimS:10})).rejects.toThrow('invalid reporting interval');});
 });
+
+import {createScheduler} from '../src/rail/scheduler';
+import {record} from '../src/domain/validation';
+describe('R32 scheduler integration with real R29 accounting',()=>{
+ it('nonaligned half-open periods retain exact boundary postings under batched replay',async()=>{
+  const c=await initial(),start=await createAccountingBook('1000',7,policy,c);
+  const b=await apply(start,c,timed('borrow',7,{loanId:'l',principalMinor:'10000',maturityS:307,interestBps:100}));
+  type S={book:AccountingBook;due:number};
+  const engine=createScheduler<S>({
+   policySha256:'a'.repeat(64),graphSha256s:[],maxPending:20,
+   decodeState:v=>record(v,'fixture state') as S,events:{review:v=>v,repay:v=>v},
+   nextBoundary:s=>({simTimeS:s.due,kind:'review'}),
+   reduce:async(s,e)=>({state:{book:await apply(s.book,c,e.kind==='review'?timed('advance',e.simTimeS):timed('repay',e.simTimeS,{loanId:'l',amountMinor:'100'}),e.id),due:e.kind==='review'?s.due+100:s.due}})
+  });
+  const s=await engine.initialize(7,1,{book:b,due:107});
+  const q=await engine.enqueue(s,[{simTimeS:107,kind:'review',payload:null},{simTimeS:107,kind:'repay',payload:null},{simTimeS:207,kind:'review',payload:null}]);
+  const all=(await engine.advance(q,207,5)).snapshot;
+  const firstBatch=await engine.advance(q,207,1),rest=await engine.advance(firstBatch.snapshot,207,5);
+  expect(rest.snapshot.checksum).toBe(all.checksum);
+  expect(await reportAccountingPeriod(all.state.book,c,{startSimS:7,endSimS:107})).toMatchObject({complete:true,interestMinor:'0',closingCashMinor:'11000'});
+  expect(await reportAccountingPeriod(all.state.book,c,{startSimS:107,endSimS:207})).toMatchObject({complete:true,interestMinor:'100',closingCashMinor:'10900'});
+ });
+});

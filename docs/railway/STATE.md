@@ -1,6 +1,6 @@
 # Railway Manager V5 execution state
 Date: 2026-11-26 IST. Working title only; final identity pending.
-R01–R12 PASS — 12/54 accepted; R13 BLOCKED; R21/R22/R23/R24/R25/R26/R27/R28/R29/R30/R31 IMPLEMENTED_UNVERIFIED; 30 NOT_STARTED (R14–R20 dependency-blocked). G0/G1 accepted; G2 deferred; G3 implementation provisional; next R31 verification then eligible R32.
+R01–R12 PASS — 12/54 accepted; R13 BLOCKED; R21–R32 IMPLEMENTED_UNVERIFIED; 29 NOT_STARTED (R14–R20 dependency-blocked). G0/G1 accepted; G2 deferred; G3 implementation provisional; G4 R32 implemented; next R32 verification then eligible R33.
 Repository: S2zxx0zxx/Railway-Ceo- (same GitHub repository ID 1471611501; renamed during R09)
 Isolated branch: feat/railway-manager-v5
 Source baseline: fefd995fd189506502ae59230b9ee9c408faa544, tree f0a6d2d577284f13dc2be45b0b8c3d306ea07a48
@@ -204,3 +204,6 @@ Initial 0b9e374 Verify 45850318498 job 140014674013: strict typecheck success, 3
 
 ## R31 additional refinance guard
 Reviewed same-timestamp historical replay: checking only final old-loan closedAtSimS could let a later ordinary repayment at the same timestamp make an earlier partial replacement pair appear fully settled. Opt-in R29 financial point now records repaymentClosed from actual immediate post-action R28 projection; R31 requires true on the refinance repayment itself. Added regression that constructs valid underlying R29 partial payoff, replacement loan, then same-time later payoff and verifies governance rejects it; grace duration boundary grid added. 43 authored tests. Corrected production blobs accounting 3927561df27b913e1c83cc8f3461751861e8501f, governance 79691c87b958c326d38e0e3b604eecc3017e1752, tests bf262cca16669a06c57fcc7c2ca0e24ac189e5ed. Fresh CI DV-044; initial failing fixture and prior repair retained. No merge.
+
+## R32 checkpoint
+Original V4/V5 SHA256 and CRC reverified; exact task/domain/economy hashes matched. R31 exact corrected Verify 43/43 and 1310/1310; four original CI passes; Android retry completed success; DV-044 retained. New deterministic scheduler with strict R06 registry, heap, generated monotonic IDs, seeded persisted RNG, canonical SHA256 snapshots/history, atomic candidate batches, explicit bounded execution and fail-closed boundary preflight. R29/R31 actual accounting/governance integration tests authored; DV-006/008 remain open for aggregate wiring and acceptance. R32 source and test blobs in R32_SCHEDULER_REPORT.md. Full checkout DNS exit128, fresh CI DV-045 pending. R32 IMPLEMENTED_UNVERIFIED; 24/54 implemented, 12 accepted, R13 blocked, 29 not started. Next eligible R33 provisionally (R10/R12 accepted, R32 provisional) after owner START and CI reconciliation. PR #1/main protected; no merge.
