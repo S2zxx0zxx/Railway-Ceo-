@@ -25,7 +25,7 @@ R23,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/energy.ts; R23_ENERGY_REPORT.md; 
 R24,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/market.ts; R24_MARKET_REPORT.md; 0b22792 4/5 original CI; 3a06d4c equivalent source 5/5 CI; 1004/1004 tests,Exact source DV-032 and DV-030; DV-033 closed after Android HTTP429 recovery,Final source reconciliation required
 R25,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/operations.ts; R25_OPERATIONS_REPORT.md; f0a196d and c70cceb corrected CI 5/5 each; 62/62 R25; 1066/1066 repository tests,Exact original CSV DV-034; DV-035 closed,Final source reconciliation required
 R26,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/operations.ts; R26_MAINTENANCE_REPORT.md; 3a7e352 CI 5/5; 40/40 R26 and 1106/1106 repository tests,Exact original CSV DV-036 and predecessor DV-034; DV-037 closed,Final source reconciliation required
-R27,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/incentives.ts; tests/railway-r27.test.ts; R27_INCENTIVES_REPORT.md; 2fd859ea7d17e7f2c0756f35b35d85c0eab7b1bb; 33 authored tests; 8/8 readback; CI 45837672240 45837672222 45837672151 45837672374 45837672178,Exact source DV-038; predecessor DV-026/028; fresh CI DV-039,Reconcile CI then START R28 independent
+R27,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/incentives.ts; tests/railway-r27.test.ts; R27_INCENTIVES_REPORT.md; 2fd859ea7d17e7f2c0756f35b35d85c0eab7b1bb; 33/33 R27 and 1139/1139 repo tests; 8/8 readback; 2/5 workflow successes,Exact original CSV DV-038; predecessor DV-026/028; remaining CI DV-039,Reconcile CI then START R28 independent
 R28,G3,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R29,G3,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R30,G3,NOT_STARTED,,,Consult original V4 dependencies and acceptance
