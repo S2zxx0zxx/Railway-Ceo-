@@ -1,6 +1,6 @@
 # Railway Manager V5 execution state
 Date: 2026-11-26 IST. Working title only; final identity pending.
-R01–R12 PASS — 12/54 accepted; R13 BLOCKED; R21/R22/R23/R24/R25/R26/R27/R28/R29/R30 IMPLEMENTED_UNVERIFIED; 31 NOT_STARTED (R14–R20 dependency-blocked). G0/G1 accepted; G2 deferred; G3 in progress. Next R30 verification then eligible R31.
+R01–R12 PASS — 12/54 accepted; R13 BLOCKED; R21/R22/R23/R24/R25/R26/R27/R28/R29/R30/R31 IMPLEMENTED_UNVERIFIED; 30 NOT_STARTED (R14–R20 dependency-blocked). G0/G1 accepted; G2 deferred; G3 implementation provisional; next R31 verification then eligible R32.
 Repository: S2zxx0zxx/Railway-Ceo- (same GitHub repository ID 1471611501; renamed during R09)
 Isolated branch: feat/railway-manager-v5
 Source baseline: fefd995fd189506502ae59230b9ee9c408faa544, tree f0a6d2d577284f13dc2be45b0b8c3d306ea07a48
@@ -193,3 +193,8 @@ R30: regional inflation index/version and immutable contract locks; explicit sce
 
 ## Actual executable verification checkpoint
 Implementation 60a2e5f94840a6f02af4e8cf4471546cac7c889b, source blob 43b6ea18cf967da79509ffeb935082440133e779 and test blob 22795e3aad0334558b4b3c2eb80ec0c5a0c91fc1 read back exactly. 8/8 repository checks successful, seven-file scoped diff. Verify game 45847796460 job 140005896173: dependency installation, strict typecheck, Vitest and production build succeeded; actual logs 50/50 R30, 52/52 suites, 1267/1267 repository tests, build 2.15s. CI observed G08 save and worker acceptance 45847796417: in_progress/pending; Android QA APK and unsigned AAB 45847796429: in_progress/pending; Browser and offline smoke 45847796752: in_progress/pending; Verify game 45847796460: completed/success; Release dependency and license audit 45847796495: completed/success. DV-043 remains open for remaining workflows. Original archive SHA/CRC and exact E24–E26 source verified. R30 IMPLEMENTED_UNVERIFIED pending prior source-policy/dependency acceptance and final integration. R31 provisionally eligible after reconciling available CI and correcting known defects; R30/R26/R27 dependencies. R13–R20 unchanged; no merge.
+
+## R30 reconciliation at R31
+Exact 60a2e5f94840a6f02af4e8cf4471546cac7c889b CI 45847796495 45847796460 45847796417 45847796752 45847796429 all completed success. Checkpoint 9db0070878528f22418fc807fdf3b43aaf2d1b72 CI 45847972682 45847972744 45847972859 45847972688 45847972680 all completed success. Verify job 140005896173 50/50 R30, 1267/1267 tests, 52/52 suites, strict typecheck/build. DV-043 CLOSED. Prior source-policy acceptance and final integration remain provisional; no acceptance promotion. R13–R20 unchanged.
+
+R31: derived progression/unlocks; R29 before/after solvency timeline, policy binding, explicit review/grace, bounded loan rescue/refinance, controlled asset/energy liquidation and archive-only zero-fund restart; 38 authored tests; DV-044 fresh CI. GP-014 calibration and GP-024 optional scope pending. G3 implementation not accepted. R32 independent R06. No merge.

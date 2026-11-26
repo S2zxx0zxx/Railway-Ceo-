@@ -30,6 +30,7 @@ const repay=object({type:enumeration(['repay']),atSimS:seconds,loanId:id,amountM
 const reserve=object({type:enumeration(['reserve-trip']),atSimS:seconds,tripId:id,amountMinor:minor});
 const settle=object({type:enumeration(['settle-trip']),atSimS:seconds,tripId:id});
 const purchase=object({type:enumeration(['buy-energy']),atSimS:seconds,lotId:id});
+const writeoff=object({type:enumeration(['write-off-energy']),atSimS:seconds,reservationId:id});
 const asset=object({type:enumeration(['acquire-asset']),atSimS:seconds,trainId:id});
 const overhead=object({type:enumeration(['overhead']),atSimS:seconds,periodIndex:integer});
 const service=object({type:enumeration(['maintenance']),atSimS:seconds,jobId:id});
@@ -44,7 +45,7 @@ function action(v:unknown,path='action'){
   switch(record(v,path).type){
     case 'advance':return advance(v,path);case 'borrow':return borrow(v,path);case 'repay':return repay(v,path);
     case 'reserve-trip':return reserve(v,path);case 'settle-trip':return settle(v,path);case 'buy-energy':return purchase(v,path);
-    case 'acquire-asset':return asset(v,path);case 'overhead':return overhead(v,path);case 'maintenance':return service(v,path);
+    case 'write-off-energy':return writeoff(v,path);case 'acquire-asset':return asset(v,path);case 'overhead':return overhead(v,path);case 'maintenance':return service(v,path);
     case 'depreciation':return depreciation(v,path);case 'disposal':return dispose(v,path);case 'subsidy':return subsidy(v,path);
     case 'fine':return fine(v,path);case 'campaign':return campaign(v,path);case 'reclassify':return reclassify(v,path);case 'reverse':return reverse(v,path);
     default:return fail('unknown accounting action');
@@ -72,7 +73,9 @@ type AssetRuntime={basis:bigint;accumulated:bigint;disposed:boolean};
 type LotRuntime={cost:bigint;quantity:bigint;usedCost:bigint;usedQuantity:bigint};
 type Flow='operating'|'investing'|'financing';
 const key=(...xs:(string|number)[])=>JSON.stringify(xs);
-async function replay(s:Book,c:Sources,append?:{commandId:string;action:Action}){
+type FinancialSnapshot={atSimS:number;availableCashMinor:string;reservedCashMinor:string;activeReservations:number;payoffAdjustedEquityMinor:string;overdueLoans:number};
+type FinancialPoint={revision:number;commandId:string;type:Action['type'];before:FinancialSnapshot;after:FinancialSnapshot};
+async function replay(s:Book,c:Sources,append?:{commandId:string;action:Action},captureTimeline=false){
   if(s.revision!==s.transactions.length)fail('revision mismatch');
   let liquidity:LiquidityBook=createLiquidityBook(s.openingCashMinor,s.startSimS,s.policy);
   const balances=new Map<Account,bigint>(accounts.map(a=>[a,0n]));
@@ -91,6 +94,12 @@ async function replay(s:Book,c:Sources,append?:{commandId:string;action:Action})
     const legs:Leg[]=[];post(legs,'cash','opening-equity',BigInt(s.openingCashMinor));
     journal.push(decodeJournalEntry({eventId:'r29-opening',commandId:'r29-opening',simTimeS:now,postings:legs,payloadSha256:await digest({openingCashMinor:s.openingCashMinor,startSimS:s.startSimS,policy:s.policy})}));
   }
+  const timeline:FinancialPoint[]=[];
+  function snapshot(l:ReturnType<typeof inspectLiquidityBook>):FinancialSnapshot{
+    const carryingEquity=balance('cash')+balance('energy-inventory')+balance('train-assets')+balance('accumulated-depreciation')+balance('loan-principal')+balance('interest-payable');
+    return {atSimS:l.simTimeS,availableCashMinor:l.availableCashMinor,reservedCashMinor:l.reservedCashMinor,activeReservations:l.reservations.filter(x=>!x.closed).length,payoffAdjustedEquityMinor:signed(carryingEquity+BigInt(l.totalDebtMinor)-BigInt(l.totalPayoffMinor)),overdueLoans:l.loans.filter(x=>x.status==='matured-unpaid').length};
+  }
+  const initial=captureTimeline?snapshot(inspectLiquidityBook(liquidity)):null;
   const rows=[...s.transactions,...(append?[{...append,payloadSha256:null}]:[])];
   for(let idx=0;idx<rows.length;idx++){
     const row=rows[idx],a=row.action;
@@ -121,6 +130,7 @@ async function replay(s:Book,c:Sources,append?:{commandId:string;action:Action})
     }
     // One advance per action; even zero-money commands accrue due interest.
     liquid({type:'advance',atSimS:now});
+    const before=captureTimeline?snapshot(inspectLiquidityBook(liquidity)):null;
     if(a.type==='advance'){}
     else if(a.type==='borrow'){
       liquid(a);const n=BigInt(a.principalMinor);post(legs,'cash','loan-principal',n);flows.financing.in+=n;
@@ -176,6 +186,23 @@ async function replay(s:Book,c:Sources,append?:{commandId:string;action:Action})
       evidence.push({id:l.lot.id,unit:l.lot.energy.unit,quantity:l.originalQuantity,cost:l.originalCostMinor,source:l.source});
       const n=BigInt(l.originalCostMinor);
       cashOut('energy-inventory',n);lots.set(a.lotId,{cost:n,quantity:BigInt(l.originalQuantity),usedCost:0n,usedQuantity:0n});
+    }else if(a.type==='write-off-energy'){
+      // R31 liquidation only; the aggregate controller authorizes this action.
+      // Use an actual R23/R24 closed reservation, no invented disposal cash.
+      if(!a.reservationId.startsWith('r31:stock:')||c.d.trips.some(t=>t.tripId===a.reservationId)||c.r.records.some(t=>t.terms.tripId===a.reservationId))fail('invalid nontrip writeoff identity');
+      use('energy-writeoff',a.reservationId);
+      const e=c.energy.reservations.find(x=>x.id===a.reservationId)??fail('missing writeoff reservation');
+      const n=e.closed??fail('writeoff reservation not closed');
+      if(n.outcome!=='consumed'||!n.consumed.length||e.allocations.length!==n.consumed.length)fail('invalid writeoff consumption');
+      for(let k=0;k<e.allocations.length;k++){
+        const a=e.allocations[k],x=n.consumed[k];
+        if(a.lotId!==x.lotId||a.unit!==x.unit||a.quantity!==x.quantity)fail('writeoff must consume full reservation');
+        const l=lots.get(x.lotId)??fail('writeoff lot not purchased');
+        l.usedCost+=BigInt(x.costMinor);l.usedQuantity+=BigInt(x.quantity);
+        if(l.usedCost>l.cost||l.usedQuantity>l.quantity)fail('writeoff exceeds carrying lot');
+      }
+      evidence.push(e);
+      post(legs,'energy-expense','energy-inventory',BigInt(n.totalCostMinor));
     }else if(a.type==='acquire-asset'){
       use('asset',a.trainId);
       const opening=c.o.opening.find(x=>x.train.id===a.trainId)??fail('unknown train');
@@ -250,6 +277,7 @@ async function replay(s:Book,c:Sources,append?:{commandId:string;action:Action})
     commands.set(row.commandId,tx);
     if(legs.length)journal.push(decodeJournalEntry({eventId:'r29-'+idx,commandId:row.commandId,simTimeS:now,postings:legs,payloadSha256:digestValue}));
     const l=inspectLiquidityBook(liquidity);
+    if(before)timeline.push({revision:idx+1,commandId:row.commandId,type:a.type,before,after:snapshot(l)});
     if(balance('cash')!==BigInt(l.cashMinor)||-balance('loan-principal')!==BigInt(l.principalOutstandingMinor)||-balance('interest-payable')!==BigInt(l.interestOutstandingMinor))fail('liquidity and journal mismatch');
     if(balance('energy-inventory')!==[...lots.values()].reduce((n,x)=>n+x.cost-x.usedCost,0n))fail('energy carrying value mismatch');
     const active=[...assets.values()].filter(x=>!x.disposed);
@@ -269,7 +297,7 @@ async function replay(s:Book,c:Sources,append?:{commandId:string;action:Action})
   // Current upstream may be ahead of the ledger while preparing a pure
   // candidate. Explicit completeness flags, not false balance claims.
   const pendingEnergyLots=c.energy.lots.filter(x=>!lots.has(x.lot.id)).map(x=>x.lot.id);
-  const pendingEnergyReservations=c.energy.reservations.filter(x=>x.closed&&!claims.has(key('trip',x.id))).map(x=>x.id);
+  const pendingEnergyReservations=c.energy.reservations.filter(x=>x.closed&&!claims.has(key('trip',x.id))&&!claims.has(key('energy-writeoff',x.id))).map(x=>x.id);
   const pendingTrips=c.r.records.filter(x=>x.closed&&!claims.has(key('trip',x.terms.tripId))).map(x=>x.terms.tripId);
   const pendingOperations=c.operations.receipts.filter(x=>{
     switch(x.type){case 'trip':return !claims.has(key('trip',x.tripId));case 'overhead':return !claims.has(key('overhead',x.periodIndex));case 'service-start':return !claims.has(key('maintenance',x.job.id));case 'depreciation':return !claims.has(key('depreciation',x.trainId,x.throughSimS));case 'disposal':return !claims.has(key('disposal',x.trainId,x.disposedAtSimS));default:return false;}
@@ -285,13 +313,20 @@ async function replay(s:Book,c:Sources,append?:{commandId:string;action:Action})
     for(const x of c.operations.maintenance){if(!x.asset)continue;const l=assets.get(x.trainId)??fail('missing asset');if(l.disposed!==(x.asset.disposedAtSimS!==null)||l.basis!==BigInt(x.asset.purchaseMinor)||l.accumulated!==BigInt(x.asset.accumulatedDepreciationMinor))fail('source asset balance mismatch');}
   }
   const out={...s,revision:commands.size,transactions:[...commands.values()]};
-  return {book:out,view:{revision:out.revision,sourceVersions:c.versions,journal,liquidity,liquidityView:l,balances:accounts.map(accountId=>({accountId,debitBalanceMinor:signed(balance(accountId))})),revenueMinor:money(revenues),operatingCostsMinor:money(operatingCosts),operatingMarginMinor:signed(margin),operatingProfitMinor:signed(operating),accountingProfitMinor:signed(profit),equityMinor:signed(equity),cashFlow,pending:{energyLots:pendingEnergyLots,energyReservations:pendingEnergyReservations,trips:pendingTrips,operations:pendingOperations,incentives:pendingIncentives,assets:pendingAssets}}};
+  return {book:out,initial,timeline,view:{revision:out.revision,sourceVersions:c.versions,journal,liquidity,liquidityView:l,balances:accounts.map(accountId=>({accountId,debitBalanceMinor:signed(balance(accountId))})),revenueMinor:money(revenues),operatingCostsMinor:money(operatingCosts),operatingMarginMinor:signed(margin),operatingProfitMinor:signed(operating),accountingProfitMinor:signed(profit),equityMinor:signed(equity),cashFlow,pending:{energyLots:pendingEnergyLots,energyReservations:pendingEnergyReservations,trips:pendingTrips,operations:pendingOperations,incentives:pendingIncentives,assets:pendingAssets}}};
 }
 export async function createAccountingBook(openingCashMinor:unknown,startSimS:unknown,policy:unknown,c:AccountingSources):Promise<AccountingBook>{
   return decodeAccountingBook({schemaVersion:1,revision:0,openingCashMinor,startSimS,policy,transactions:[]},c);
 }
 export async function decodeAccountingBook(input:unknown,c:AccountingSources):Promise<AccountingBook>{return freeze((await replay(book(input),sources(c))).book);}
 export async function inspectAccountingBook(input:unknown,c:AccountingSources){return freeze((await replay(book(input),sources(c))).view);}
+/** R31 opt-in timeline, generated only from validated R29 replay.
+ * Before = after the automatic R28 clock advance but before the action.
+ * After = committed candidate effect. Never trusts externally supplied metrics. */
+export async function inspectAccountingTimeline(input:unknown,c:AccountingSources){
+  const x=await replay(book(input),sources(c),undefined,true);
+  return freeze({book:x.book,initial:x.initial??fail('missing initial snapshot'),timeline:x.timeline,view:x.view});
+}
 export async function applyAccountingCommand(input:unknown,c:AccountingSources,cmd:unknown):Promise<AccountingBook>{
   const q=command(cmd),s=book(input),ctx=sources(c);
   const old=s.transactions.find(x=>x.commandId===q.commandId);
