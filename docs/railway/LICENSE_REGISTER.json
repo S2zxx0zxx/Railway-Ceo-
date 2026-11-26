@@ -82,7 +82,15 @@
       "licenseEvidence": null,
       "licenseBlob": null,
       "productionAccepted": false,
-      "blocker": "https://download.geofabrik.de/asia/india/index.html ; https://www.openstreetmap.org/copyright ; R04 provenance/boundary policy; R13 actual dated PBF, checksum and byte hash. No downloaded dataset or public tile scraping."
+      "blocker": "https://download.geofabrik.de/asia/india/index.html ; https://www.openstreetmap.org/copyright ; R04 provenance/boundary policy; R13 actual dated PBF, checksum and byte hash. No downloaded dataset or public tile scraping.",
+      "r04Review": {
+        "policy": "docs/railway/R04_DATA_ACQUISITION_POLICY.json",
+        "licenseUrl": "https://opendatacommons.org/licenses/odbl/1-0/",
+        "providerListing": "https://download.geofabrik.de/asia/india/eastern-zone/",
+        "disposition": "DATA_CANDIDATE_REVIEWED_NOT_ACQUIRED",
+        "actualDataRightsAndBoundary": "Pending actual-data review R13/R18/R51",
+        "snapshotSha256": null
+      }
     },
     {
       "id": "B02",
@@ -180,7 +188,13 @@
       "licenseEvidence": "https://github.com/transitland/transitland-atlas/blob/db0fe0bd5382f85e35740be5832589e7fe619ad7/LICENSE.txt",
       "licenseBlob": "da6ab6cc8f333d7e89a99812866df8f24374d47c",
       "productionAccepted": false,
-      "blocker": "Defer for pilot; catalog not track geometry; individual GTFS feeds separately licensed; no feed acquisition."
+      "blocker": "Defer for pilot; catalog not track geometry; individual GTFS feeds separately licensed; no feed acquisition.",
+      "r04Review": {
+        "policy": "docs/railway/R04_DATA_ACQUISITION_POLICY.json",
+        "disposition": "DEFERRED_NO_INSTALL",
+        "feedRights": "No feed selected; per-feed review required",
+        "source": "https://www.transit.land/documentation/concepts/source-feeds/"
+      }
     },
     {
       "id": "C01",
