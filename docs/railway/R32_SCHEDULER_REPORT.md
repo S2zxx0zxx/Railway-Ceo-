@@ -15,3 +15,6 @@ Trusted nextBoundary adapter supplies earliest review, grace deadline, maturity 
 
 ## Tests and status
 New tests/railway-r32.test.ts blob 64a81a65c8731a82100a2953b8ed91d55d616fa3; additional actual domain integration tests R29 blob e6d11c5956a66a6c82eb69679d809f04a8f4eef5 and R31 blob 4ee4f786f37599caf5dd94c9775bda392de22053. Positive/negative/boundary/atomicity/replay/heap/seed/hash/real accounting and governance cases. Fresh CI tracked DV-045; R32 IMPLEMENTED_UNVERIFIED pending exact executable results. No merge or next task started.
+
+## Initial CI correction
+Initial 5f1fe85 Verify 45854135748 job 140027935105 TypeScript TS2345 exit2: spread literal lost R06 branded seconds in comparator fixture; corrected fixture annotation; production scheduler unchanged. Worker 45854135594 and browser 45854135811 failed; release audit 45854135698 passed; Android 45854135680 pending at observation. Fresh corrected CI required. Corrected test blob 24f4192a00db71e798cae7c0964808792e252493. No new source changes or acceptance claim.
