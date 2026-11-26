@@ -7,7 +7,7 @@ R05,G0,PASS,docs/railway/R05_MODULE_REVIEW.md; dbf82a4 and eefc7f5 CI 5/5 each,,
 R06,G1,PASS,src/domain; tests/railway-r06.test.ts; b2c13be and d67fbe5 CI 5/5 each; 206/206 local cases,,START R07
 R07,G1,PASS,src/rail/graph/index.ts; tests/railway-r07.test.ts; 980e708 and e0e5776 CI 5/5 each; 56/56 local cases,,START R08
 R08,G1,PASS,src/rail/compatibility/index.ts; fc637c5 and 4ef5106 CI 5/5 each; 66/66 local cases,,START R09
-R09,G1,IMPLEMENTED_UNVERIFIED,src/rail/routing/index.ts; src/worker/rail-routing.ts; R09_ROUTING_REPORT.md; f97aa926ff79bb94ca2552cd4a1be12d8804a313; 34/34 local cases; 2/2 Node thread smoke; 7/7 exact blobs; CI 45806966964 45806967040 45806966930 45806966966 45806966938,Full repository CI pending,START R10 provisionally
+R09,G1,PASS,src/rail/routing/index.ts; src/worker/rail-routing.ts; R09_ROUTING_REPORT.md; f97aa926ff79bb94ca2552cd4a1be12d8804a313; 34/34 local; 2/2 Node thread; 496/496 CI tests; 7/7 exact blobs; CI 45806966966 45806967040 45806966964 45806966938 45806966930; checkpoint 6eb30f9 CI 45807054230 45807054236 45807054728 45807054224 45807054741,,START R10
 R10,G1,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R11,G1,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R12,G1,NOT_STARTED,,,Consult original V4 dependencies and acceptance
