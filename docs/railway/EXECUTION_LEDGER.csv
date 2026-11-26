@@ -2,8 +2,8 @@ id,gate,status,evidence,blocker,next_action
 R01,G0,PASS,docs/railway/R01_BASELINE.md; run 45769168839; tested ed2e4eedbad97b3b036b4d8c4bcfe1d293d33744,,START R02
 R02,G0,PASS,docs/railway/R02_QUARANTINE.md; runs 45778676512 and 45778676345; tested 4a573b335766a055b11a41581a766d55770e5d65,,START R03
 R03,G0,PASS,docs/railway/R03_SOURCE_REVIEW.md; tested b95c47935865a7310548b0d604ac2b83e8afc539; CI 45791087407 45791087624 45791087413 45791087499 45791087404,,START R04
-R04,G0,IMPLEMENTED_UNVERIFIED,docs/railway/R04_DATA_ACQUISITION_PLAN.md; R04_DATA_ACQUISITION_POLICY.json; 3cb55955bf9c0d25cf624299b5625b10ce51b68e; 14/14 readback; CI 45794398047 45794396405 45794396446 45794396587 45794396408,Fresh CI not fully accepted,START R05
-R05,G0,NOT_STARTED,,,Consult original V4 dependencies and acceptance
+R04,G0,PASS,docs/railway/R04_DATA_ACQUISITION_PLAN.md; 3cb5595 four CI success; equivalent cac9b84 Android 45794465233 success,,START R05
+R05,G0,IMPLEMENTED_UNVERIFIED,docs/railway/R05_MODULE_REVIEW.md; R05_MODULE_MAP.json; R05_QA_MAPPING.csv,Fresh readback and CI pending,START R06 provisionally
 R06,G1,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R07,G1,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R08,G1,NOT_STARTED,,,Consult original V4 dependencies and acceptance

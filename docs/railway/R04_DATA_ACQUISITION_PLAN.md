@@ -23,3 +23,6 @@ Source list, policy and checksum strategy reviewed. Web sidecar retrieval reject
 
 ## Repository verification checkpoint
 Implementation commit 3cb55955bf9c0d25cf624299b5625b10ce51b68e; 14/14 connector readback assertions passed, six documentation files only. CI: Browser and offline smoke 45794398047: in_progress/pending; Verify game 45794396405: in_progress/pending; Release dependency and license audit 45794396446: in_progress/pending; G08 save and worker acceptance 45794396587: in_progress/pending; Android QA APK and unsigned AAB 45794396408: in_progress/pending. Fresh CI deferred under DV-004; R04 IMPLEMENTED_UNVERIFIED. No actual data or rights clearance claimed. Next R05.
+
+## R04 closure at R05
+Original implementation 3cb5595: four workflows passed, Android 45794396408 job 139821214284 failed dependency fetch HTTP 429 (Maven Central, exit 1). Next checkpoint cac9b84 differs only in four docs/railway files; Android 45794465233 completed success, APK verification and unsigned AAB assembly/hash succeeded. Equivalent executable baseline recovery accepted for R04 planning only; original failure preserved. DV-004 closed. Actual data acquisition, checksums and parser DV-002/003 remain R13. No physical-device or real-data acceptance claimed.
