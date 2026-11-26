@@ -43,7 +43,10 @@ const overlap=(a:Window,b:Window)=>a.resourceId===b.resourceId&&a.lane===b.lane&
 export function segmentDuration(distanceInput:unknown,speedInput:unknown,accInput:unknown,brakeInput:unknown):number {
   const d=BigInt(positive(distanceInput)),v=BigInt(positive(speedInput)),a=BigInt(positive(accInput)),b=BigInt(positive(brakeInput));
   const minimum=ceil(18n*d,5n*v)+ceil(a+b,2n);
-  return safe(minimum>a+b?minimum:a+b);
+  const T=minimum>a+b?minimum:a+b;
+  // Reject unrepresentable peak velocity at plan time, not during inspection.
+  safe(2000n*d/(2n*T-a-b));
+  return safe(T);
 }
 export function segmentPosition(distanceInput:unknown,speedInput:unknown,accInput:unknown,brakeInput:unknown,elapsedInput:unknown){
   const duration=segmentDuration(distanceInput,speedInput,accInput,brakeInput);
@@ -232,7 +235,7 @@ export async function prepareMovement(graph:RailGraph,catalog:RollingStockCatalo
       const phase=p.phases[t.phaseIndex],dt=integer(Math.min(elapsed-phase.startS,phase.endS-phase.startS));
       const motion=phase.kind==='MOVE'?segmentPosition(phase.distanceM,phase.speedLimitKmh,phase.accelerationS,phase.brakingS,dt):{distanceM:0,speedMmPerS:0};
       // Geometry is a trusted ordered reference; rendering interpolation is R42.
-      return {tripId:t.tripId,trainId:t.trainId,planId:t.planId,status:phase.kind==='MOVE'?'RUNNING':'DWELL',nodeId:phase.kind==='MOVE'?(motion.distanceM===phase.distanceM?phase.to:motion.distanceM===0?phase.from:null):phase.from,edgeId:phase.edgeId,stationId:phase.stationId,distanceM:add(phase.distanceBeforeM,motion.distanceM),edgeDistanceM:motion.distanceM,speedMmPerS:motion.speedMmPerS,geometry:phase.edgeId?graph.edge(phase.edgeId).geometry:null,resourceId:phase.resourceId,lane:t.lanes[t.phaseIndex],arrivalSimS:null};
+      return {tripId:t.tripId,trainId:t.trainId,planId:t.planId,status:phase.kind==='MOVE'?'RUNNING':'DWELL',nodeId:phase.kind==='MOVE'?(dt===phase.endS-phase.startS?phase.to:dt===0?phase.from:null):phase.from,edgeId:phase.edgeId,stationId:phase.stationId,distanceM:add(phase.distanceBeforeM,motion.distanceM),edgeDistanceM:motion.distanceM,speedMmPerS:motion.speedMmPerS,geometry:phase.edgeId?graph.edge(phase.edgeId).geometry:null,resourceId:phase.resourceId,lane:t.lanes[t.phaseIndex],arrivalSimS:null};
     });
     const reservations=s.state.trips.flatMap(t=>windows(t).map((w,i)=>({...w,tripId:t.tripId,phaseIndex:i}))).filter(w=>w.end>s.simTimeS);
     const occupied=reservations.filter(w=>w.start<=s.simTimeS&&s.state.trips.some(t=>t.tripId===w.tripId&&t.phaseIndex===w.phaseIndex));

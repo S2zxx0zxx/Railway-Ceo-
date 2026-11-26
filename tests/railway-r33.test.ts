@@ -72,3 +72,12 @@ describe('R33 deterministic replay and invalid state defense',()=>{
  it('checksum corruption and missing pending event rejected',async()=>{const {runtime,s}=await setup();const q=await runtime.reserve(s,reservation());await expect(runtime.restore({...q,pendingEvents:[]})).rejects.toThrow();await expect(runtime.restore({...q,simTimeS:1000})).rejects.toThrow();});
  it('no financial postings, settlement or hidden randomness in movement',async()=>{const {runtime,s}=await setup();const q=await runtime.reserve(s,reservation());const x=await runtime.advance(q,300,20);expect(x.snapshot.rngState).toBe(s.rngState);expect(Object.keys(x.snapshot.state).sort()).toEqual(['schemaVersion','trips']);expect((await runtime.inspect(x.snapshot)).trips[0].status).toBe('ARRIVED');});
 });
+
+describe('R33 additional numerical and location boundaries',()=>{
+ it('rejects unrepresentable peak velocity before creating a movement plan',()=>{expect(()=>segmentDuration(MAX_INTEGER,MAX_INTEGER,1,1)).toThrow();});
+ it('rounded zero metres does not imply that a moving train is still at the origin node',async()=>{
+  const f=await fixtures();const plans=clone(f.plans);plans.find((p:any)=>p.id==='short').dynamics={accelerationS:1000,brakingS:1000,dwellS:[]};
+  const runtime=await prepareMovement(f.g,f.c,f.resources,plans,f.roster,f.limits),s=await runtime.initialize(0,1),q=await runtime.reserve(s,reservation('a','t1','short',10));
+  const x=await runtime.advance(q,11,5);expect((await runtime.inspect(x.snapshot)).trips[0]).toMatchObject({status:'RUNNING',edgeId:'ab',edgeDistanceM:0,nodeId:null});
+ });
+});
