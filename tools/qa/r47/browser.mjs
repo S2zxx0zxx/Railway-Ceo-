@@ -12,6 +12,7 @@ try{
  // Place a sentinel legacy cache; update cleanup must not touch it.
  await page.evaluate(async()=>{const c=await caches.open('the-ceo-legacy-sentinel');await c.put(new Request(location.origin+'/legacy-test'),new Response('retained'));});
  await page.getByRole('button',{name:'Start guest company'}).click();await ready();
+ const beforeQuote=await page.evaluate(()=>r47Qa.export());
  await page.evaluate(()=>r47Qa.quote());
  const optional=page.getByLabel('Optional service availability');assert.equal(await optional.getByText('Disabled',{exact:true}).count(),9);
  const pre=await page.evaluate(()=>r47Qa.export());
@@ -39,11 +40,16 @@ try{
  const latest=await recovery.evaluate(()=>r47Qa.export());
  // Actual import rejection with intact trusted head, then corruption and valid recovery below.
  const input=recovery.getByLabel('Restore matching recovery file');
- const invalid=[{label:'malformed',raw:'{'},{label:'unknown-field',raw:JSON.stringify({...latest,extra:true})},{label:'tampered',raw:JSON.stringify({...latest,payload:latest.payload+' '})},{label:'wrong-tag',raw:JSON.stringify({...latest,tag:'0'.repeat(64)})}];
+ const invalid=[{label:'stale-authenticated',raw:JSON.stringify(beforeQuote)},{label:'malformed',raw:'{'},{label:'unknown-field',raw:JSON.stringify({...latest,extra:true})},{label:'tampered',raw:JSON.stringify({...latest,payload:latest.payload+' '})},{label:'wrong-tag',raw:JSON.stringify({...latest,tag:'0'.repeat(64)})}];
  for(const item of invalid){await input.setInputFiles({name:item.label+'.json',mimeType:'application/json',buffer:Buffer.from(item.raw)});await recovery.locator('main[aria-busy="false"]').waitFor();await recovery.getByRole('alert').waitFor();assert.deepEqual(await recovery.evaluate(()=>r47Qa.export()),latest);}
  // A separate browser context has a separate local key and storage.
- const foreign=await b.newContext();try{const fp=await foreign.newPage();await fp.goto(origin);await fp.getByRole('button',{name:'Start guest company'}).click();await fp.getByText('Guest company ready',{exact:true}).waitFor();const own=await fp.evaluate(()=>r47Qa.export());await assert.rejects(fp.evaluate(s=>r47Qa.recover(s),latest),/not latest|authentication/);assert.deepEqual(await fp.evaluate(()=>r47Qa.export()),own);}finally{await foreign.close();}
- console.log('R52_IMPORT PASS four invalid file imports and cross-install recovery rejected with unchanged trusted saves');
+ const foreign=await b.newContext();try{const fp=await foreign.newPage();await fp.goto(origin);await fp.getByRole('button',{name:'Start guest company'}).click();await fp.getByText('Guest company ready',{exact:true}).waitFor();const own=await fp.evaluate(()=>r47Qa.export());await assert.rejects(fp.evaluate(s=>r47Qa.recover(s),latest),/not latest|authentication/);assert.deepEqual(await fp.evaluate(()=>r47Qa.export()),own);
+ // Deleting the installation key must not permit implicit initialization or recovery.
+ const retained=await fp.evaluate(()=>new Promise((resolve,reject)=>{const q=indexedDB.open('r47-qa-guest');q.onerror=()=>reject(q.error);q.onsuccess=()=>{const db=q.result,t=db.transaction(['heads','slots','keys'],'readwrite'),heads=t.objectStore('heads').getAll(),slots=t.objectStore('slots').getAll();t.objectStore('keys').clear();t.oncomplete=()=>{db.close();resolve({heads:heads.result,slots:slots.result});};t.onerror=()=>reject(t.error);};}));
+ assert.equal(await fp.evaluate(()=>r47Qa.presence()),'incomplete');await assert.rejects(fp.evaluate(()=>r47Qa.duplicate()),/existing or incomplete/);await assert.rejects(fp.evaluate(s=>r47Qa.recover(s),own),/trusted save head|installation key/);
+ const after=await fp.evaluate(()=>new Promise((resolve,reject)=>{const q=indexedDB.open('r47-qa-guest');q.onerror=()=>reject(q.error);q.onsuccess=()=>{const db=q.result,t=db.transaction(['heads','slots','keys'],'readonly'),heads=t.objectStore('heads').getAll(),slots=t.objectStore('slots').getAll(),keys=t.objectStore('keys').count();t.oncomplete=()=>{db.close();resolve({heads:heads.result,slots:slots.result,keys:keys.result});};t.onerror=()=>reject(t.error);};}));assert.deepEqual(after,{...retained,keys:0});
+ }finally{await foreign.close();}
+ console.log('R52_IMPORT PASS five invalid or stale file imports, cross-install and missing-key recovery rejected; trusted saves unchanged');
  await recovery.evaluate(()=>new Promise((resolve,reject)=>{const q=indexedDB.open('r47-qa-guest');q.onerror=()=>reject(q.error);q.onsuccess=()=>{const db=q.result,tx=db.transaction('slots','readwrite'),store=tx.objectStore('slots'),rows=store.getAll();rows.onsuccess=()=>{for(const row of rows.result)store.put({...row,seal:{...row.seal,payload:'corrupt'}});};tx.oncomplete=()=>{db.close();resolve(true);};tx.onerror=()=>reject(tx.error);};}));
  await recovery.getByRole('button',{name:'Resume guest company'}).click();await recovery.getByRole('alert').filter({hasText:/no valid latest copy/}).waitFor();
  await recovery.getByLabel('Restore matching recovery file').setInputFiles({name:'save.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(latest))});

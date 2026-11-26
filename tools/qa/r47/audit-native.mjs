@@ -25,3 +25,12 @@ const {resolve}=await import('node:path');
 const inventoryPath=resolve('r47-native-evidence/r51-native-classpath.json');
 execFileSync('bash',['gradlew','--offline','--no-daemon','-I',resolve('tools/qa/r47/r51-native-inventory.gradle'),':app:r51QaRuntimeInventory'],{cwd:'r47-native-qa/android',env:{...process.env,R51_NATIVE_INVENTORY_PATH:inventoryPath},stdio:'inherit',timeout:180000});
 execFileSync('python',['tools/qa/r47/r51-native-pom-audit.py',inventoryPath],{stdio:'inherit'});
+
+// R52: check real merged binary manifest, not just Capacitor source settings.
+const manifest=execFileSync(aapt,['dump','xmltree',apk,'AndroidManifest.xml'],{encoding:'utf8'});
+assert.match(manifest,/android:allowBackup[^\n]*=\(type 0x12\)0x0\b/,'QA APK must disable platform backup');
+assert.match(manifest,/android:usesCleartextTraffic[^\n]*=\(type 0x12\)0x0\b/,'QA APK must disable cleartext traffic');
+assert.equal(native.android?.webContentsDebuggingEnabled,false);
+assert.doesNotMatch(permissions,/android\.permission\.(?:CAMERA|RECORD_AUDIO|READ_PHONE_STATE|READ_SMS|SEND_SMS|READ_CALL_LOG|WRITE_CALL_LOG|READ_CONTACTS|WRITE_CONTACTS|ACCESS_BACKGROUND_LOCATION|MANAGE_EXTERNAL_STORAGE|REQUEST_INSTALL_PACKAGES)\b/i);
+await writeFile('r47-native-evidence/r52-merged-manifest.txt',manifest);
+console.log('R52_NATIVE_BOUNDARY PASS QA merged manifest backup and cleartext disabled; restricted permission denylist; debug QA only');

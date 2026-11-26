@@ -11,7 +11,10 @@ assert.ok(!Object.keys(lock.packages).some(k=>forbidden.test(k)),'Unapproved SDK
 const files=execFileSync('git',['ls-files','-z'],{encoding:'utf8'}).split('\0').filter(p=>/^(src\/rail\/|src\/ui\/railway\/|src\/platform\/|railway-app\/)/.test(p)&&/\.(?:tsx?|html|css)$/.test(p));
 for(const p of files){const t=await readFile(p,'utf8');assert.doesNotMatch(t,/\b(?:fetch|WebSocket|EventSource|sendBeacon)\s*\(\s*['"`](?:https?|wss?):/i,'Literal external runtime call '+p);}
 for(const path of ['railway-dist','r47-qa-dist']){
- const html=await readFile(join(path,'index.html'),'utf8');assert.match(html,/Content-Security-Policy/);assert.ok(html.includes("connect-src 'self'")&&html.includes("script-src 'self'")&&html.includes("frame-src 'none'")&&html.includes("form-action 'none'"));
+ const html=await readFile(join(path,'index.html'),'utf8');assert.match(html,/Content-Security-Policy/);const policy=html.match(/http-equiv="Content-Security-Policy" content="([^"]+)"/i);assert.ok(policy,'Missing CSP meta');
+ const directives=new Map();for(const part of policy[1].split(';').map(s=>s.trim()).filter(Boolean)){const [name,...values]=part.split(/\s+/);assert.ok(!directives.has(name),'Duplicate CSP directive '+name);directives.set(name,values.join(' '));}
+ for(const [name,values] of Object.entries({'default-src':"'none'",'script-src':"'self'",'connect-src':"'self'",'object-src':"'none'",'base-uri':"'none'",'form-action':"'none'",'frame-src':"'none'",'worker-src':"'self' blob:",'font-src':"'self'",'manifest-src':"'self'"}))assert.equal(directives.get(name),values,'Unexpected CSP '+name);
+ assert.ok(!policy[1].includes("'unsafe-eval'")&&!policy[1].includes('https:')&&!policy[1].includes('*'),'Broad CSP allowance');
 }
 await mkdir('r47-evidence',{recursive:true});await writeFile('r47-evidence/r48-source-audit.json',JSON.stringify({runtime,sourceFiles:files.length,csp:true,limitations:'Pinned package and literal endpoint checks plus browser network tests; not proof against dynamic same-origin calls or malicious code. No final native release audit.'},null,2));
 console.log('R48_SOURCE PASS '+runtime.length+' exact runtime dependencies; '+files.length+' source files; local-only CSP in both builds');
