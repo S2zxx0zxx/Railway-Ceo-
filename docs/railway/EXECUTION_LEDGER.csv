@@ -32,7 +32,7 @@ R30,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/company.ts; R30_COMPANY_REPORT.md
 R31,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/governance.ts; R31_GOVERNANCE_REPORT.md; 66501728 Verify 43/43 R31 and 1310/1310 repository tests; 4/5 original CI; Android retry completed success,Provisional predecessors and integration,Final reconciliation required
 R32,G4,PASS,src/rail/scheduler/index.ts; R32_SCHEDULER_REPORT.md; 15683d5 and docs-only 9cc9fde CI 5/5 each; 1353/1353 tests; 40 dedicated plus 3 integration; DV-045 closed,,START R33
 R33,G4,PASS,src/rail/movement/index.ts; R33_MOVEMENT_REPORT.md; 0c6993e and c173585 CI 5/5 each; 1393/1393 tests; 40 R33; DV-046 closed,,START R34
-R34,G4,IMPLEMENTED_UNVERIFIED,src/rail/dispatch/index.ts; tests/railway-r34.test.ts; R34_DISPATCH_REPORT.md; 30 authored cases; initial 27/30; corrections pushed,Corrected CI DV-047; provisional R21/R23/R28/R29; GP-003/031 and durable CAS tracked,Reconcile CI before next eligible R35
+R34,G4,IMPLEMENTED_UNVERIFIED,src/rail/dispatch/index.ts; R34_DISPATCH_REPORT.md; 83f17a3ce26f5b7a55df0d33add2bb183d9a2cf5; 30/30 dedicated and 1423/1423 repo tests; 2/5 corrected CI successes,DV-047 corrected platform CI pending; provisional R21/R23/R28/R29 and DV-048,START R35 provisionally
 R35,G4,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R36,G4,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R37,G4,NOT_STARTED,,,Consult original V4 dependencies and acceptance
