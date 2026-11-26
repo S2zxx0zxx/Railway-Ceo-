@@ -26,3 +26,6 @@ Node executed every compiled shared case function from out/tests/railway-r06.cas
 
 ## Status
 R05 dbf82a42ac06e059568ba1d7e6f2a38e5dceb750 and checkpoint eefc7f5d075bd8cd4f3dd134a887c261825fb73c both 5/5 CI completed success. R05 PASS, G0 accepted for foundation scope; DV-005 closed. R06 local acceptance passed, full repository CI/readback pending: IMPLEMENTED_UNVERIFIED. Next R07 provisional under owner protocol. No merge or release.
+
+## Repository readback checkpoint
+Implementation b2c13be0f24f86c1bb29741fbcebccfe2bc9a528; all five source/test file hashes matched local-tested Git blobs. Compare: five added source/test files, five docs-only changes; protected refs unchanged. CI: Android QA APK and unsigned AAB 45798509182: in_progress/pending; Verify game 45798509142: in_progress/pending; Browser and offline smoke 45798509185: in_progress/pending; G08 save and worker acceptance 45798509155: in_progress/pending; Release dependency and license audit 45798509347: in_progress/pending. DV-013 open for fresh repository CI; no false PASS. Next R07 under owner protocol. No merge.

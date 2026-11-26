@@ -4,7 +4,7 @@ R02,G0,PASS,docs/railway/R02_QUARANTINE.md; runs 45778676512 and 45778676345; te
 R03,G0,PASS,docs/railway/R03_SOURCE_REVIEW.md; tested b95c47935865a7310548b0d604ac2b83e8afc539; CI 45791087407 45791087624 45791087413 45791087499 45791087404,,START R04
 R04,G0,PASS,docs/railway/R04_DATA_ACQUISITION_PLAN.md; 3cb5595 four CI success; equivalent cac9b84 Android 45794465233 success,,START R05
 R05,G0,PASS,docs/railway/R05_MODULE_REVIEW.md; dbf82a4 and eefc7f5 CI 5/5 each,,START R06
-R06,G1,IMPLEMENTED_UNVERIFIED,src/domain/units.ts; validation.ts; models.ts; tests/railway-r06.test.ts; R06_DOMAIN_SCHEMA_REPORT.md; 206/206 local cases,Repository readback and fresh full CI pending,START R07 provisionally
+R06,G1,IMPLEMENTED_UNVERIFIED,src/domain/units.ts; validation.ts; models.ts; tests/railway-r06.test.ts; R06_DOMAIN_SCHEMA_REPORT.md; b2c13be0f24f86c1bb29741fbcebccfe2bc9a528; 206/206 local cases; 5/5 blobs; CI 45798509182 45798509142 45798509185 45798509155 45798509347,Full repository CI pending,START R07 provisionally
 R07,G1,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R08,G1,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R09,G1,NOT_STARTED,,,Consult original V4 dependencies and acceptance
