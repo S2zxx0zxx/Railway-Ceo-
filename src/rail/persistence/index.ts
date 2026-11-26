@@ -5,6 +5,7 @@ import type {prepareDispatch,DispatchSnapshot} from '../dispatch';
 import {anchorClock,observeClock,checkClock,decodeOfflinePolicy,decodeOfflineClock,catchupInput,AUTO_SETTLEMENT_PREFIX,type OfflineClock,type OfflinePolicy} from '../offline';
 
 import {runCatchupBatch,pending} from '../offline/batch';
+import {achievementReceipts,projectAchievements,claimAchievement} from '../progression';
 
 type Runtime=Awaited<ReturnType<typeof prepareDispatch>>;
 type Controller=Awaited<ReturnType<Runtime['open']>>;
@@ -14,7 +15,7 @@ const hex=(b:ArrayBuffer)=>Array.from(new Uint8Array(b),x=>x.toString(16).padSta
 const bytes=(s:string)=>new TextEncoder().encode(s);
 const raw=(v:unknown)=>v;
 const dbName='railway-ceo-save-v1';
-const kinds=['quote','dispatch','bulk','settle','cancel','fleet','advance','catchup','finance'] as const;
+const kinds=['quote','dispatch','bulk','settle','cancel','fleet','advance','catchup','finance','achievement'] as const;
 const kind=enumeration(kinds);
 const request=object({requestId:id,kind,input:raw});
 type Request=ReturnType<typeof request>;
@@ -70,6 +71,7 @@ export async function decodeRailwaySave(input:unknown,key:CryptoKey,limits:Limit
     const parsed=JSON.parse(r.payload);if(fingerprint(parsed)!==r.payload)fail('invalid journal fingerprint');
     canonical(r.result);previous=r.committedRevision;
   }
+  achievementReceipts(b.journal);
   if(b.schemaVersion!==1&&((b.revision===1)!==(b.previousTag===null)))fail('invalid previous commit link');
   return b;
 }
@@ -160,6 +162,10 @@ export function createRailwayStore(runtime:Runtime,limitsInput:unknown,options:{
     const l=await load(await read());
     return {view:l.view,management:await l.controller.inspectManagement()};
   }
+  async function progressionView(){
+    const l=await load(await read()),f=await l.controller.inspectFinance();
+    return {view:l.view,companyId:f.companyId,missions:projectAchievements(f.governance.missions,l.body.journal,f.governance.policySha256,f.simTimeS),unlocks:f.governance.unlocks,events:[],eventEffectsEnabled:false,onlineEnabled:false};
+  }
   async function financeView(){const l=await load(await read());return {view:l.view,finance:await l.controller.inspectFinance()};}
   async function checkManagement(input:unknown,expected:unknown){
     const q=request(input),captured:unknown=JSON.parse(fingerprint(q.input)),e=cursor(expected);
@@ -175,7 +181,11 @@ export function createRailwayStore(runtime:Runtime,limitsInput:unknown,options:{
         }
       }
       let result:unknown;
-      switch(q.kind){        case 'finance':result=(await c.finance(captured,checksum)).result;break;
+      switch(q.kind){        case 'achievement':{
+        if(c.snapshot().pendingEvents.some(e=>e.simTimeS<=c.snapshot().simTimeS))fail('process due events before achievement claim');
+        const f=await c.inspectFinance();result=claimAchievement(f.governance.missions,l.body.journal,f.governance.policySha256,f.simTimeS,captured);break;
+      }
+      case 'finance':result=(await c.finance(captured,checksum)).result;break;
       case 'quote':result=await c.quoteTrip(captured,checksum);break;
         case 'dispatch':result=(await c.dispatch(captured,checksum)).receipt;break;
         case 'bulk':result=(await c.bulkDispatch(captured,checksum)).results;break;
@@ -245,5 +255,5 @@ export function createRailwayStore(runtime:Runtime,limitsInput:unknown,options:{
     return viewFor(x.body,x.seal,x.controller);
   }
   async function exportLatest(){const l=await load(await read());return structuredClone(l.seal);}
-  return Object.freeze({initialize,open,management,financeView,checkManagement,execute,recover,exportLatest,close:()=>db.close()});
+  return Object.freeze({initialize,open,management,financeView,progressionView,checkManagement,execute,recover,exportLatest,close:()=>db.close()});
 }
