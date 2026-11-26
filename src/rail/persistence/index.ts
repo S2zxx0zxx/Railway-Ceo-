@@ -155,6 +155,37 @@ export function createRailwayStore(runtime:Runtime,limitsInput:unknown,options:{
     }
     return l.view;
   }
+  // Read one authenticated durable head and its projections; never publish a candidate.
+  async function management(){
+    const l=await load(await read());
+    return {view:l.view,management:await l.controller.inspectManagement()};
+  }
+  async function checkManagement(input:unknown,expected:unknown){
+    const q=request(input),captured:unknown=JSON.parse(fingerprint(q.input)),e=cursor(expected);
+    const l=await load(await read());checkExpected(l.view,e);
+    try{
+      if(l.view.recoveryRequired||l.body.schemaVersion===1)fail('recover or migrate save first');
+      if(l.body.journal.length>=limits.maxJournalEntries)fail('journal limit; export and reconciled checkpoint required');
+      const c=l.controller,checksum=c.snapshot().checksum,clock=l.body.schemaVersion===3?l.body.clock:undefined;
+      if(offline&&(!clock||pending(c,clock)))fail('offline clock requires catch-up before commands');
+      if(q.kind==='dispatch'||q.kind==='bulk'||q.kind==='settle'||q.kind==='cancel'||q.kind==='fleet'){
+        for(const value of q.kind==='bulk'?list(raw)(captured):[captured]){
+          const row=record(value,'manual command');if(typeof row.commandId==='string'&&row.commandId.startsWith(AUTO_SETTLEMENT_PREFIX))fail('reserved automatic settlement command ID');
+        }
+      }
+      let result:unknown;
+      switch(q.kind){
+        case 'quote':result=await c.quoteTrip(captured,checksum);break;
+        case 'dispatch':result=(await c.dispatch(captured,checksum)).receipt;break;
+        case 'bulk':result=(await c.bulkDispatch(captured,checksum)).results;break;
+        case 'fleet':{const r=await c.fleetCommand(captured,checksum);const m=await c.inspectManagement();result={receipt:r.receipt,job:m.rows.find(x=>x.trainId===r.receipt.trainId)?.maintenance.activeJob??null};break;}
+        case 'settle':result=(await c.settle(captured,checksum)).receipt;break;
+        case 'cancel':result=(await c.cancel(captured,checksum)).receipt;break;
+        default:fail('not a management command');
+      }
+      return {ok:true as const,result};
+    }catch(e){return {ok:false as const,reason:e instanceof Error?e.message:String(e)};}
+  }
   async function execute(input:unknown,expected:unknown){
     const q:Request=request(input),payload=fingerprint(q.input),captured:unknown=JSON.parse(payload),expectedCursor=cursor(expected);
     if(payload.length>1000000)fail('command payload limit');
@@ -212,5 +243,5 @@ export function createRailwayStore(runtime:Runtime,limitsInput:unknown,options:{
     return viewFor(x.body,x.seal,x.controller);
   }
   async function exportLatest(){const l=await load(await read());return structuredClone(l.seal);}
-  return Object.freeze({initialize,open,execute,recover,exportLatest,close:()=>db.close()});
+  return Object.freeze({initialize,open,management,checkManagement,execute,recover,exportLatest,close:()=>db.close()});
 }

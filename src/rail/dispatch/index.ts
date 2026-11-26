@@ -620,6 +620,32 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
         return {...r,nodeId:m.phaseIndex===p.phases.length?p.destination:m.phaseIndex<0?p.origin:p.phases[m.phaseIndex].kind==='MOVE'?null:p.phases[m.phaseIndex].from,state:m.phaseIndex===p.phases.length?'ARRIVED':m.phaseIndex<0?'RESERVED':p.phases[m.phaseIndex].kind==='MOVE'?'RUNNING':'DWELL'};
       }));
     }
+    async function inspectManagement(){return serial(async()=>{
+      const s=current.state,energyView=inspectEnergyBook(s.energy),op=inspectOperatingBook(catalog,s.operations),accounting=await inspectAccountingBook(s.accounting,src(s)),governance=await evaluateSolvency(s.accounting,src(s),cfg.governance);
+      const rows=inspectFleet().map(r=>{
+        const own=s.operations.opening.find(t=>t.train.id===r.trainId)??fail('missing owned train');
+        const model=catalog.resolve(own.catalogReference),condition=op.trains.find(t=>t.trainId===r.trainId)??fail('missing condition');
+        const maintenance=op.maintenance.find(t=>t.trainId===r.trainId)??fail('missing maintenance');
+        const trip=s.movement.trips.find(t=>t.tripId===r.tripId);
+        const plan=trip?movement.plans.find(p=>p.id===trip.planId):undefined;
+        return {...r,model,condition,maintenance:{...maintenance,availability:inspectMaintenanceAvailability(catalog,s.operations,r.trainId,current.simTimeS)},location:r.nodeId===null?null:graph.stationsAt(r.nodeId).map(t=>({id:t.id,name:t.name})),trip:trip&&plan?{departureSimS:trip.departureSimS,expectedArrivalSimS:checkedAdd(trip.departureSimS,plan.durationS),phaseIndex:trip.phaseIndex,distanceM:plan.distanceM}:null};
+      });
+      const templates=plans.map(p=>({id:p.settings.id,serviceId:p.settings.serviceId,modelId:p.reference.modelId,origin:p.movement.origin,destination:p.movement.destination,route:p.route.route,stations:p.route.route.stopIds.map(id=>({id,name:graph.station(id).name})),durationS:p.movement.durationS,relocationYardId:fleet?.destination(p.settings.id)??null,claims:p.settings.claims,requirements:p.requirements,risks:p.settings.risks,inferences:p.route.inferences,inspection:life?terminalPolicy(p.settings.id):null}));
+      const yards=(fleet?.config.yards??[]).map(y=>{
+        const base=fleet!.config.bases.find(b=>b.id===y.baseId)!,nodeId=fleet!.config.anchors.find(a=>a.baseId===base.id)!.nodeId;
+        const occupied=rows.filter(r=>r.yardId===y.id||r.inboundYardId===y.id).length;
+        const baseOccupied=rows.filter(r=>fleet!.config.yards.some(z=>z.baseId===base.id&&(z.id===r.yardId||z.id===r.inboundYardId))).length;
+        return {...y,base,nodeId,stationName:graph.station(base.stationId).name,owned:base.companyId===cfg.governance.companyId,occupied,baseOccupied};
+      });
+      const trips=s.receipts.map(r=>{
+        const closure=s.closures.find(c=>c.tripId===r.tripId)??null;
+        const revenue=s.revenue.records.find(t=>t.terms.tripId===r.tripId)?.closed?.totals??null;
+        const energy=energyView.reservations.find(t=>t.id===r.tripId)??null;
+        const postings=closure?accounting.journal.filter(j=>j.commandId===closure.accountingCommandId).flatMap(j=>j.postings):[];
+        return {receipt:r,closure,revenue,energy,postings};
+      });
+      return freeze({companyId:cfg.governance.companyId,simTimeS:current.simTimeS,stateRevision:s.revision,maxBulk:cfg.maxBulk,maxQuotes:cfg.maxQuotes,rows,templates,yards,trips,models:catalog.snapshot().entries,quotes:[...issued.values()],governance,liquidity:accounting.liquidityView,inventory:energyView.inventory});
+    });}
     async function advance(target:unknown,budget:unknown,expectedChecksum:unknown){
       const t=integer(target),n=limit(budget),expected=sha256(expectedChecksum);
       return serial(async()=>{
@@ -637,7 +663,7 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
         s=await verify(s);current=s;return freeze({snapshot:s,processed,complete,nextDueSimS:next?.simTimeS??null});
       });
     }
-    return Object.freeze({snapshot:()=>current,arrivedTripIds:()=>freeze(current.state.movement.trips.filter(t=>!current.state.closures.some(c=>c.tripId===t.tripId)&&t.phaseIndex===movement.plans.find(p=>p.id===t.planId)?.phases.length).map(t=>t.tripId).sort(cmp)),issuedQuotes:()=>freeze([...issued.values()]),quoteTrip,dispatch,bulkDispatch,advance,fleetCommand:fleetCommandRun,inspectFleet,settle:(q:unknown,c:unknown)=>terminal(q,c,'settled'),cancel:(q:unknown,c:unknown)=>terminal(q,c,'cancelled')});
+    return Object.freeze({snapshot:()=>current,arrivedTripIds:()=>freeze(current.state.movement.trips.filter(t=>!current.state.closures.some(c=>c.tripId===t.tripId)&&t.phaseIndex===movement.plans.find(p=>p.id===t.planId)?.phases.length).map(t=>t.tripId).sort(cmp)),issuedQuotes:()=>freeze([...issued.values()]),quoteTrip,dispatch,bulkDispatch,advance,fleetCommand:fleetCommandRun,inspectFleet,inspectManagement,settle:(q:unknown,c:unknown)=>terminal(q,c,'settled'),cancel:(q:unknown,c:unknown)=>terminal(q,c,'cancelled')});
   }
   async function initialize(start:unknown,seed:unknown,input:unknown){
     const b=opening(input);
