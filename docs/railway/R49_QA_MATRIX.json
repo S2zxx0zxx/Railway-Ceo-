@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "scope": "R49 isolated implementation-first",
+  "dependencies": [
+    "R42",
+    "R43",
+    "R44",
+    "R45",
+    "R46",
+    "R47",
+    "R40"
+  ],
+  "checks": [
+    {
+      "id": "R49-Q01",
+      "scope": "Chromium and Firefox integrated synthetic guest loop",
+      "status": "PENDING_CI"
+    },
+    {
+      "id": "R49-Q02",
+      "scope": "320/360/800/1024 viewport and five screens",
+      "status": "PENDING_CI"
+    },
+    {
+      "id": "R49-Q03",
+      "scope": "Android emulator offline navigation and native back",
+      "status": "PENDING_CI"
+    },
+    {
+      "id": "R49-Q04",
+      "scope": "Existing R39/R40/R47 recovery/process death/update/clock replay regression",
+      "status": "PENDING_CI"
+    },
+    {
+      "id": "R49-Q05",
+      "scope": "Real India map and region install/corruption",
+      "status": "BLOCKED_R42"
+    },
+    {
+      "id": "R49-Q06",
+      "scope": "Physical Android RAM/storage/permission denial/update/install",
+      "status": "BLOCKED_DEVICE"
+    },
+    {
+      "id": "R49-Q07",
+      "scope": "Approved art and full production gameplay",
+      "status": "BLOCKED_APPROVAL"
+    },
+    {
+      "id": "R49-Q08",
+      "scope": "iOS/WebKit and PWA installation on physical devices",
+      "status": "UNVERIFIED"
+    },
+    {
+      "id": "R49-Q09",
+      "scope": "Cross-device transfer and key policy",
+      "status": "BLOCKED_DV060_DV074"
+    }
+  ]
+}

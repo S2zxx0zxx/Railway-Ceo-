@@ -57,14 +57,14 @@ export function createClockSampler(){
 /** Host lifecycle adapter. Does not run a forced background service. Pause
  * checkpoint is best effort; durable watermark handles abrupt process death.
  * Call on foreground heartbeat with the same sampler; rendering is not authority. */
-export async function bindRailwayLifecycle(runner:ReturnType<typeof createOfflineRunner>,hooks:{onProgress:(v:View)=>void;onError:(e:unknown)=>void}){
+export async function bindRailwayLifecycle(runner:ReturnType<typeof createOfflineRunner>,hooks:{onProgress:(v:View)=>void;onError:(e:unknown)=>void;closeRunnerOnDispose?:boolean}){
  const sample=createClockSampler();let disposed=false;
- const wake=()=>{if(!disposed)void runner.wake(sample(),hooks.onProgress).catch(hooks.onError);};
+ const wake=()=>{if(!disposed)void runner.wake(sample(),v=>{if(!disposed)hooks.onProgress(v);}).catch(e=>{if(!disposed)hooks.onError(e);});};
  const visibility=()=>wake(),pagehide=()=>wake(),pageshow=()=>wake();
  document.addEventListener('visibilitychange',visibility);window.addEventListener('pagehide',pagehide);window.addEventListener('pageshow',pageshow);
  let native:Awaited<ReturnType<typeof NativeApp.addListener>>|undefined;
  try{if(nativePlatform)native=await NativeApp.addListener('appStateChange',()=>wake());}
  catch(e){document.removeEventListener('visibilitychange',visibility);window.removeEventListener('pagehide',pagehide);window.removeEventListener('pageshow',pageshow);throw e;}
  wake();
- return {wake,dispose:async()=>{disposed=true;document.removeEventListener('visibilitychange',visibility);window.removeEventListener('pagehide',pagehide);window.removeEventListener('pageshow',pageshow);await native?.remove();runner.close();}};
+ return {wake,dispose:async()=>{disposed=true;document.removeEventListener('visibilitychange',visibility);window.removeEventListener('pagehide',pagehide);window.removeEventListener('pageshow',pageshow);try{await native?.remove();}finally{if(hooks.closeRunnerOnDispose!==false)runner.close();}}};
 }

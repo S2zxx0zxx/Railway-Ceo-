@@ -58,5 +58,23 @@ assert a['configuration']==b['configuration'] and a['quote']==b['quote'] and b['
 assert False in l['events'] and True in l['events']
 print('R47_ANDROID PASS separate QA app, airplane-mode guest start, force-stop resume, persisted quote and native lifecycle')
 PY
+# Navigate actual screens through Android accessibility and native back.
+for screen in Operations Finance Progression; do
+ tap_text "$screen"
+ case "$screen" in Operations) heading='Operations control';; Finance) heading='Company & finance';; Progression) heading='Company progression';; esac
+ for i in $(seq 1 30); do
+  adb shell uiautomator dump /sdcard/r49-window.xml >/dev/null 2>&1 || true
+  adb pull /sdcard/r49-window.xml "r47-native-evidence/r49-${screen}.xml" >/dev/null 2>&1 || true
+  if grep -Fq "$heading" "r47-native-evidence/r49-${screen}.xml"; then break; fi
+  sleep 1
+ done
+ grep -Fq "$heading" "r47-native-evidence/r49-${screen}.xml"
+ adb shell input keyevent KEYCODE_BACK
+ sleep 1
+done
+adb shell getprop ro.build.version.sdk >r47-native-evidence/r49-api.txt
+adb shell cat /proc/meminfo >r47-native-evidence/r49-memory.txt
+adb shell dumpsys webviewupdate >r47-native-evidence/r49-webview.txt
+echo 'R49_NATIVE_NAVIGATION PASS actual three screens and native Back in airplane mode'
 adb shell screencap -p /sdcard/r47.png
 adb pull /sdcard/r47.png r47-native-evidence/guest.png

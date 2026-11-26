@@ -14,6 +14,8 @@ type Tab='home'|'fleet'|'finance'|'progression';
 export function RailwayGuestShell({session,qa=false,updateReady=false,offlineReady=false}:{session?:GuestSession;qa?:boolean;updateReady?:boolean;offlineReady?:boolean}){
  const [status,setStatus]=useState<'loading'|'absent'|'present'|'incomplete'|'unconfigured'>('loading'),[view,setView]=useState<View>(),[tab,setTab]=useState<Tab>('home'),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
  const wakeRef=useRef<(()=>void)|undefined>(undefined);const activeRef=useRef(false),lock=useRef(false);
+ const homeRef=useRef<()=>void>(()=>{});
+ const acceptView=(v:View)=>setView(old=>!old||v.revision>=old.revision?v:old);
  const report=(e:unknown)=>setError(e instanceof Error?e.message:String(e));
  useEffect(()=>{let live=true;if(!session){setStatus('unconfigured');return;}
   session.store.presence().then(s=>{if(live)setStatus(s);},e=>{if(live){setStatus('incomplete');report(e);}});
@@ -22,11 +24,11 @@ export function RailwayGuestShell({session,qa=false,updateReady=false,offlineRea
  const entered=!!view;
  useEffect(()=>{if(!session||!entered||view?.recoveryRequired)return;let gone=false;let stop:(()=>Promise<void>)|undefined;
   activeRef.current=true;
-  void bindRailwayLifecycle(session.runner,{onProgress:v=>{if(!gone)setView(v);},onError:e=>{if(!gone)report(e);}}).then(b=>{if(gone)void b.dispose();else{stop=b.dispose;wakeRef.current=b.wake;}}).catch(report);
+  void bindRailwayLifecycle(session.runner,{closeRunnerOnDispose:false,onProgress:v=>{if(!gone)acceptView(v);},onError:e=>{if(!gone)report(e);}}).then(b=>{if(gone)void b.dispose();else{stop=b.dispose;wakeRef.current=b.wake;}}).catch(e=>{if(!gone)report(e);});
   return()=>{gone=true;activeRef.current=false;wakeRef.current=undefined;if(stop)void stop();};
  },[session,entered,view?.recoveryRequired]);
  useEffect(()=>{if(!Capacitor.isNativePlatform())return;let gone=false;let h:Awaited<ReturnType<typeof NativeApp.addListener>>|undefined;
-  void NativeApp.addListener('backButton',()=>setTab('home')).then(x=>{if(gone)void x.remove();else h=x;}).catch(report);
+  void NativeApp.addListener('backButton',()=>{if(!document.querySelector('main[aria-busy="true"]'))homeRef.current();}).then(x=>{if(gone)void x.remove();else h=x;}).catch(report);
   return()=>{gone=true;void h?.remove();};
  },[]);
  async function run(f:()=>Promise<void>){if(lock.current)return;lock.current=true;setBusy(true);setError('');setNotice('');try{await f();}catch(e){report(e);}finally{lock.current=false;setBusy(false);}}
@@ -34,7 +36,8 @@ export function RailwayGuestShell({session,qa=false,updateReady=false,offlineRea
  const recover=()=>run(async()=>{if(!session||!view)return;setView(await session.store.recover({revision:view.revision,tag:view.tag}));setNotice('Latest authenticated mirror restored.');});
  const exportSave=()=>run(async()=>{if(!session)return;await exportJson('railway-save.json',JSON.stringify(await session.store.exportLatest()));setNotice('Authenticated same-installation recovery export prepared.');});
  async function restoreFile(file:File){await run(async()=>{if(!session)throw Error('No configured guest company');if(file.size>64000000)throw Error('Recovery file exceeds envelope limit');const expected=await session.store.recoveryCursor(),restored=await session.store.recover(expected,JSON.parse(await file.text()));setStatus('present');setView(restored);setNotice('Matching latest authenticated save restored.');});}
- const home=()=>{setTab('home');if(session)void session.store.open().then(setView).catch(report);};
+ const home=()=>{setTab('home');if(session&&entered)void session.store.open().then(acceptView).catch(report);};
+ homeRef.current=home;
  const ready=!!session&&!!view&&!view.recoveryRequired&&!!view.clock&&!view.catchupPending;
  if(ready&&tab!=='home')return <>{error&&<p role="alert">{error}</p>}{tab==='fleet'?<RailwayFleetScreen store={session!.store} onExit={home}/>:tab==='finance'?<RailwayFinanceScreen store={session!.store} onExit={home}/>:<RailwayProgressionScreen store={session!.store} onExit={home}/>}</>;
  return <main className="rf" aria-label="Railway guest entry" aria-busy={busy}><header className="rf-top"><div><small>{qa?'SYNTHETIC QA — NOT RELEASE':'DEVELOPMENT BUILD'}</small><h1>Railway management</h1></div></header>

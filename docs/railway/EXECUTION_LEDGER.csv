@@ -47,7 +47,7 @@ R45,G5,BLOCKED,e5ed2432eb54a613972b53a68b2c8be69d628570; actual Chromium 4587823
 R46,G5,BLOCKED,04a41971867427d5eb0745a9476dfe80a567f7f0; actual Verify 45878558882 1544/1544 tests; 3/3 R46; actual Chromium 45878559289 and art exclusion PASS; styled 0c9d85ef3843de84552d12fcc888a1affd58f18a CI 13/13,DV-071 closed executable only; DV-072 approved model art roster branding rights and starter contract missing,START R47 independently on owner command
 R47,G5,BLOCKED,a1ae52577789d810784d1bb6a906e26157891ebb; 1546/1546 tests; actual PWA 45879602642 PASS; separate Android 45879602529 PASS; exact CI 15/15,DV-073 closed executable only; DV-074 approved identity scenario transfer physical UI-02 scope missing,Reconcile functional dependencies before final acceptance
 R48,G5,IMPLEMENTED_UNVERIFIED,581b243f27a2d224be60dc97f34514beb70eac1e; 1548/1548 tests; actual source browser APK permission and emulator checks PASS; exact CI 15/15,DV-075 closed executable only; DV-076 incomplete R45/R47 dependencies; optional services disabled,R49 bounded QA next on owner START; R13 remains deferred
-R49,G5,NOT_STARTED,,R42 and approved scope dependencies incomplete; owner directs remaining bounded implementation-first pass,START R49 for independent cross-platform QA only; preserve blockers
+R49,G5,BLOCKED,R49_QA_REPORT.md; lifecycle and navigation fixes; integrated cross-browser and native QA authored,DV-077 executable CI; DV-078 real map approved content device and transfer acceptance blocked,R50 bounded synthetic stress next on owner START
 R50,G6,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R51,G6,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R52,G6,NOT_STARTED,,,Consult original V4 dependencies and acceptance

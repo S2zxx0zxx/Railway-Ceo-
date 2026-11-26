@@ -7,10 +7,12 @@ import {fixture} from '../../../tests/fixtures/railway-r39';
 import {createGuestSession} from '../../../src/rail/guest';
 import {RailwayGuestShell} from '../../../src/ui/railway/GuestShell';
 import {initRailwayPwa} from '../../../src/rail/guest/pwa';
-const f=await fixture();
+const integrated=import.meta.env.VITE_R49_QA==='1';
+const f=await fixture(integrated?{market:true,loan:true,governance:{milestones:[{id:'first-trip',metric:'completed-trips',target:1}]}}:{});
 const session=createGuestSession({runtime:f.runtime,opening:f.opening,startSimS:0,seed:123,limits:{maxJournalEntries:100,maxBytes:16000000},offlinePolicy:{schemaVersion:1,maxWallDeltaMs:120000,simSecondsPerWallSecond:1,maxBacklogSimS:120,maxBatchSimS:30,maxBatchEvents:100,maxBatchesPerWake:5,autoSettleArrivals:true},workerTimeoutMs:60000},{qaDatabaseName:'r47-qa-guest'});
 const cursor=(v:{revision:number;tag:string})=>({revision:v.revision,tag:v.tag});
 Object.assign(globalThis,{r47Qa:{read:()=>session.store.open(),presence:()=>session.store.presence(),export:()=>session.store.exportLatest(),duplicate:()=>session.startGuest(),rejectOptional:async(kind:string)=>{const v=await session.store.open();return session.store.execute({requestId:'r48-forbidden-'+kind,kind,input:{amount:'9999999',verified:true}},cursor(v));},quote:async()=>{const v=await session.store.open();return session.store.execute({requestId:'r47-qa-quote',kind:'quote',input:{quoteId:'q47',trainId:'t1',templateId:'service-template'}},cursor(v));}}});
+if(integrated)Object.assign(globalThis,{r49Qa:{management:()=>session.store.management(),finance:()=>session.store.financeView(),progression:()=>session.store.progressionView(),advanceTrip:async()=>{const v=await session.store.open();if(!v.clock)throw Error('QA clock missing');const sample={wallMs:v.clock.wallHighMs+120000,sessionId:'r49-synthetic-clock',monotonicMs:120000};let result=await session.runner.wake(sample);for(let i=0;i<5&&result.catchupPending;i++)result=await session.runner.wake(sample);return result;}}});
 function Entry(){const [state,setState]=useState({offlineReady:false,updateReady:false}),[error,setError]=useState('');useEffect(()=>{void initRailwayPwa(setState).catch(e=>setError(String(e)));},[]);return <>{error&&<p role="alert">{error}</p>}<RailwayGuestShell session={session} qa {...state}/></>;}
 createRoot(document.getElementById('root')!).render(<Entry/>);
 // Native QA records the actual UI-driven guest save and relaunch, not a mocked bridge.

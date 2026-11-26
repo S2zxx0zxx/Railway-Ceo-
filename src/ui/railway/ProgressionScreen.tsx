@@ -14,7 +14,7 @@ export function RailwayProgressionScreen({store,onExit}:{store:Store;onExit?:()=
   catch(e){setError(String(e));await refresh();}finally{setBusy(false);}
  }
  return <main className="rf" aria-label="Railway progression" aria-busy={busy}>
-  <header><h1>Company progression</h1>{onExit&&<button onClick={onExit}>Back</button>}<button disabled={busy} onClick={()=>void refresh()}>Refresh</button></header>
+  <header><h1>Company progression</h1>{onExit&&<button disabled={busy} onClick={onExit}>Back</button>}<button disabled={busy} onClick={()=>void refresh()}>Refresh</button></header>
   {error&&<p role="alert">{error}</p>}
   {!data?<p>Loading verified milestones…</p>:<>
    <h2>Achievements</h2><p>Recognition only; no cash or research currency granted.</p>
