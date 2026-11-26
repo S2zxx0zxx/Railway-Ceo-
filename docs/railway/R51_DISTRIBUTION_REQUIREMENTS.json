@@ -39,7 +39,20 @@
       "runId": 45884553888,
       "exactEmbeddedNpmNotices": 4
     },
-    "qaClasspathInventory": "New offline Gradle collector and cached POM declaration evidence; pending actual CI; no clearance inferred."
+    "qaClasspathInventory": "New offline Gradle collector and cached POM declaration evidence; pending actual CI; no clearance inferred.",
+    "qaClasspathEvidence": {
+      "runId": 45887252821,
+      "artifactId": 15149333980,
+      "providerAndLocalZipSha256": "d72b8f840511320e1911a13320778595f657b4817058722d4edc2d754bafb832",
+      "zipCrc": "PASS",
+      "components": 61,
+      "externalArtifacts": 53,
+      "mavenCoordinates": 51,
+      "directDeclarations": 50,
+      "unresolvedCoordinate": "com.google.guava:listenablefuture:1.0",
+      "unresolvedParent": "com.google.guava:guava-parent:26.0-android",
+      "releaseClearance": false
+    }
   },
   "projectLicense": "PENDING_OWNER",
   "releaseAccepted": false,
