@@ -26,7 +26,7 @@ R24,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/market.ts; R24_MARKET_REPORT.md; 
 R25,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/operations.ts; R25_OPERATIONS_REPORT.md; f0a196d and c70cceb corrected CI 5/5 each; 62/62 R25; 1066/1066 repository tests,Exact original CSV DV-034; DV-035 closed,Final source reconciliation required
 R26,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/operations.ts; R26_MAINTENANCE_REPORT.md; 3a7e352 CI 5/5; 40/40 R26 and 1106/1106 repository tests,Exact original CSV DV-036 and predecessor DV-034; DV-037 closed,Final source reconciliation required
 R27,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/incentives.ts; R27_INCENTIVES_REPORT.md; 2fd859e 4/5 original CI; de547a0 equivalent 5/5; 1139/1139 tests,Exact original CSV DV-038 and DV-026/028; DV-039 closed after HTTP429 recovery,Final source reconciliation required
-R28,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/liquidity.ts; tests/railway-r28.test.ts; R28_LIQUIDITY_REPORT.md; 45 authored tests,Exact E20-E21 source comparison and fresh CI,Reconcile CI and fix known defects before R29
+R28,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/liquidity.ts; tests/railway-r28.test.ts; R28_LIQUIDITY_REPORT.md; 74fa6c44a393eb52a66fc5013f1eba0d9e867cb0; 45 authored tests; 8/8 readback; 1/5 workflow successes,Exact original CSV DV-040; executable CI DV-041,Reconcile CI then START R29 provisional
 R29,G3,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R30,G3,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R31,G3,NOT_STARTED,,,Consult original V4 dependencies and acceptance
