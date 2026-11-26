@@ -87,7 +87,7 @@ export function createRailwayStore(runtime:Runtime,limitsInput:unknown,options:{
   async function read():Promise<Read>{
     return db.transaction('r',db.heads,db.slots,db.keys,async()=>({head:await db.heads.get(companyId),active:await db.slots.get(slot('active')),mirror:await db.slots.get(slot('mirror')),key:await db.keys.get(companyId)}));
   }
-  function checkHead(r:Read){if(!r.head||!r.key||r.key.companyId!==companyId)fail('no trusted save head or installation key');const h=headDecoder(r.head);if(h.companyId!==companyId)fail('wrong company head');return {head:h,key:validKey(r.key.key)};}
+  function checkHead(r:Read){if(!r.head||!r.key||r.key.companyId!==companyId)fail('no trusted save head or installation key');const h=headDecoder(r.head);if(h.companyId!==companyId)fail('wrong company head');return {head:h,key:validKey((r.key??fail('missing installation key')).key)};}
   async function decode(r:Read,s:unknown){
     const {head,key}=checkHead(r),seal=sealDecoder(s);
     if(seal.tag!==head.tag)fail('not latest committed save');
