@@ -112,13 +112,20 @@
       "licenseClaim": "Apache-2.0",
       "role": "ORACLE_CANDIDATE",
       "pin": "e5112194fde4cc8ec36e2b0093e250df89ef4845",
-      "decision": "CANDIDATE_PIN_REVIEW_ONLY",
-      "reviewTask": "R03 or subsequent task per V4 ledger",
+      "decision": "BUILD_ONLY_ORACLE_CANDIDATE",
+      "reviewTask": "R08",
       "licenseReviewed": "Apache-2.0",
       "licenseEvidence": "https://github.com/geofabrik/OpenRailRouting/blob/e5112194fde4cc8ec36e2b0093e250df89ef4845/LICENSE.txt",
       "licenseBlob": "5471dc10377b76db85a2feca7a99a7eef4980ba8",
       "productionAccepted": false,
-      "blocker": "R16 separate Java oracle; pin GraphHopper fork/submodule and Maven dependencies at acquisition; no mobile engine; unknown rail tags fail closed."
+      "blocker": "R16 exact fork commit and dependency integrity/licenses; strict unknown-vs-DC distinction and equivalent profile; R17 actual comparisons.",
+      "r08Review": {
+        "evidence": "docs/railway/R08_COMPATIBILITY_REPORT.md",
+        "graphhopperDeclaredVersion": "11.1-osm-reader-callbacks-1",
+        "installed": false,
+        "strictOracleAccepted": false,
+        "reason": "Missing numeric tags may encode as zero; sample profiles permit missing values. R16 verify equivalent strict profile and actual build."
+      }
     },
     {
       "id": "B04",
