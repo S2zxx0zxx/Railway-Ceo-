@@ -136,6 +136,7 @@ export function createRailwayStore(runtime:Runtime,limitsInput:unknown,options:{
     const current=clock??(l.body.schemaVersion===3?l.body.clock:undefined);
     return current?{...base,schemaVersion:3,clock:current}:base;
   };
+  async function presence(){const r=await read();return !r.head&&!r.active&&!r.mirror&&!r.key?'absent' as const:r.head&&r.key&&(r.active||r.mirror)?'present' as const:'incomplete' as const;}
   async function initialize(start:unknown,seed:unknown,opening:unknown):Promise<View>{
     const c=await runtime.initialize(start,seed,opening),key=await createRailwaySaveKey();
     const body:Body={format:'railway-ceo-save',schemaVersion:2,companyId,configurationSha256,revision:1,previousTag:null,limits,snapshot:c.snapshot(),quotes:[],journal:[]};
@@ -261,5 +262,5 @@ export function createRailwayStore(runtime:Runtime,limitsInput:unknown,options:{
     return viewFor(x.body,x.seal,x.controller);
   }
   async function exportLatest(){const l=await load(await read());return structuredClone(l.seal);}
-  return Object.freeze({initialize,open,management,financeView,progressionView,checkManagement,execute,recover,exportLatest,close:()=>db.close()});
+  return Object.freeze({presence,initialize,open,management,financeView,progressionView,checkManagement,execute,recover,exportLatest,close:()=>db.close()});
 }

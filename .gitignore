@@ -37,3 +37,10 @@ coverage/
 *.apks
 *.aab
 *.dex
+
+/railway-dist/
+/r47-qa-dist/
+/r47-update-dist/
+/r47-native-qa/
+/r47-evidence/
+/r47-native-evidence/
