@@ -82,7 +82,7 @@ export function prepareFleet(graph:RailGraph,companyId:string,input:unknown){
         if(r.tripId||r.inboundYardId||e.tripId!==null)fail('train active or inbound');
         if(e.kind==='park'){
           if(!['IDLE','ASSIGNED'].includes(r.state)||r.yardId!==null||r.jobId||e.yardId===null||e.jobId!==null)fail('invalid parking transition');
-          const y=capacity(rows,e.yardId);if(r.nodeId!==y.nodeId)fail('parking requires actual base location');
+          const y=capacity(rows,e.yardId??fail('yard required'));if(r.nodeId!==y.nodeId)fail('parking requires actual base location');
           r.yardId=e.yardId;r.state='PARKED';r.routeId=null;
         }else if(e.kind==='unpark'){
           if(r.state!=='PARKED'||r.yardId===null||r.jobId||e.yardId!==null||e.jobId!==null)fail('invalid unpark transition');

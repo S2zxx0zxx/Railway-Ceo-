@@ -377,7 +377,7 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
     }else if(q.action==='park'){
       if(q.yardId===null)fail('yard required');
       if(!['IDLE','ASSIGNED'].includes(row.state))fail('invalid parking transition');
-      const target=fleet.capacity(projectFleet(s),q.yardId);if(target.nodeId!==row.nodeId)fail('parking requires actual base location');
+      const target=fleet.capacity(projectFleet(s),q.yardId??fail('yard required'));if(target.nodeId!==row.nodeId)fail('parking requires actual base location');
     }else {
       if(q.yardId!==null||row.state!=='PARKED')fail('invalid unpark transition');
       if(av!=='AVAILABLE')fail('train requires service before unpark');

@@ -76,7 +76,7 @@ type Claim=Decoded<typeof claimResult>;
 export type DemandBook=ReadonlyTree<Book>;
 const fail=(reason:string):never=>{throw new TypeError('Demand: '+reason);};
 export const isRelocationService=(serviceId:string)=>serviceId.startsWith('r36:relocation:')&&serviceId.length>'r36:relocation:'.length;
-function checkPurpose(t:Pick<Trip,'serviceId'|'claims'>){
+function checkPurpose(t:{serviceId:string;claims:readonly unknown[]}){
   if(isRelocationService(t.serviceId)?t.claims.length!==0:t.claims.length===0)fail('only explicit empty relocation may omit demand claims');
 }
 function compareClaim(a:{boardIndex:number;alightIndex:number;bucketId:string},b:typeof a){return a.boardIndex-b.boardIndex||a.alightIndex-b.alightIndex||order(a.bucketId,b.bucketId);}
