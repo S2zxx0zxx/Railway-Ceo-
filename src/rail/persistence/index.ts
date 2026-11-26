@@ -14,7 +14,7 @@ const hex=(b:ArrayBuffer)=>Array.from(new Uint8Array(b),x=>x.toString(16).padSta
 const bytes=(s:string)=>new TextEncoder().encode(s);
 const raw=(v:unknown)=>v;
 const dbName='railway-ceo-save-v1';
-const kinds=['quote','dispatch','bulk','settle','cancel','fleet','advance','catchup'] as const;
+const kinds=['quote','dispatch','bulk','settle','cancel','fleet','advance','catchup','finance'] as const;
 const kind=enumeration(kinds);
 const request=object({requestId:id,kind,input:raw});
 type Request=ReturnType<typeof request>;
@@ -160,6 +160,7 @@ export function createRailwayStore(runtime:Runtime,limitsInput:unknown,options:{
     const l=await load(await read());
     return {view:l.view,management:await l.controller.inspectManagement()};
   }
+  async function financeView(){const l=await load(await read());return {view:l.view,finance:await l.controller.inspectFinance()};}
   async function checkManagement(input:unknown,expected:unknown){
     const q=request(input),captured:unknown=JSON.parse(fingerprint(q.input)),e=cursor(expected);
     const l=await load(await read());checkExpected(l.view,e);
@@ -174,8 +175,8 @@ export function createRailwayStore(runtime:Runtime,limitsInput:unknown,options:{
         }
       }
       let result:unknown;
-      switch(q.kind){
-        case 'quote':result=await c.quoteTrip(captured,checksum);break;
+      switch(q.kind){        case 'finance':result=(await c.finance(captured,checksum)).result;break;
+      case 'quote':result=await c.quoteTrip(captured,checksum);break;
         case 'dispatch':result=(await c.dispatch(captured,checksum)).receipt;break;
         case 'bulk':result=(await c.bulkDispatch(captured,checksum)).results;break;
         case 'fleet':{const r=await c.fleetCommand(captured,checksum);const m=await c.inspectManagement();result={receipt:r.receipt,job:m.rows.find(x=>x.trainId===r.receipt.trainId)?.maintenance.activeJob??null};break;}
@@ -216,6 +217,7 @@ export function createRailwayStore(runtime:Runtime,limitsInput:unknown,options:{
         result={observation:observed?{creditedSimS:observed.creditedSimS,creditedWallMs:observed.creditedWallMs,discardedWallMs:observed.discardedWallMs,rollback:observed.rollback,monotonicAnomaly:observed.monotonicAnomaly}:null,...await runCatchupBatch(c,clock,p)};
         break;
       }
+      case 'finance':result=(await c.finance(captured,checksum)).result;break;
       case 'quote':result=await c.quoteTrip(captured,checksum);break;
       case 'dispatch':{const {snapshot,...r}=await c.dispatch(captured,checksum);result=r;break;}
       case 'bulk':{const {snapshot,...r}=await c.bulkDispatch(captured,checksum);result=r;break;}
@@ -243,5 +245,5 @@ export function createRailwayStore(runtime:Runtime,limitsInput:unknown,options:{
     return viewFor(x.body,x.seal,x.controller);
   }
   async function exportLatest(){const l=await load(await read());return structuredClone(l.seal);}
-  return Object.freeze({initialize,open,management,checkManagement,execute,recover,exportLatest,close:()=>db.close()});
+  return Object.freeze({initialize,open,management,financeView,checkManagement,execute,recover,exportLatest,close:()=>db.close()});
 }

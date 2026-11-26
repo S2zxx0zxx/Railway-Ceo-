@@ -6,7 +6,7 @@ const context=await b.newContext({viewport:{width:360,height:800}});
 const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(String(e)));
 mkdirSync('r43-evidence',{recursive:true});
 const wait=async()=>{await page.getByRole('heading',{name:'Operations control'}).waitFor();await page.getByText('Available cash',{exact:true}).waitFor();};
-const tab=async n=>{await page.getByRole('navigation').getByRole('button',{name:n[0].toUpperCase()+n.slice(1),exact:true}).click();};
+const tab=async n=>{await page.getByRole('navigation').getByRole('button',{name:n==='catalog'?'Catalogue':n[0].toUpperCase()+n.slice(1),exact:true}).click();};
 const select=async id=>page.getByRole('button',{name:new RegExp('^'+id+' · Fictional engine')}).click();
 const read=()=>page.evaluate(()=>r43Qa.read()),backup=()=>page.evaluate(()=>r43Qa.export());
 const refresh=()=>page.getByRole('button',{name:'Refresh saved operations'}).click();

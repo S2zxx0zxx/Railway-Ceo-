@@ -9,3 +9,6 @@ UI-02 company name/base/difficulty and starter creation blocked by approved scen
 
 ## R43 first verification and browser harness correction
 Exact 87efb28b15b86c1d8d2a01e0a9dc65cc400d36d3 Verify game 45873481131 job 140094556608 strict typecheck/build PASS, 5/5 R43, 1530/1530 repository tests, 64 suites. Isolated Vite UI build succeeded. Dedicated browser 45873481133 job 140094556390 first screen rendered and mobile overflow assertion passed, captured fleet-360.png; failed after 30s because test requested exact accessible name "routes" rather than actual "Routes". Correct test navigation labels (no weakened product checks), add real second-tab stale-confirmation rejection test, preserve artifact 15143771740 provider SHA256 698d87e8ca5d0c578fdc87ca04082f52116129dff19b2916aa9d23194b6ea605; screenshot SHA256 3c01aad412f81d96895cbee30270c7170fe55a2927a74fb6f721dac2fefa361b. Fresh browser evidence required; DV-065 OPEN. No production code change in this correction. DV-066 remains. No merge.
+
+## R44 reconciliation
+R43 corrected revision 4345cb7f509518f82d67e16dac0c0a60d356f02e 9/10 workflows PASS; dedicated browser 45873853065 job 140095835484 failed exact Yard label after PASS maintenance rejection/no mutation. Added explicit accessible Yard label and corrected Catalogue test selector; DV-065 remains OPEN. DV-066 preserved.

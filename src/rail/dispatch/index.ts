@@ -12,8 +12,9 @@ import { decodeRevenueBook, issueRevenueTerms, settleRevenue, calculateFare, cal
 import { decodeEnergyBook, estimateEnergy, applyEnergyEvent, inspectEnergyBook, type EnergyBook } from '../economy/energy';
 import { decodeOperatingBook, inspectOperatingBook, inspectMaintenanceAvailability, applyOperatingEvent, type OperatingBook } from '../economy/operations';
 import { decodeIncentiveBook, projectInspection, applyIncentiveEvent, type IncentiveBook } from '../economy/incentives';
-import { decodeAccountingBook, inspectAccountingBook, type AccountingBook } from '../economy/accounting';
-import { decodeGovernancePolicy, evaluateSolvency, applyGovernedAccountingCommand } from '../economy/governance';
+import { decodeAccountingBook, inspectAccountingBook, reportAccountingPeriod, type AccountingBook } from '../economy/accounting';
+import { decodeGovernancePolicy, evaluateSolvency, applyGovernedAccountingCommand, applyRecoveryCommand } from '../economy/governance';
+import {valueCompany} from '../economy/company';
 import { decodeEnergyMarket, inspectEnergyMarket, applyMarketAction, type EnergyMarketBook } from '../economy/market';
 
 import {prepareFleet,fleetCommand,fleetCompletion,fleetRecord,type FleetRecord} from '../fleet';
@@ -37,6 +38,20 @@ const energyFactor=object({loadFactorBps:factor,gradeFactorBps:factor,idleQuanti
 const risk=object({id,reason:text(240)});
 const template=object({id,movementPlanId:id,serviceId:id,request:raw,route:raw,claims:distinct(list(claim,0,128),x=>x.bucketId),energyFactors:list(energyFactor,1,100000),expectedCostMinor:minor,reserveMinor:minor,quoteTtlS:positive,delayRateMinorPerSecond:minor,delayCapMinor:minor,risks:distinct(list(risk,0,128),x=>x.id)});
 const config=object({schemaVersion:version1,governance:decodeGovernancePolicy,templates:distinct(list(template,1,10000),x=>x.id),maxPending:limit,maxQuotes:limit,maxReceipts:limit,maxBulk:limit});
+const procurementUnit=enumeration(['mL','Wh','g']);
+const financePurchase=object({type:enumeration(['purchase']),unit:procurementUnit,quantity:energyQuantity,contractId:nullable(id)});
+const financeContract=object({type:enumeration(['contract']),unit:procurementUnit,quantity:energyQuantity,expiresAtSimS:integer});
+const financeRepay=object({type:enumeration(['repay']),loanId:id,amountMinor:minor});
+const financeRescue=object({type:enumeration(['rescue']),principalMinor:minor});
+const financeRefinance=object({type:enumeration(['refinance']),loanId:id,replacementPrincipalMinor:minor});
+const financeAction=(v:unknown,p='finance action')=>{
+  switch(record(v,p).type){
+    case 'purchase':return financePurchase(v,p);case 'contract':return financeContract(v,p);
+    case 'repay':return financeRepay(v,p);case 'rescue':return financeRescue(v,p);
+    case 'refinance':return financeRefinance(v,p);default:return fail('unsupported finance action');
+  }
+};
+const financeCommand=object({commandId:id,action:financeAction});
 const quoteInput=object({quoteId:id,trainId:id,templateId:id});
 const command=object({commandId:id,quoteId:id});
 const executeInput=object({commandId:id,templateId:id,quote:(v:unknown)=>record(v,'quote') as unknown as QuoteEnvelope,quoteSha256:sha256,allocationSha256:sha256,baseVersion:integer});
@@ -240,11 +255,49 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
     const envelope=await createTripQuote(graph,v.p.request,v.p.route,{id:q.quoteId,trainId:q.trainId,stateVersion:s.revision,issuedAtSimS:at,expiresAtSimS:checkedAdd(at,v.p.settings.quoteTtlS),configurationSha256,terms:v.terms});
     return freeze({templateId:q.templateId,quote:envelope,quoteSha256:envelope.quoteSha256,allocationSha256:v.allocationSha256});
   }
-  const events:Registry=Object.freeze({...movement.events,'fleet.command':fleetCommand,'fleet.complete':fleetCompletion,'dispatch.execute':executeInput,'dispatch.terminal':terminalEvent,'dispatch.financial-boundary':object({atSimS:integer})});
+  const events:Registry=Object.freeze({...movement.events,'fleet.command':fleetCommand,'fleet.complete':fleetCompletion,'dispatch.execute':executeInput,'dispatch.terminal':terminalEvent,'dispatch.financial-boundary':object({atSimS:integer}),'finance.command':financeCommand});
   async function post(s:DispatchState,action:unknown,commandId:string){
     return (await applyGovernedAccountingCommand(s.accounting,src(s),cfg.governance,{expectedRevision:s.accounting.revision,expectedSources:versionMap(s),commandId,action})).accounting;
   }
   const terminalId=async(commandId:string,kind:string)=>'r35:'+kind+':'+await digest({configurationSha256,commandId,kind});
+  const financeId=async(q:string)=>'r44:'+await digest({configurationSha256,commandId:q});
+  async function runFinance(s:DispatchState,q:ReturnType<typeof financeCommand>,at:number){
+    if(!life)fail('financial lifecycle not configured');
+    const {g,a,due}=await financialBoundary(s);
+    if(a.liquidityView.simTimeS>at||(due!==null&&at>=due))fail('mandatory financial boundary first');
+    if(g.stage==='RESTART_AUTHORIZED')fail('archived company');
+    const aid=await financeId(q.commandId),action=q.action;
+    if(s.accounting.transactions.some(t=>t.commandId===aid))fail('finance command already used; replay via durable request ID');
+    if(a.pending.assets||a.pending.operations||a.pending.incentives||a.pending.energyLots.length||a.pending.energyReservations.length||a.pending.trips.length)fail('unreconciled accounting sources');
+    let next:DispatchState={...s};
+    if(action.type==='purchase'||action.type==='contract'){
+      if(g.stage!=='HEALTHY')fail('energy procurement requires healthy company');
+      let market=s.market??fail('energy market not configured');
+      if(action.quantity==='0')fail('positive energy quantity required');
+      if(inspectEnergyMarket(market).simTimeS<at)market=applyMarketAction(market,{expectedRevision:market.revision,action:{type:'advance',targetSimS:at}});
+      if(action.type==='purchase'){
+        market=applyMarketAction(market,{expectedRevision:market.revision,action:{type:'purchase',unit:action.unit,quantity:action.quantity,contractId:action.contractId,lotId:aid,availableCashMinor:a.liquidityView.availableCashMinor}});
+        next={...next,market,energy:inspectEnergyMarket(market).energy};
+        next={...next,accounting:await post(next,{type:'buy-energy',atSimS:at,lotId:aid},aid)};
+      }else{
+        market=applyMarketAction(market,{expectedRevision:market.revision,action:{type:'contract',contractId:aid,unit:action.unit,quantity:action.quantity,expiresAtSimS:action.expiresAtSimS}});
+        next={...next,market,energy:inspectEnergyMarket(market).energy};
+        next={...next,accounting:await post(next,{type:'advance',atSimS:at},aid)};
+      }
+    }else if(action.type==='repay'){
+      next={...next,accounting:await post(next,{type:'repay',atSimS:at,loanId:action.loanId,amountMinor:action.amountMinor},aid)};
+    }else{
+      // R31 owns recovery terms. Advance the same accounting clock first,
+      // never grant a loan or alter fleet/stock liquidation from the UI.
+      next={...next,accounting:await post(next,{type:'advance',atSimS:at},aid)};
+      let market=next.market;
+      if(market&&inspectEnergyMarket(market).simTimeS<at)market=applyMarketAction(market,{expectedRevision:market.revision,action:{type:'advance',targetSimS:at}});
+      next={...next,market,energy:market?inspectEnergyMarket(market).energy:next.energy};
+      const recovered=await applyRecoveryCommand(next.accounting,src(next),cfg.governance,{id:aid,expectedAccountingRevision:next.accounting.revision,expectedSources:versionMap(next),action},market??undefined);
+      next={...next,accounting:recovered.accounting,operations:recovered.operations,energy:recovered.energy,market:recovered.market};
+    }
+    return decodeState({...next,revision:checkedAdd(s.revision,1)});
+  }
   async function runBoundary(s:DispatchState,at:number){
     if(!life)throw new Error('R35: lifecycle not configured');
     const b=await financialBoundary(s);
@@ -395,6 +448,7 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
     const s=decodeState(input),at=integer(event.simTimeS);
     if(event.kind==='fleet.command'||event.kind==='fleet.complete')return fleetAction(s,event,at);
     if(event.kind==='dispatch.financial-boundary'){if(object({atSimS:integer})(event.payload).atSimS!==at)fail('boundary time mismatch');return {state:await runBoundary(s,at)};}
+    if(event.kind==='finance.command')return {state:await runFinance(s,financeCommand(event.payload),at)};
     if(event.kind==='dispatch.terminal')return closeTrip(s,terminalEvent(event.payload),at);
     if(event.kind==='movement.phase'){
       const out=fleet?movement.reduceFleet(s.movement,event):movement.reduce(s.movement,event);
@@ -620,6 +674,27 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
         return {...r,nodeId:m.phaseIndex===p.phases.length?p.destination:m.phaseIndex<0?p.origin:p.phases[m.phaseIndex].kind==='MOVE'?null:p.phases[m.phaseIndex].from,state:m.phaseIndex===p.phases.length?'ARRIVED':m.phaseIndex<0?'RESERVED':p.phases[m.phaseIndex].kind==='MOVE'?'RUNNING':'DWELL'};
       }));
     }
+    async function finance(input:unknown,expectedChecksum:unknown){
+      const q=financeCommand(input),expected=sha256(expectedChecksum);
+      return serial(async()=>{
+        cas(expected);if(current.pendingEvents.some(e=>e.simTimeS<=current.simTimeS))fail('process due events before finance command');
+        const before=await inspectAccountingBook(current.state.accounting,src(current.state)),aid=await financeId(q.commandId);
+        const queued=await scheduler.enqueue(current,[{kind:'finance.command',simTimeS:current.simTimeS,payload:q}]);
+        const out=await scheduler.advance(queued,current.simTimeS,1);if(!out.complete)fail('finance event budget exhausted');
+        const snapshot=await verify(await syncBoundary(out.snapshot)),s=snapshot.state;
+        const after=await inspectAccountingBook(s.accounting,src(s)),market=s.market?inspectEnergyMarket(s.market):null;
+        const result=freeze({commandId:q.commandId,accountingCommandId:aid,action:q.action,atSimS:snapshot.simTimeS,cashBeforeMinor:before.liquidityView.cashMinor,cashAfterMinor:after.liquidityView.cashMinor,availableAfterMinor:after.liquidityView.availableCashMinor,debtBeforeMinor:before.liquidityView.totalPayoffMinor,debtAfterMinor:after.liquidityView.totalPayoffMinor,lot:market?.inventory.lots.find(x=>x.lot.id===aid)??null,contract:market?.contracts.find(x=>x.id===aid)??null,governance:await evaluateSolvency(s.accounting,src(s),cfg.governance),journal:after.journal.slice(before.journal.length)});
+        current=snapshot;return freeze({snapshot,result});
+      });
+    }
+    async function inspectFinance(){return serial(async()=>{
+      const s=current.state,accounting=await inspectAccountingBook(s.accounting,src(s)),governance=await evaluateSolvency(s.accounting,src(s),cfg.governance);
+      const end=Number(accounting.liquidityView.simTimeS),start=Number(s.accounting.startSimS);
+      const period=end>start?await reportAccountingPeriod(s.accounting,src(s),{startSimS:Math.max(start,end-7*86400),endSimS:end}):null;
+      let valuation:Awaited<ReturnType<typeof valueCompany>>|null=null,valuationError:string|null=null;
+      try{valuation=await valueCompany(s.accounting,src(s),{companyId:cfg.governance.companyId,shares:null,stock:null});}catch(e){valuationError=reason(e);}
+      return freeze({companyId:cfg.governance.companyId,simTimeS:current.simTimeS,accounting,governance,valuation,valuationError,period,policy:s.accounting.policy,governancePolicy:cfg.governance,market:s.market?inspectEnergyMarket(s.market):null,marketPolicy:s.market?.config??null,energy:inspectEnergyBook(s.energy),supportsFinance:life!==null});
+    });}
     async function inspectManagement(){return serial(async()=>{
       const s=current.state,energyView=inspectEnergyBook(s.energy),op=inspectOperatingBook(catalog,s.operations),accounting=await inspectAccountingBook(s.accounting,src(s)),governance=await evaluateSolvency(s.accounting,src(s),cfg.governance);
       const rows=inspectFleet().map(r=>{
@@ -663,7 +738,7 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
         s=await verify(s);current=s;return freeze({snapshot:s,processed,complete,nextDueSimS:next?.simTimeS??null});
       });
     }
-    return Object.freeze({snapshot:()=>current,arrivedTripIds:()=>freeze(current.state.movement.trips.filter(t=>!current.state.closures.some(c=>c.tripId===t.tripId)&&t.phaseIndex===movement.plans.find(p=>p.id===t.planId)?.phases.length).map(t=>t.tripId).sort(cmp)),issuedQuotes:()=>freeze([...issued.values()]),quoteTrip,dispatch,bulkDispatch,advance,fleetCommand:fleetCommandRun,inspectFleet,inspectManagement,settle:(q:unknown,c:unknown)=>terminal(q,c,'settled'),cancel:(q:unknown,c:unknown)=>terminal(q,c,'cancelled')});
+    return Object.freeze({snapshot:()=>current,arrivedTripIds:()=>freeze(current.state.movement.trips.filter(t=>!current.state.closures.some(c=>c.tripId===t.tripId)&&t.phaseIndex===movement.plans.find(p=>p.id===t.planId)?.phases.length).map(t=>t.tripId).sort(cmp)),issuedQuotes:()=>freeze([...issued.values()]),quoteTrip,dispatch,bulkDispatch,advance,fleetCommand:fleetCommandRun,inspectFleet,inspectManagement,inspectFinance,finance,settle:(q:unknown,c:unknown)=>terminal(q,c,'settled'),cancel:(q:unknown,c:unknown)=>terminal(q,c,'cancelled')});
   }
   async function initialize(start:unknown,seed:unknown,input:unknown){
     const b=opening(input);

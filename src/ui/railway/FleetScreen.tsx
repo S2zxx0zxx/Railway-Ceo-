@@ -125,7 +125,7 @@ export function RailwayFleetScreen({store,runner,onExit}:{store:Store;runner?:Ru
   {tab==='yard'&&<><section className="rf-card"><h2>Owned and configured yards</h2>{m!.yards.map(y=><div className="rf-sub" key={y.id}><strong>{y.id} · {y.stationName}</strong><Pair label="Yard occupied / reserved">{y.occupied} / {y.capacity}</Pair><Pair label="Base occupied / reserved">{y.baseOccupied} / {y.base.capacity}</Pair><Pair label="Ownership">{y.owned?'Owned':'Not owned'}</Pair></div>)}
    <Disabled label="Buy base / expand yard" reason="Purchase and capacity expansion commands are not yet available."/>
   </section>{r&&<><TrainCard row={r}/><section className="rf-card"><h2>Parking & maintenance</h2>
-   <label>Yard<select value={yard} disabled={busy} onChange={e=>{reset();setYard(e.target.value);}}><option value="">Choose yard</option>{m!.yards.filter(y=>y.owned&&y.nodeId===r.nodeId).map(y=><option value={y.id} key={y.id}>{y.id} · {y.occupied}/{y.capacity}</option>)}</select></label>
+   <label>Yard<select aria-label="Yard" value={yard} disabled={busy} onChange={e=>{reset();setYard(e.target.value);}}><option value="">Choose yard</option>{m!.yards.filter(y=>y.owned&&y.nodeId===r.nodeId).map(y=><option value={y.id} key={y.id}>{y.id} · {y.occupied}/{y.capacity}</option>)}</select></label>
    {fleet('Park at actual location','park',!yard?'Choose an owned yard at this location.':!['IDLE','ASSIGNED'].includes(r.state)?'Train is not idle or assigned.':'')}
    {fleet('Unpark','unpark',r.state!=='PARKED'?'Train is not parked.':'')}
    {fleet('Start service / repair','service',r.state!=='PARKED'?'Park at an owned yard first.':!['SERVICE_DUE','REPAIR_DUE'].includes(r.maintenance.availability)?'No scheduled service or repair is due.':'')}
