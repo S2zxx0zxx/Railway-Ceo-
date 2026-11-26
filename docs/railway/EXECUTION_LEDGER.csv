@@ -23,7 +23,7 @@ R21,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/demand.ts; R21_DEMAND_REPORT.md; 
 R22,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/revenue.ts; R22_REVENUE_REPORT.md; 53883b8 CI 5/5; 81/81 R22 and 892/892 repository tests,Exact original CSV DV-028 and R21 DV-026; DV-029 closed,Final source reconciliation required
 R23,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/energy.ts; R23_ENERGY_REPORT.md; 886db5b and 215b864 CI 5/5 each; 55/55 R23 and 947/947 repo tests,Exact original CSV DV-030; DV-031 closed,Final source reconciliation required
 R24,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/market.ts; R24_MARKET_REPORT.md; 0b22792 4/5 original CI; 3a06d4c equivalent source 5/5 CI; 1004/1004 tests,Exact source DV-032 and DV-030; DV-033 closed after Android HTTP429 recovery,Final source reconciliation required
-R25,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/operations.ts; tests/railway-r25.test.ts; R25_OPERATIONS_REPORT.md; 26950e5e80a063c770e412b515a91fa3d973546a; 62 authored tests; 8/8 readback; CI 45834166500 45834166743 45834166588 45834166623 45834166512,Exact source DV-034; fresh CI DV-035,Investigate CI before next task
+R25,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/operations.ts; tests/railway-r25.test.ts; 62 authored cases; readonly inference repair,Original source DV-034; replacement CI DV-035,Reconcile corrected CI before R26
 R26,G3,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R27,G3,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R28,G3,NOT_STARTED,,,Consult original V4 dependencies and acceptance

@@ -104,10 +104,11 @@ function replay(catalog:RollingStockCatalog,input:unknown){
   for(const x of p.staff)if(crew.has(x.employeeId))fail('crew and overhead roster overlap');
   const rules=new Map(p.wearRules.map(r=>[r.modelId,r]));
   for(const r of p.wearRules)catalog.entry(r.modelId);
-  const trains=new Map(s.opening.map(x=>{
+  type TrainRuntime={opening:Decoded<typeof opening>;conditionBps:number;odometerM:number;lastArrivalSimS:number};
+  const trains=new Map<string,TrainRuntime>(s.opening.map((x):[string,TrainRuntime]=>{
     const m=catalog.resolve(x.catalogReference);
     if(!('energyPerKm' in m)||m.model.id!==x.train.modelId||x.train.companyId!==s.companyId||!rules.has(x.train.modelId))fail('opening train identity or wear rule mismatch');
-    return [x.train.id,{opening:x,conditionBps:Number(x.train.conditionBps),odometerM:Number(x.odometerM),lastArrivalSimS:Number(x.acquiredAtSimS)}] as const;
+    return [x.train.id,{opening:x,conditionBps:Number(x.train.conditionBps),odometerM:Number(x.odometerM),lastArrivalSimS:Number(x.acquiredAtSimS)}];
   }));
   const tripIds=new Set<string>(),shiftIds=new Set<string>(),periodIds=new Set<number>();
   const shifts=new Map<string,{start:number;end:number}[]>();
