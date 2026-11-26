@@ -36,7 +36,7 @@ R34,G4,IMPLEMENTED_UNVERIFIED,src/rail/dispatch/index.ts; R34_DISPATCH_REPORT.md
 R35,G4,IMPLEMENTED_UNVERIFIED,20c07fe; 25/25 dedicated; 1448/1448 repository tests; CI 5/5; DV-049 closed,Provisional R34/R26/R27/R31; DV-051,START R36 provisionally
 R36,G4,IMPLEMENTED_UNVERIFIED,fb8f0e4 and e09d5da CI 5/5 each; 21/21 dedicated; 1469/1469 tests; DV-052 closed,Provisional R26/R35; DV-054 purchased base and circle-line policy and topology; DV-051,START R37 independently
 R37,G4,IMPLEMENTED_UNVERIFIED,12/12 synthetic; 1481/1481 repo tests; ordinary CI 5/5 for source and retry and docs; actual ALTRIOS Rust tests PASS on retry,DV-055 actual wheel/demo/holdout and approval pending; DV-056 closed,START R38 independently
-R38,G4,IMPLEMENTED_UNVERIFIED,tools/calibration/osrd; native capture and R33 comparator; 12 authored regression cases and dedicated oracle workflow,DV-057 actual pinned native run and matched acceptance; DV-058 normal CI pending,START R39 provisionally after reconciliation
+R38,G4,IMPLEMENTED_UNVERIFIED,tools/calibration/osrd; efd35c6e7a4daaf9b71d1c88460e68f6aff372da; 12/12 synthetic and 1493/1493 repo tests; 4/5 ordinary CI; native 45864116665 job 140062398379 in_progress,DV-057 actual native comparison and approved scope; DV-058 open; no calibrated production claim,START R39 provisionally R32 R35
 R39,G4,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R40,G4,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R41,G4,NOT_STARTED,,,Consult original V4 dependencies and acceptance
