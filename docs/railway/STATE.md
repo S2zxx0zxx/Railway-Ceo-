@@ -1,6 +1,6 @@
 # Railway Manager V5 execution state
 Date: 2026-11-26 IST. Working title only; final identity pending.
-R01–R12 PASS — 12/54 accepted; R13 BLOCKED; R21/R22/R23 IMPLEMENTED_UNVERIFIED; 38 NOT_STARTED (R14–R20 dependency-blocked). G0/G1 accepted; G2 deferred; G3 in progress. Next R23 verification then eligible R24.
+R01–R12 PASS — 12/54 accepted; R13 BLOCKED; R21/R22/R23/R24 IMPLEMENTED_UNVERIFIED; 37 NOT_STARTED (R14–R20 dependency-blocked). G0/G1 accepted; G2 deferred; G3 in progress. Next R24 verification then eligible R25.
 Repository: S2zxx0zxx/Railway-Ceo- (same GitHub repository ID 1471611501; renamed during R09)
 Isolated branch: feat/railway-manager-v5
 Source baseline: fefd995fd189506502ae59230b9ee9c408faa544, tree f0a6d2d577284f13dc2be45b0b8c3d306ea07a48
@@ -110,3 +110,8 @@ Implementation 886db5b4aa90a4bae1c5214c83a9f23e1fb5a980; 8/8 repository readback
 
 ## Actual executable CI evidence
 Verify game run 45831111575 job 139947800740 on implementation 886db5b4aa90a4bae1c5214c83a9f23e1fb5a980: npm ci, typecheck, Vitest and production build all success; 55/55 R23 tests, 45/45 suites, 947/947 total tests, build 2.77s from actual logs. Fresh implementation CI observed G08 save and worker acceptance 45831111438: in_progress/pending; Android QA APK and unsigned AAB 45831111415: in_progress/pending; Release dependency and license audit 45831111480: completed/success; Verify game 45831111575: completed/success; Browser and offline smoke 45831111461: completed/success. DV-031 remains open for remaining CI. DV-030 exact immutable original E08–E10 comparison remains open; R23 IMPLEMENTED_UNVERIFIED despite executable pass. R24 dependent on R23; reconcile outstanding R23 CI and repair known defects before proceeding provisionally; final acceptance waits on DV-030. R13–R20 deferred unchanged; no merge.
+
+## R23 reconciliation at R24
+Exact implementation 886db5b4aa90a4bae1c5214c83a9f23e1fb5a980 CI 45831111480 45831111575 45831111461 45831111438 45831111415 all completed success; checkpoint 215b864a5b9ffda8c98c3b5a6acbed4b112c34f1 CI 45831321981 45831322116 45831322077 45831321967 45831321947 all completed success. Verify job 139947800740 logs 55/55 R23 and 947/947 repository tests, 45/45 suites, strict typecheck/build. DV-031 closed on actual executable evidence. Exact archive formula source comparison DV-030 remains open; R23 remains IMPLEMENTED_UNVERIFIED. R24 uses the existing implementation provisionally under owner protocol; no known failing CI. R24 adds an original register-contract event to the same R23 replay engine, with full-quantity/unique-ID/count checks; all previous R23 tests must pass again. No duplicate inventory engine. R13–R20 unchanged.
+
+R24: deterministic bounded mean-reverting market, clock history, immutable contract terms and exclusive expiry, timed spot/contract procurement through existing R23 replay (register-contract extension), revisioned action history and 57 tests authored; no local execution. Exact E11 DV-032 and R23 DV-030 remain, fresh CI DV-033. R25 independently depends R06/R12 PASS. No raw data or new dependencies. No merge.

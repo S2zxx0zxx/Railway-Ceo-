@@ -45,11 +45,13 @@ export function estimateEnergy(catalog:RollingStockCatalog,reference:unknown,inp
 const amount=object({unit,quantity:positive});
 const amounts=distinct(list(amount,0,3),v=>v.unit);
 const source=refine(object({kind:enumeration(['spot','contract']),contractId:nullable(id),priceMinor:minor,priceQuantity:positive}),s=>(s.kind==='contract')===(s.contractId!==null),'source identity mismatch');
+const registerContract=object({type:enumeration(['register-contract']),contract:decodeEnergyContract});
 const purchase=object({type:enumeration(['purchase']),lotId:id,energy:amount,source,availableCashMinor:minor});
 const reserve=object({type:enumeration(['reserve']),reservationId:id,requirements:amounts});
 const close=refine(object({type:enumeration(['close']),reservationId:id,outcome:enumeration(['consumed','released']),actual:amounts}),e=>e.outcome!=='released'||e.actual.length===0,'release cannot consume energy');
 function event(input:unknown,path='event'){
   const r=record(input,path);
+  if(r.type==='register-contract')return registerContract(input,path);
   if(r.type==='purchase')return purchase(input,path);
   if(r.type==='reserve')return reserve(input,path);
   if(r.type==='close')return close(input,path);
@@ -81,7 +83,13 @@ function replay(input:unknown){
   const lots=new Map<string,Lot>(),reservations=new Map<string,Reservation>();
   const unitLots=new Map<Unit,Lot[]>();
   for(const e of s.events){
-    if(e.type==='purchase'){
+    if(e.type==='register-contract'){
+      const c=e.contract;
+      if(contracts.has(c.id))fail('duplicate energy contract');
+      if(c.remainingQuantity!==c.quantity)fail('new contract must have full unused quantity');
+      if(contracts.size>=10000)fail('contract count limit');
+      contracts.set(c.id,{terms:c,drawn:0n});
+    }else if(e.type==='purchase'){
       if(lots.has(e.lotId))fail('duplicate energy lot');
       const n=BigInt(e.energy.quantity),u=e.energy.unit,cap=capacities.get(u)??0n,onHand=stock.get(u)??0n;
       if(onHand+n>cap)fail('inventory capacity exceeded');
@@ -131,7 +139,7 @@ function replay(input:unknown){
     }
   }
   const lotView=[...lots.values()].map(l=>({lot:decodeEnergyLot({id:l.id,energy:{unit:l.unit,quantity:qty(l.original-l.used)},reservedQuantity:qty(l.reserved),costMinor:money(l.cost-l.used*l.cost/l.original)}),originalQuantity:qty(l.original),originalCostMinor:money(l.cost),consumedQuantity:qty(l.used),consumedCostMinor:money(l.used*l.cost/l.original),source:l.source}));
-  const contractView=[...contracts.values()].map(c=>decodeEnergyContract({...c.terms,remainingQuantity:qty(BigInt(c.terms.quantity)-c.drawn)}));
+  const contractView=[...contracts.values()].sort((a,b)=>order(a.terms.id,b.terms.id)).map(c=>decodeEnergyContract({...c.terms,remainingQuantity:qty(BigInt(c.terms.quantity)-c.drawn)}));
   const inventory=s.capacity.map(c=>{
     const group=unitLots.get(c.unit)??[],reserved=group.reduce((n,l)=>n+l.reserved,0n),onHand=stock.get(c.unit)??0n;
     const carryingCost=group.reduce((n,l)=>n+l.cost-l.used*l.cost/l.original,0n);
