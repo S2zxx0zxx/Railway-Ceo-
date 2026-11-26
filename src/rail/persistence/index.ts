@@ -2,7 +2,9 @@ import Dexie,{type Table} from 'dexie';
 import {integer,checkedAdd} from '../../domain/units';
 import {object,list,distinct,id,sha256,nullable,enumeration,record,text} from '../../domain/validation';
 import type {prepareDispatch,DispatchSnapshot} from '../dispatch';
-import {anchorClock,observeClock,checkClock,decodeOfflinePolicy,decodeOfflineClock,catchupInput,AUTO_SETTLEMENT_PREFIX,autoSettlementCommandId,type OfflineClock,type OfflinePolicy} from '../offline';
+import {anchorClock,observeClock,checkClock,decodeOfflinePolicy,decodeOfflineClock,catchupInput,AUTO_SETTLEMENT_PREFIX,type OfflineClock,type OfflinePolicy} from '../offline';
+
+import {runCatchupBatch,pending} from '../offline/batch';
 
 type Runtime=Awaited<ReturnType<typeof prepareDispatch>>;
 type Controller=Awaited<ReturnType<Runtime['open']>>;
@@ -106,9 +108,6 @@ export function createRailwayStore(runtime:Runtime,limitsInput:unknown,options:{
     // history; the durable wrapper journal adds identity for quote/bulk/advance.
     return {body,seal,controller};
   }
-  const arrived=(c:Controller)=>c.arrivedTripIds();
-  const due=(c:Controller)=>c.snapshot().pendingEvents.some(e=>e.simTimeS<=c.snapshot().simTimeS);
-  const pending=(c:Controller,clock:OfflineClock)=>c.snapshot().simTimeS<clock.targetSimS||due(c)||(clock.policy.autoSettleArrivals&&arrived(c).length>0);
   const viewFor=(body:SaveBody,seal:SealedRailwaySave,c:Controller,recoveryRequired=false):View=>({revision:body.revision,tag:seal.tag,snapshot:c.snapshot(),recoveryRequired,...(body.schemaVersion===3?{clock:structuredClone(body.clock),catchupPending:pending(c,body.clock)}:{})});
   async function load(r:Read):Promise<Loaded>{
     checkHead(r);
@@ -134,33 +133,6 @@ export function createRailwayStore(runtime:Runtime,limitsInput:unknown,options:{
     const current=clock??(l.body.schemaVersion===3?l.body.clock:undefined);
     return current?{...base,schemaVersion:3,clock:current}:base;
   };
-  async function catchup(c:Controller,clock:OfflineClock,p:OfflinePolicy){
-    const start=c.snapshot().simTimeS, target=start+Math.min(p.maxBatchSimS,clock.targetSimS-start);
-    let remaining=p.maxBatchEvents;const processed:string[]=[],settled:string[]=[];
-    while(remaining>0){
-      const s=c.snapshot(),next=s.pendingEvents[0];
-      if(due(c)){
-        const r=await c.advance(s.simTimeS,remaining,s.checksum);processed.push(...r.processed);remaining-=r.processed.length;
-        if(!r.processed.length)fail('due event made no progress');
-        continue;
-      }
-      if(p.autoSettleArrivals){
-        const trip=arrived(c)[0];
-        if(trip){
-          // A legacy save may already contain the predictable base ID.
-          // Choose the first unused ID deterministically, including fleet history.
-          const occupied=new Set([...s.state.receipts,...s.state.closures,...s.state.fleetHistory].map(x=>x.commandId));
-          await c.settle({commandId:autoSettlementCommandId(trip,occupied),tripId:trip},s.checksum);settled.push(trip);remaining--;continue;
-        }
-      }
-      if(s.simTimeS>=target)break;
-      // Stop at next actual event to settle at canonical arrival, independent of batch partition.
-      const at=Math.min(target,next?.simTimeS??target),r=await c.advance(at,remaining,s.checksum);
-      processed.push(...r.processed);remaining-=r.processed.length;
-      if(r.snapshot.simTimeS===s.simTimeS&&!r.processed.length)fail('clock batch made no progress');
-    }
-    return {fromSimS:start,toSimS:c.snapshot().simTimeS,targetSimS:clock.targetSimS,processed,settled,complete:!pending(c,clock)};
-  }
   async function initialize(start:unknown,seed:unknown,opening:unknown):Promise<View>{
     const c=await runtime.initialize(start,seed,opening),key=await createRailwaySaveKey();
     const body:Body={format:'railway-ceo-save',schemaVersion:2,companyId,configurationSha256,revision:1,previousTag:null,limits,snapshot:c.snapshot(),quotes:[],journal:[]};
@@ -210,7 +182,7 @@ export function createRailwayStore(runtime:Runtime,limitsInput:unknown,options:{
         if(!clock&&!a.sample)fail('clock anchor sample required');
         const observed=clock&&a.sample?observeClock(clock,a.sample,t):null;
         clock=observed?.clock??clock??anchorClock(p,a.sample,t);
-        result={observation:observed?{creditedSimS:observed.creditedSimS,creditedWallMs:observed.creditedWallMs,discardedWallMs:observed.discardedWallMs,rollback:observed.rollback,monotonicAnomaly:observed.monotonicAnomaly}:null,...await catchup(c,clock,p)};
+        result={observation:observed?{creditedSimS:observed.creditedSimS,creditedWallMs:observed.creditedWallMs,discardedWallMs:observed.discardedWallMs,rollback:observed.rollback,monotonicAnomaly:observed.monotonicAnomaly}:null,...await runCatchupBatch(c,clock,p)};
         break;
       }
       case 'quote':result=await c.quoteTrip(captured,checksum);break;

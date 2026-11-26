@@ -38,9 +38,9 @@ R36,G4,IMPLEMENTED_UNVERIFIED,fb8f0e4 and e09d5da CI 5/5 each; 21/21 dedicated; 
 R37,G4,IMPLEMENTED_UNVERIFIED,12/12 synthetic; 1481/1481 repo tests; ordinary CI 5/5; locked Rust tests and wheel PASS; actual Python import failed; corrected import retry,DV-055 actual Python demo/holdout and Indian approval pending; DV-056 closed,Retain actual retry evidence
 R38,G4,IMPLEMENTED_UNVERIFIED,12/12 synthetic; 1493/1493 full tests; both ordinary CI 5/5; native OSRD actual artifact verified; median 3.163266%; 0 false negatives and 3 false positives across 18 probes,DV-057 matched Indian and routing scope pending; DV-058 closed,START R39 provisionally
 R39,G4,IMPLEMENTED_UNVERIFIED,889f8a4 and bb5c942 both 6/6 CI; 8/8 codec; 1501/1501 full; 8 Chromium groups; DV-059 closed,DV-060 portable transfer archive and physical device scope; R35/R36 provisional,START R40 provisionally
-R40,G4,IMPLEMENTED_UNVERIFIED,f15622d4ee6f7fa68e898a0bdcac8a540215ec65; 12/12 R40 and 1513/1513 full tests; six actual Chromium groups PASS; isolated Android emulator replay harness authored,DV-061 Android CI HTTP429 retry; DV-062 actual emulator/native lifecycle and production policy approval; predecessor provisional,HOLD R41 until R40 full acceptance
-R41,G4,NOT_STARTED,,Owner hold until R40 required acceptance; R31/R35/R40 dependencies,Do not start
-R42,G5,NOT_STARTED,,,Consult original V4 dependencies and acceptance
+R40,G4,IMPLEMENTED_UNVERIFIED,f15622d4 hardened CI 7/7 after retry; 1513/1513; 12/12 R40; six Chromium groups; additional native QA 03e0af1272c5f9ba80262bf3339931fafee378a9,DV-061 QA revision pending; DV-062 policy and physical device; provisional predecessor,Owner authorizes provisional R41
+R41,G4,IMPLEMENTED_UNVERIFIED,tools/balance/railway-lab.ts; shared R40 batch; 12 authored tests; dedicated 200-scenario research CI,DV-063 executable CI and scenario results pending; DV-064 approved profile and long-term replenishment/expansion/recovery contracts pending,Next eligible R43 while R42 R19-blocked
+R42,G5,NOT_STARTED,,R19 hard prerequisite blocked by R13-R20 owner deferral; real map data unavailable,Do not substitute synthetic data as real; R43 independently eligible
 R43,G5,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R44,G5,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R45,G5,NOT_STARTED,,,Consult original V4 dependencies and acceptance
