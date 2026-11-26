@@ -6,7 +6,7 @@ const dir=resolve('r47-native-qa'),bundle=resolve('r47-qa-dist'),cap=resolve('no
 if(existsSync(dir))throw Error('QA workspace exists; inspect rather than overwrite');
 if(JSON.parse(await readFile(bundle+'/build-id.json','utf8')).qa!==true)throw Error('QA bundle required');
 await mkdir(dir);await symlink(resolve('node_modules'),dir+'/node_modules','junction');await cp('package.json',dir+'/package.json');await cp(bundle,dir+'/www',{recursive:true});await rm(dir+'/www/railway-sw.js');
-const config={appId:'app.railway.qa.r47',appName:'Railway QA R47',webDir:'www',server:{hostname:'railway-qa.localhost',androidScheme:'https',cleartext:false},android:{allowMixedContent:false,webContentsDebuggingEnabled:false}};
+const config={appId:'app.railway.qa.r47',appName:'Railway QA R47',webDir:'www',server:{hostname:'railway-qa.localhost',androidScheme:'https',cleartext:false,allowNavigation:[]},android:{allowMixedContent:false,webContentsDebuggingEnabled:false}};
 await writeFile(dir+'/capacitor.config.json',JSON.stringify(config));
 function run(cmd,args,cwd){const r=spawnSync(cmd,args,{cwd,stdio:'inherit'});if(r.status!==0)throw Error(cmd+' failed '+r.status);}
 run(process.execPath,[cap,'add','android'],dir);run(process.execPath,[cap,'sync','android'],dir);

@@ -32,9 +32,10 @@ export function RailwayGuestShell({session,qa=false,updateReady=false,offlineRea
  const enter=(fresh:boolean)=>run(async()=>{if(!session)return;const v=await(fresh?session.startGuest():session.resume());setStatus('present');setView(v);});
  const recover=()=>run(async()=>{if(!session||!view)return;setView(await session.store.recover({revision:view.revision,tag:view.tag}));setNotice('Latest authenticated mirror restored.');});
  const exportSave=()=>run(async()=>{if(!session)return;await exportJson('railway-save.json',JSON.stringify(await session.store.exportLatest()));setNotice('Authenticated same-installation recovery export prepared.');});
- async function restoreFile(file:File){await run(async()=>{if(!session||!view)throw Error('Open the existing authenticated save first');if(file.size>64000000)throw Error('Recovery file exceeds envelope limit');const restored=await session.store.recover({revision:view.revision,tag:view.tag},JSON.parse(await file.text()));setView(restored);setNotice('Matching latest authenticated save restored.');});}
+ async function restoreFile(file:File){await run(async()=>{if(!session)throw Error('No configured guest company');if(file.size>64000000)throw Error('Recovery file exceeds envelope limit');const expected=await session.store.recoveryCursor(),restored=await session.store.recover(expected,JSON.parse(await file.text()));setStatus('present');setView(restored);setNotice('Matching latest authenticated save restored.');});}
+ const home=()=>{setTab('home');if(session)void session.store.open().then(setView).catch(report);};
  const ready=!!session&&!!view&&!view.recoveryRequired&&!!view.clock&&!view.catchupPending;
- if(ready&&tab!=='home')return <>{error&&<p role="alert">{error}</p>}{tab==='fleet'?<RailwayFleetScreen store={session!.store} onExit={()=>setTab('home')}/>:tab==='finance'?<RailwayFinanceScreen store={session!.store} onExit={()=>setTab('home')}/>:<RailwayProgressionScreen store={session!.store} onExit={()=>setTab('home')}/>}</>;
+ if(ready&&tab!=='home')return <>{error&&<p role="alert">{error}</p>}{tab==='fleet'?<RailwayFleetScreen store={session!.store} onExit={home}/>:tab==='finance'?<RailwayFinanceScreen store={session!.store} onExit={home}/>:<RailwayProgressionScreen store={session!.store} onExit={home}/>}</>;
  return <main className="rf" aria-label="Railway guest entry" aria-busy={busy}><header className="rf-top"><div><small>{qa?'SYNTHETIC QA — NOT RELEASE':'DEVELOPMENT BUILD'}</small><h1>Railway management</h1></div></header>
  <section className="rf-card"><h2>{entered?'Guest company':'Play offline as guest'}</h2><p>No login, account linking or network service required.</p>
  {status==='loading'&&<p>Checking local save…</p>}
@@ -48,7 +49,8 @@ export function RailwayGuestShell({session,qa=false,updateReady=false,offlineRea
  {!view.recoveryRequired&&<button disabled={busy||!activeRef.current} onClick={()=>wakeRef.current?.()}>Continue offline catch-up</button>}
  <button disabled={!ready||busy} onClick={()=>setTab('fleet')}>Operations</button><button disabled={!ready||busy} onClick={()=>setTab('finance')}>Finance</button><button disabled={!ready||busy} onClick={()=>setTab('progression')}>Progression</button>
  <button disabled={busy} onClick={()=>void exportSave()}>Export recovery file</button>
- <label>Restore matching recovery file<input type="file" accept="application/json,.json" disabled={busy} onChange={e=>{const f=e.target.files?.[0];e.target.value='';if(f)void restoreFile(f);}}/></label><p>Recovery is bound to this installation and latest trusted save. Cross-device transfer is not enabled.</p></>}
+ </>}
+ {(status==='present'||status==='incomplete')&&<><label>Restore matching recovery file<input type="file" accept="application/json,.json" disabled={busy} onChange={e=>{const f=e.target.files?.[0];e.target.value='';if(f)void restoreFile(f);}}/></label><p>Recovery is bound to this installation and latest trusted save. Cross-device transfer is not enabled.</p></>}
  </section><section className="rf-card"><h2>Offline availability</h2><p>{Capacitor.isNativePlatform()?'Bundled Android application':offlineReady?'Offline cache ready':'Offline cache not confirmed'}</p>
  {updateReady&&<p role="status">Update downloaded. Return to this screen, finish any active actions, close all railway tabs, then reopen. No forced reload.</p>}
  <h2>Help</h2><p>Use the guest company without signing in. Save recovery does not create a new company. Available language: English. Other languages and account linking are not configured.</p></section>

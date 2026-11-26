@@ -5,6 +5,7 @@ const b=await chromium.launch({headless:true}),ctx=await b.newContext({viewport:
 mkdirSync('r47-evidence',{recursive:true});page.on('pageerror',e=>errors.push(String(e)));
 const origin='http://127.0.0.1:4187/',ready=()=>page.getByText('Guest company ready',{exact:true}).waitFor();
 try{
+ const blank=await ctx.newPage();await blank.goto('http://127.0.0.1:4188/');await blank.getByText(/No approved railway starter scenario/).waitFor();assert.equal(await blank.getByRole('button',{name:'Start guest company'}).count(),0);await blank.close();
  await page.goto(origin);await page.getByRole('button',{name:'Start guest company'}).waitFor();
  await page.getByText('Offline cache ready',{exact:true}).waitFor();
  // Place a sentinel legacy cache; update cleanup must not touch it.
@@ -23,15 +24,23 @@ try{
  const saved=await page.evaluate(()=>r47Qa.export());assert.ok(JSON.parse(saved.payload).journal.some(x=>x.requestId==='r47-qa-quote'));
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);await page.screenshot({path:'r47-evidence/guest-offline.png',fullPage:true});
  await ctx.setOffline(false);
+ // Actual IDB corruption of both copies: retain the authenticated head and key.
+ await page.close();const recovery=await ctx.newPage();await recovery.goto(origin);await recovery.getByRole('button',{name:'Resume guest company'}).waitFor();
+ const latest=await recovery.evaluate(()=>r47Qa.export());
+ await recovery.evaluate(()=>new Promise((resolve,reject)=>{const q=indexedDB.open('r47-qa-guest');q.onerror=()=>reject(q.error);q.onsuccess=()=>{const db=q.result,tx=db.transaction('slots','readwrite'),store=tx.objectStore('slots'),rows=store.getAll();rows.onsuccess=()=>{for(const row of rows.result)store.put({...row,seal:{...row.seal,payload:'corrupt'}});};tx.oncomplete=()=>{db.close();resolve(true);};tx.onerror=()=>reject(tx.error);};}));
+ await recovery.getByRole('button',{name:'Resume guest company'}).click();await recovery.getByRole('alert').filter({hasText:/no valid latest copy/}).waitFor();
+ await recovery.getByLabel('Restore matching recovery file').setInputFiles({name:'save.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(latest))});
+ await recovery.getByText('Matching latest authenticated save restored.').waitFor();await recovery.getByText('Guest company ready',{exact:true}).waitFor();
+ assert.ok(JSON.parse((await recovery.evaluate(()=>r47Qa.export())).payload).journal.some(x=>x.requestId==='r47-qa-quote'));
  cpSync('r47-update-dist','r47-qa-dist',{recursive:true});
- await page.evaluate(async()=>{const r=await navigator.serviceWorker.getRegistration();await r.update();});
- await page.getByText(/Update downloaded/).waitFor({timeout:60000});
- assert.equal(await page.evaluate(async()=> (await(await fetch('./build-id.json')).json()).buildId),'initial');
- await page.close();const next=await ctx.newPage();await next.goto(origin);await next.getByRole('button',{name:'Resume guest company'}).waitFor();
+ await recovery.evaluate(async()=>{const r=await navigator.serviceWorker.getRegistration();await r.update();});
+ await recovery.getByText(/Update downloaded/).waitFor({timeout:60000});
+ assert.equal(await recovery.evaluate(async()=> (await(await fetch('./build-id.json')).json()).buildId),'initial');
+ await recovery.close();const next=await ctx.newPage();await next.goto(origin);await next.getByRole('button',{name:'Resume guest company'}).waitFor();
  await next.waitForFunction(async()=>{const r=await navigator.serviceWorker.getRegistration();return !r?.waiting&&r?.active?.state==='activated';});
  await next.reload();await next.getByRole('button',{name:'Resume guest company'}).click();await next.getByText('Guest company ready',{exact:true}).waitFor();
  const final=await next.evaluate(async()=>({body:JSON.parse((await r47Qa.export()).payload),build:(await(await fetch('./build-id.json')).json()).buildId,legacy:await caches.has('the-ceo-legacy-sentinel')}));
  assert.equal(final.build,'update');assert.equal(final.legacy,true);assert.ok(final.body.journal.some(x=>x.requestId==='r47-qa-quote'));assert.deepEqual(errors,[]);
  writeFileSync('r47-evidence/browser.json',JSON.stringify({initialRevision:JSON.parse(first.payload).revision,finalRevision:final.body.revision,build:final.build,legacyPreserved:final.legacy},null,2));
- console.log('R47_BROWSER PASS explicit guest creation and duplicate rejection, actual operations finance progression, offline reload and save retention, waiting update and legacy cache isolation');
+ console.log('R47_BROWSER PASS explicit guest creation and duplicate rejection, actual operations finance progression, offline reload and save retention, both-copy recovery, waiting update and legacy cache isolation');
 }finally{await ctx.close();await b.close();}

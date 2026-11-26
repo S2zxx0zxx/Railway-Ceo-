@@ -20,7 +20,7 @@ if(Capacitor.isNativePlatform()){
  const stage=await session.store.presence();
  let recorded=false,writing=false;
  setInterval(()=>{if(writing)return;writing=true;void (async()=>{try{
-  if(await session.store.presence()!=='present')return;
+  if(!document.body.innerText.includes('Guest company ready')||await session.store.presence()!=='present')return;
   const v=await session.store.open();if(!v.clock||v.catchupPending)return;
   if(!recorded){if(stage==='absent'){const r=await (globalThis as any).r47Qa.quote();await report('r47-phase',{native:true,platform:Capacitor.getPlatform(),configuration:session.configurationSha256,revision:r.view.revision,tag:r.view.tag,quote:r.result});}else{const seal=await session.store.exportLatest(),body=JSON.parse(seal.payload);if(!body.journal.some((x:any)=>x.requestId==='r47-qa-quote'))throw Error('missing persisted QA quote');await report('r47-final',{native:true,platform:Capacitor.getPlatform(),configuration:session.configurationSha256,revision:v.revision,tag:v.tag,quote:body.journal.find((x:any)=>x.requestId==='r47-qa-quote').result});}recorded=true;}
   await report('r47-lifecycle',{events:[...events],revision:v.revision});
