@@ -42,6 +42,14 @@ type LoanTerms=Decoded<typeof decodeLoan>;
 type RuntimeLoan={terms:LoanTerms;principal:bigint;interest:bigint;interestRecognized:bigint;interestPaid:bigint;principalPaid:bigint;cursor:number;lastBoundary:number;pendingNumerator:bigint;closedAtSimS:number|null};
 type Reservation={id:string;amountMinor:string;closed:null|{outcome:'settled'|'released';actualMinor:string;releasedMinor:string;additionalMinor:string}};
 export type LiquidityBook=ReadonlyTree<Book>;
+// Explicit discriminated type includes accruals pushed by nested recognize().
+export type LiquidityReceipt=
+  | {type:'interest';commandId:string;loanId:string;throughSimS:number;interestExpenseMinor:string;cashExpenseMinor:string}
+  | {type:'borrow';commandId:string;loanId:string;principalReceivedMinor:string}
+  | {type:'repay';commandId:string;loanId:string;principalPaidMinor:string;interestPaidMinor:string;cashOutMinor:string}
+  | {type:'reservation-close';commandId:string;reservationId:string;outcome:'settled'|'released';actualMinor:string;releasedMinor:string;additionalMinor:string;cashExpenseMinor:string}
+  | {type:'receipt';commandId:string;sourceId:string;category:Decoded<typeof receipt>['category'];cashInMinor:string}
+  | {type:'expense';commandId:string;sourceId:string;cashExpenseMinor:string};
 /** E20 simple noncompounding interest per explicit scenario period, accrued on
  * outstanding principal-time, not on accrued interest. Accrual stops at maturity
  * (no invented default penalty). Carry fractional paise until the next recognition.
@@ -53,7 +61,7 @@ function replay(input:unknown){
   let cash=BigInt(s.openingCashMinor),locked=0n,now=Number(s.startSimS);
   const loans=new Map<string,RuntimeLoan>(),reservations=new Map<string,Reservation>();
   const commands=new Set<string>(),sources=new Set<string>();
-  const receipts=[];
+  const receipts:LiquidityReceipt[]=[];
   function free(){return cash-locked;}
   function pay(n:bigint){if(n>free())fail('insufficient available cash');cash-=n;}
   function recognize(l:RuntimeLoan,to:number,commandId:string){

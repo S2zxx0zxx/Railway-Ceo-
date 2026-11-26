@@ -27,7 +27,7 @@ R25,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/operations.ts; R25_OPERATIONS_REP
 R26,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/operations.ts; R26_MAINTENANCE_REPORT.md; 3a7e352 CI 5/5; 40/40 R26 and 1106/1106 repository tests,Exact original CSV DV-036 and predecessor DV-034; DV-037 closed,Final source reconciliation required
 R27,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/incentives.ts; R27_INCENTIVES_REPORT.md; 2fd859e 4/5 original CI; de547a0 equivalent 5/5; 1139/1139 tests,Exact original CSV DV-038 and DV-026/028; DV-039 closed after HTTP429 recovery,Final source reconciliation required
 R28,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/liquidity.ts; R28_LIQUIDITY_REPORT.md; 74fa6c4 CI 5/5; 45/45 R28; 1184/1184 repo tests,Original source recovered; DV-040 detailed policy acceptance pending; DV-041 closed,Final reconciliation required
-R29,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/accounting.ts; tests/railway-r29.test.ts; R29_ACCOUNTING_REPORT.md; R29_SOURCE_RECONCILIATION.md; 33 authored tests,Fresh CI DV-042; prior policy reconciliation and DV-006; source SHA CRC verified,Reconcile CI and known defects before R30
+R29,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/accounting.ts; liquidity.ts receipt union correction; tests/railway-r29.test.ts; 33 authored cases; source recovery report,Corrected CI DV-042; prior policy acceptance and DV-006,Reconcile corrected CI before R30
 R30,G3,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R31,G3,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R32,G4,NOT_STARTED,,,Consult original V4 dependencies and acceptance
