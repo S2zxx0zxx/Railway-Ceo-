@@ -65,10 +65,19 @@ for screen in Operations Finance Progression; do
  for i in $(seq 1 30); do
   adb shell uiautomator dump /sdcard/r49-window.xml >/dev/null 2>&1 || true
   adb pull /sdcard/r49-window.xml "r47-native-evidence/r49-${screen}.xml" >/dev/null 2>&1 || true
-  if grep -Fq "$heading" "r47-native-evidence/r49-${screen}.xml"; then break; fi
+  if python - "$heading" "r47-native-evidence/r49-${screen}.xml" <<'PY'
+import sys,xml.etree.ElementTree as E
+try:
+ assert any(sys.argv[1] in (e.get('text',''),e.get('content-desc','')) for e in E.parse(sys.argv[2]).iter('node'))
+except Exception: sys.exit(1)
+PY
+  then break; fi
   sleep 1
  done
- grep -Fq "$heading" "r47-native-evidence/r49-${screen}.xml"
+ python - "$heading" "r47-native-evidence/r49-${screen}.xml" <<'PY'
+import sys,xml.etree.ElementTree as E
+assert any(sys.argv[1] in (e.get('text',''),e.get('content-desc','')) for e in E.parse(sys.argv[2]).iter('node'))
+PY
  adb shell input keyevent KEYCODE_BACK
  sleep 1
 done
