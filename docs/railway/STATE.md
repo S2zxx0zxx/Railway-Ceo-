@@ -1,6 +1,6 @@
 # Railway Manager V5 execution state
 Date: 2026-11-26 IST. Working title only; final identity pending.
-R01–R12 PASS — 12/54 accepted; R13 BLOCKED; R21/R22/R23/R24/R25/R26/R27 IMPLEMENTED_UNVERIFIED; 34 NOT_STARTED (R14–R20 dependency-blocked). G0/G1 accepted; G2 deferred; G3 in progress. Next R27 verification then eligible R28.
+R01–R12 PASS — 12/54 accepted; R13 BLOCKED; R21/R22/R23/R24/R25/R26/R27/R28 IMPLEMENTED_UNVERIFIED; 33 NOT_STARTED (R14–R20 dependency-blocked). G0/G1 accepted; G2 deferred; G3 in progress. Next R28 verification then eligible R29.
 Repository: S2zxx0zxx/Railway-Ceo- (same GitHub repository ID 1471611501; renamed during R09)
 Isolated branch: feat/railway-manager-v5
 Source baseline: fefd995fd189506502ae59230b9ee9c408faa544, tree f0a6d2d577284f13dc2be45b0b8c3d306ea07a48
@@ -160,3 +160,8 @@ Implementation 2fd859ea7d17e7f2c0756f35b35d85c0eab7b1bb; 8/8 readback passed: br
 
 ## Actual executable CI evidence
 Verify game run 45837672178 job 139970740819 on implementation 2fd859ea7d17e7f2c0756f35b35d85c0eab7b1bb: npm ci, strict typecheck, Vitest and production build all success; 33/33 R27, 49/49 suites, 1139/1139 total tests, build 3.12s. Fresh CI Android QA APK and unsigned AAB 45837672240: in_progress/pending; Browser and offline smoke 45837672222: in_progress/pending; G08 save and worker acceptance 45837672151: in_progress/pending; Verify game 45837672178: completed/success; Release dependency and license audit 45837672374: completed/success. DV-039 remains open for remaining workflows. DV-038 exact original E17–E19 comparison and predecessor DV-026/028 remain open; R27 IMPLEMENTED_UNVERIFIED despite actual executable pass. R28 independent R06 accepted; reconcile outstanding CI and repair known defects before starting. R13–R20 deferred unchanged. No merge.
+
+## R27 reconciliation at R28
+Original 2fd859ea7d17e7f2c0756f35b35d85c0eab7b1bb: Verify 45837672178, license 45837672374, browser 45837672222, save/worker 45837672151 success. Verify job 139970740819 33/33 R27, 1139/1139 repository tests, 49/49 suites. Android 45837672240 job 139970740643 failed assembleDebug dependency downloads with HTTP429 Maven Central (slf4j, jdom2, javawriter, jsr305 and others); exit1. Exact compare 2fd859ea7d17e7f2c0756f35b35d85c0eab7b1bb...de547a02ec9a3c20dc0c75dba92b8abf6481d99d contains four docs-only files. Equivalent production checkpoint de547a02ec9a3c20dc0c75dba92b8abf6481d99d CI 45837903160 45837903152 45837903197 45837903567 45837903153 all success including Android. DV-039 closed on equivalent successful source; failed evidence retained. DV-038 and prior DV-026/028 remain open; R27 IMPLEMENTED_UNVERIFIED. R28 independently depends accepted R06; R13–R20 remain deferred.
+
+R28: exact loan principal/interest/maturity/repayment and pure cash liquidity reservations, reconciliation and command idempotency; 45 authored tests; local runtime unavailable. DV-040 exact source and DV-041 CI open. R29 provisional dependencies; no merge.
