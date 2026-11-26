@@ -1,6 +1,6 @@
 # Railway Manager V5 execution state
 Date: 2026-11-26 IST. Working title only; final identity pending.
-R01–R12 PASS — 12/54 accepted; R13 BLOCKED; R21/R22/R23/R24 IMPLEMENTED_UNVERIFIED; 37 NOT_STARTED (R14–R20 dependency-blocked). G0/G1 accepted; G2 deferred; G3 in progress. Next R24 verification then eligible R25.
+R01–R12 PASS — 12/54 accepted; R13 BLOCKED; R21/R22/R23/R24/R25 IMPLEMENTED_UNVERIFIED; 36 NOT_STARTED (R14–R20 dependency-blocked). G0/G1 accepted; G2 deferred; G3 in progress. Next R25 verification then eligible R26.
 Repository: S2zxx0zxx/Railway-Ceo- (same GitHub repository ID 1471611501; renamed during R09)
 Isolated branch: feat/railway-manager-v5
 Source baseline: fefd995fd189506502ae59230b9ee9c408faa544, tree f0a6d2d577284f13dc2be45b0b8c3d306ea07a48
@@ -121,3 +121,8 @@ Implementation 0b22792d79145ddec436649e5c561cf5605f9358; 8/8 readback passed: br
 
 ## Actual executable CI evidence
 Verify game run 45833044536 job 139954525158 on implementation 0b22792d79145ddec436649e5c561cf5605f9358: npm ci, typecheck, Vitest and production build all success; 57/57 R24, 55/55 R23 backward regression, 46/46 suites, 1004/1004 total tests, build 3.00s from actual logs. Fresh implementation CI observed Verify game 45833044536: completed/success; G08 save and worker acceptance 45833044781: completed/success; Android QA APK and unsigned AAB 45833044498: in_progress/pending; Release dependency and license audit 45833044512: completed/success; Browser and offline smoke 45833044513: completed/success. DV-033 remains open for remaining CI. DV-032 exact immutable original E11 comparison and predecessor DV-030 remain open; R24 IMPLEMENTED_UNVERIFIED despite executable pass. R25 independent accepted R06/R12; reconcile outstanding R24 CI and repair known defects before starting next task. R13–R20 deferred unchanged; no merge.
+
+## R24 reconciliation at R25
+Original 0b22792d79145ddec436649e5c561cf5605f9358 4/5 workflow successes (45833044536 Verify; 45833044512 license; 45833044781 save/worker; 45833044513 browser). Verify job 139954525158 57/57 R24 and 1004/1004 full tests; 46/46 suites; typecheck/build success. Android 45833044498 job 139954524345 failed assembleDebug with Maven Central HTTP429 dependency downloads (jose4j, slf4j, jdom2 etc), exit1; APK/AAB later steps skipped. Preserve failed run. Compared 0b22792d79145ddec436649e5c561cf5605f9358...3a06d4c84ff0d4aca69775eb634f5e9f9ae08aa7: only docs/railway changes; checkpoint all five CI successful 45833262741 45833262757 45833262781 45833262815 45833262735, including equivalent executable Android recovery. DV-033 CLOSED on equivalent successful source plus exact original evidence; no code change needed for HTTP429. DV-032 original E11 comparison and predecessor DV-030 remain open; R24 IMPLEMENTED_UNVERIFIED. R25 independent accepted R06/R12. R13–R20 remain deferred.
+
+R25: E12 regional/class access and terminal charges; E13 hourly crew and aligned separate staff overhead; E14 deterministic bounded wear with catalog binding; immutable revisioned operating book and duplicate trip/shift/period protection. 62 tests authored; no local execution. Exact source DV-034 and fresh CI DV-035. R26 provisional dependency. No merge.
