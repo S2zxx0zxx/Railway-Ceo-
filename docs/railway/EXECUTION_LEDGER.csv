@@ -33,7 +33,7 @@ R31,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/governance.ts; R31_GOVERNANCE_REP
 R32,G4,PASS,src/rail/scheduler/index.ts; R32_SCHEDULER_REPORT.md; 15683d5 and docs-only 9cc9fde CI 5/5 each; 1353/1353 tests; 40 dedicated plus 3 integration; DV-045 closed,,START R33
 R33,G4,PASS,src/rail/movement/index.ts; R33_MOVEMENT_REPORT.md; 0c6993e and c173585 CI 5/5 each; 1393/1393 tests; 40 R33; DV-046 closed,,START R34
 R34,G4,IMPLEMENTED_UNVERIFIED,src/rail/dispatch/index.ts; R34_DISPATCH_REPORT.md; 83f17a3 CI 5/5; 1423/1423 tests; DV-047 closed,Provisional predecessors and DV-048; docs-only DV-050,START R35 provisionally
-R35,G4,IMPLEMENTED_UNVERIFIED,src/rail/dispatch/index.ts; src/rail/economy/accounting.ts; tests/railway-r35.test.ts; 25 authored cases,Fresh CI DV-049; provisional dependencies; DV-051 partial-delivery and disruption/recovery contracts,START R36 provisionally after CI reconciliation
+R35,G4,IMPLEMENTED_UNVERIFIED,src/rail/dispatch/index.ts; src/rail/economy/accounting.ts; tests/railway-r35.test.ts; 25 authored cases; initial TS2322 corrected,Corrected CI DV-049; provisional dependencies; DV-051 partial-delivery and disruption/recovery contracts,START R36 provisionally after CI reconciliation
 R36,G4,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R37,G4,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R38,G4,NOT_STARTED,,,Consult original V4 dependencies and acceptance

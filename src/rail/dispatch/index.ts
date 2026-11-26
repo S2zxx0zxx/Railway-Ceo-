@@ -270,7 +270,7 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
     if(q.outcome==='cancelled'){
       const inputs=p.energyInputs.slice(0,completed.length);
       const next=p.energyInputs[completed.length],last=completed.at(-1)?.endS??0,wait=elapsed-last;
-      if(wait>0&&next)inputs.push({...next,distanceM:0,runningS:0,idleS:wait,requestedRegenWh:'0',maxRegenBps:0});
+      if(wait>0&&next)inputs.push({...next,distanceM:0,runningS:0,idleS:wait,requestedRegenWh:energyQuantity('0'),maxRegenBps:basisPoints(0)});
       requirements=inputs.length?estimateEnergy(catalog,p.reference,inputs).energy:[];
     }
     const energyEvent={type:'close',reservationId:q.tripId,outcome:q.outcome==='cancelled'&&distance===0?'released':'consumed',actual:requirements};
@@ -373,6 +373,18 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
         if(closure.outcome==='settled'){
           if(d.status!=='served'||er.closed?.outcome!=='consumed'||!m||m.phaseIndex!==p.movement.phases.length||closure.phaseIndex!==m.phaseIndex||closure.nodeId!==p.movement.destination||closure.distanceM!==p.movement.distanceM||closure.arrivalSimS!==checkedAdd(r.atSimS,p.movement.durationS)||rev.closed?.evidence.arrivalSimS!==closure.arrivalSimS||!op||op.type!=='trip'||op.trip.distanceM!==closure.distanceM||op.trip.arrivalSimS!==closure.arrivalSimS)fail('settled trip evidence mismatch');
         }else if(m||d.status!=='released'||closure.arrivalSimS!==null||rev.closed?.evidence.arrivalSimS!==null||closure.distanceM>=p.movement.distanceM||(closure.distanceM===0?(er.closed?.outcome!=='released'||!!op||closure.nodeId!==p.movement.origin||closure.atSimS!==r.atSimS):(er.closed?.outcome!=='consumed'||!op||op.type!=='trip'||op.trip.distanceM!==closure.distanceM||op.trip.arrivalSimS!==closure.atSimS)))fail('cancelled trip evidence mismatch');
+        if(closure.outcome==='cancelled'){
+          const elapsed=closure.atSimS-r.atSimS,phases=p.movement.phases;
+          if(closure.phaseIndex===-1){
+            if(elapsed!==0||closure.distanceM!==0||closure.nodeId!==p.movement.origin)fail('invalid predeparture cancellation position');
+          }else{
+            const phase=phases[closure.phaseIndex];
+            if(!phase||elapsed<phase.startS||elapsed>=phase.endS||phase.kind==='MOVE'&&elapsed!==phase.startS||phase.from!==closure.nodeId||phase.distanceBeforeM!==closure.distanceM)fail('cancelled position does not match actual phase');
+            let distance=0,stopIndex=closure.nodeId===p.route.stopAnchors[0]&&closure.distanceM===0?0:-1;
+            for(let i=0;i<p.segments.length;i++){distance=checkedAdd(distance,p.segments[i]);if(distance===closure.distanceM&&p.route.stopAnchors[i+1]===closure.nodeId)stopIndex=i+1;}
+            if(stopIndex<0||d.claims.some(c=>c.allocated>0&&c.alightIndex<=stopIndex))fail('cancelled station or partial-delivery mismatch');
+          }
+        }
         continue;
       }
       const phase=m.phaseIndex+1,phases=p.movement.phases;
