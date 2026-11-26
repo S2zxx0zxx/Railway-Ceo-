@@ -19,7 +19,7 @@ R17,G2,NOT_STARTED,,R13 actual dataset prerequisite blocked directly or transiti
 R18,G2,NOT_STARTED,,R13 actual dataset prerequisite blocked directly or transitively,Resume in original dependency order after R13
 R19,G2,NOT_STARTED,,R13 actual dataset prerequisite blocked directly or transitively,Resume in original dependency order after R13
 R20,G2,NOT_STARTED,,R13 actual dataset prerequisite blocked directly or transitively,Resume in original dependency order after R13
-R21,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/demand.ts; tests/railway-r21.test.ts; R21_DEMAND_REPORT.md; E01-E03 source-derived interim implementation,Exact immutable CSV comparison and executable CI pending; local runtime ClientError,Reconcile R21 CI and original formula evidence; R22 provisional only after no known defect
+R21,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/demand.ts; tests/railway-r21.test.ts; R21_DEMAND_REPORT.md; 83cfe410845fb17712a2bae14f5e9bda8f179f3a; 8/8 readback; CI 45823142298 45823142388 45823142320 45823142394 45823142377,Exact immutable CSV and executable verification pending; local runtime ClientError,START R22 provisionally after CI reconciliation and no known defect
 R22,G3,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R23,G3,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R24,G3,NOT_STARTED,,,Consult original V4 dependencies and acceptance
