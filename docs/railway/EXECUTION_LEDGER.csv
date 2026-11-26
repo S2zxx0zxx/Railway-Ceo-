@@ -37,8 +37,8 @@ R35,G4,IMPLEMENTED_UNVERIFIED,20c07fe; 25/25 dedicated; 1448/1448 repository tes
 R36,G4,IMPLEMENTED_UNVERIFIED,fb8f0e4 and e09d5da CI 5/5 each; 21/21 dedicated; 1469/1469 tests; DV-052 closed,Provisional R26/R35; DV-054 purchased base and circle-line policy and topology; DV-051,START R37 independently
 R37,G4,IMPLEMENTED_UNVERIFIED,12/12 synthetic; 1481/1481 repo tests; ordinary CI 5/5; locked Rust tests and wheel PASS; actual Python import failed; corrected import retry,DV-055 actual Python demo/holdout and Indian approval pending; DV-056 closed,Retain actual retry evidence
 R38,G4,IMPLEMENTED_UNVERIFIED,12/12 synthetic; 1493/1493 full tests; both ordinary CI 5/5; native OSRD actual artifact verified; median 3.163266%; 0 false negatives and 3 false positives across 18 probes,DV-057 matched Indian and routing scope pending; DV-058 closed,START R39 provisionally
-R39,G4,IMPLEMENTED_UNVERIFIED,src/rail/persistence/index.ts; 889f8a4070b2add5098f4d3b2b0330219c4cf62b; 8/8 codec tests; 1501/1501 repo tests; 8 real Chromium acceptance groups; 5/6 hardened CI,DV-059 remaining platform CI; DV-060 portable transfer archive and physical device scope; R35/R36 provisional,START R40 provisionally
-R40,G4,NOT_STARTED,,,Consult original V4 dependencies and acceptance
+R39,G4,IMPLEMENTED_UNVERIFIED,889f8a4 and bb5c942 both 6/6 CI; 8/8 codec; 1501/1501 full; 8 Chromium groups; DV-059 closed,DV-060 portable transfer archive and physical device scope; R35/R36 provisional,START R40 provisionally
+R40,G4,IMPLEMENTED_UNVERIFIED,src/rail/offline policy and worker/lifecycle; R39 authenticated v3 clock; 11 authored tests and real Chromium parity workflow,DV-061 executable CI pending; DV-062 policy approval and native lifecycle device acceptance; predecessor provisional,START R41 provisionally after verification
 R41,G4,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R42,G5,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R43,G5,NOT_STARTED,,,Consult original V4 dependencies and acceptance

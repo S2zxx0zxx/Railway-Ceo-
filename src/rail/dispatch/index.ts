@@ -637,7 +637,7 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
         s=await verify(s);current=s;return freeze({snapshot:s,processed,complete,nextDueSimS:next?.simTimeS??null});
       });
     }
-    return Object.freeze({snapshot:()=>current,issuedQuotes:()=>freeze([...issued.values()]),quoteTrip,dispatch,bulkDispatch,advance,fleetCommand:fleetCommandRun,inspectFleet,settle:(q:unknown,c:unknown)=>terminal(q,c,'settled'),cancel:(q:unknown,c:unknown)=>terminal(q,c,'cancelled')});
+    return Object.freeze({snapshot:()=>current,arrivedTripIds:()=>freeze(current.state.movement.trips.filter(t=>!current.state.closures.some(c=>c.tripId===t.tripId)&&t.phaseIndex===movement.plans.find(p=>p.id===t.planId)?.phases.length).map(t=>t.tripId).sort(cmp)),issuedQuotes:()=>freeze([...issued.values()]),quoteTrip,dispatch,bulkDispatch,advance,fleetCommand:fleetCommandRun,inspectFleet,settle:(q:unknown,c:unknown)=>terminal(q,c,'settled'),cancel:(q:unknown,c:unknown)=>terminal(q,c,'cancelled')});
   }
   async function initialize(start:unknown,seed:unknown,input:unknown){
     const b=opening(input);
@@ -665,5 +665,6 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
     }
     return controller(s,offers);
   }
-  return Object.freeze({configurationSha256,companyId:cfg.governance.companyId,initialize,open,openPersisted,verify,events,decodeState,reduce});
+  const workerRecipe=freeze(structuredClone({graph:graph.snapshot(),catalog:catalog.snapshot(),reviewedEvidence:catalog.reviewedEvidence(),movement:movement.workerRecipe,config:cfg,lifecycle:life,fleet:fleet?.config??null}));
+  return Object.freeze({workerRecipe,configurationSha256,companyId:cfg.governance.companyId,supportsLifecycle:life!==null,initialize,open,openPersisted,verify,events,decodeState,reduce});
 }

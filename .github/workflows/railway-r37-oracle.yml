@@ -81,8 +81,15 @@ jobs:
         run: |
           set -euo pipefail
           python -c 'import altrios, altrios.altrios_pyo3; print(altrios.__file__); print(altrios.altrios_pyo3.__file__)'
-          python -m pytest --import-mode=importlib -v python/altrios/tests 2>&1 | tee "$RUNNER_TEMP/r37-evidence/python-tests.log"
-          python -m pytest --import-mode=importlib -v python/altrios/demos/test_demos.py -k speed_limit_simple_corr_demo 2>&1 | tee "$RUNNER_TEMP/r37-evidence/demo.log"
+          # Execute exact upstream tests outside the altrios source package.
+          # pytest importlib can otherwise resolve altrios.tests through checkout.
+          mkdir -p "$RUNNER_TEMP/r37-test-isolated"
+          cp -a python/altrios/tests "$RUNNER_TEMP/r37-test-isolated/tests"
+          cp -a python/altrios/demos "$RUNNER_TEMP/r37-test-isolated/demos"
+          cd "$RUNNER_TEMP/r37-test-isolated"
+          unset PYTHONPATH
+          python -m pytest --import-mode=importlib -v tests 2>&1 | tee "$RUNNER_TEMP/r37-evidence/python-tests.log"
+          python -m pytest --import-mode=importlib -v demos/test_demos.py -k speed_limit_simple_corr_demo 2>&1 | tee "$RUNNER_TEMP/r37-evidence/demo.log"
       - name: Execute disjoint ALTRIOS research scenarios
         shell: bash
         run: |

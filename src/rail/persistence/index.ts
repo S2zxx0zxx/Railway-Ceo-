@@ -1,7 +1,8 @@
 import Dexie,{type Table} from 'dexie';
 import {integer,checkedAdd} from '../../domain/units';
 import {object,list,distinct,id,sha256,nullable,enumeration,record,text} from '../../domain/validation';
-import type {prepareDispatch,DispatchSnapshot,Offer} from '../dispatch';
+import type {prepareDispatch,DispatchSnapshot} from '../dispatch';
+import {anchorClock,observeClock,checkClock,decodeOfflinePolicy,decodeOfflineClock,catchupInput,type OfflineClock,type OfflinePolicy} from '../offline';
 
 type Runtime=Awaited<ReturnType<typeof prepareDispatch>>;
 type Controller=Awaited<ReturnType<Runtime['open']>>;
@@ -11,7 +12,7 @@ const hex=(b:ArrayBuffer)=>Array.from(new Uint8Array(b),x=>x.toString(16).padSta
 const bytes=(s:string)=>new TextEncoder().encode(s);
 const raw=(v:unknown)=>v;
 const dbName='railway-ceo-save-v1';
-const kinds=['quote','dispatch','bulk','settle','cancel','fleet','advance'] as const;
+const kinds=['quote','dispatch','bulk','settle','cancel','fleet','advance','catchup'] as const;
 const kind=enumeration(kinds);
 const request=object({requestId:id,kind,input:raw});
 type Request=ReturnType<typeof request>;
@@ -27,9 +28,13 @@ type Slot={key:string;seal:SealedRailwaySave};
 type KeyRow={companyId:string;key:CryptoKey};
 type Body={format:'railway-ceo-save';schemaVersion:2;companyId:string;configurationSha256:string;revision:number;previousTag:string|null;limits:Limits;snapshot:unknown;quotes:unknown;journal:Journal[]};
 type OldBody=Omit<Body,'schemaVersion'|'previousTag'>&{schemaVersion:1};
+type ClockBody=Omit<Body,'schemaVersion'>&{schemaVersion:3;clock:OfflineClock};
+type SaveBody=Body|OldBody|ClockBody;
+type CurrentBody=Body|ClockBody;
 const bodyShape={format:enumeration(['railway-ceo-save']),companyId:id,configurationSha256:sha256,revision:pos,limits:limitDecoder,snapshot:raw,quotes:raw,journal:distinct(list(journalRow,0,100000),r=>r.requestId)};
 const v1=object({...bodyShape,schemaVersion:(v:unknown)=>v===1?1 as const:fail('unsupported legacy schema')});
 const v2=object({...bodyShape,schemaVersion:(v:unknown)=>v===2?2 as const:fail('unsupported schema'),previousTag:nullable(sha256)});
+const v3=object({...bodyShape,schemaVersion:(v:unknown)=>v===3?3 as const:fail('unsupported clock schema'),previousTag:nullable(sha256),clock:decodeOfflineClock});
 function canonical(v:unknown,depth=0):unknown{
   if(depth>128)fail('JSON nesting');
   if(v===null||typeof v==='string'||typeof v==='boolean')return v;
@@ -44,7 +49,7 @@ function validKey(k:CryptoKey){
   return k;
 }
 export async function createRailwaySaveKey(){return crypto.subtle.generateKey({name:'HMAC',hash:'SHA-256',length:256},false,['sign','verify']);}
-export async function sealRailwaySave(body:Body|OldBody,key:CryptoKey):Promise<SealedRailwaySave>{
+export async function sealRailwaySave(body:SaveBody,key:CryptoKey):Promise<SealedRailwaySave>{
   const payload=JSON.stringify(body);
   if(bytes(payload).length>body.limits.maxBytes)fail('save size limit; export/reconcile before continuing');
   return {payload,tag:hex(await crypto.subtle.sign('HMAC',validKey(key),bytes(payload)))};
@@ -55,7 +60,7 @@ export async function decodeRailwaySave(input:unknown,key:CryptoKey,limits:Limit
   const sig=Uint8Array.from(s.tag.match(/../g)!,x=>parseInt(x,16));
   if(!await crypto.subtle.verify('HMAC',validKey(key),sig,bytes(s.payload)))fail('save authentication failed');
   const raw=JSON.parse(s.payload),version=record(raw,'save').schemaVersion;
-  const b:Body|OldBody=version===1?v1(raw):v2(raw);
+  const b:SaveBody=version===1?v1(raw):version===2?v2(raw):v3(raw);
   if(!same(b.limits,limits)||b.journal.length>limits.maxJournalEntries)fail('save limits mismatch');
   let previous=0;
   for(const r of b.journal){
@@ -63,7 +68,7 @@ export async function decodeRailwaySave(input:unknown,key:CryptoKey,limits:Limit
     const parsed=JSON.parse(r.payload);if(fingerprint(parsed)!==r.payload)fail('invalid journal fingerprint');
     canonical(r.result);previous=r.committedRevision;
   }
-  if(b.schemaVersion===2&&((b.revision===1)!==(b.previousTag===null)))fail('invalid previous commit link');
+  if(b.schemaVersion!==1&&((b.revision===1)!==(b.previousTag===null)))fail('invalid previous commit link');
   return b;
 }
 class RailwayDB extends Dexie {
@@ -73,16 +78,18 @@ class RailwayDB extends Dexie {
   constructor(name:string){super(name);this.version(1).stores({heads:'companyId',slots:'key',keys:'companyId'});}
 }
 type Read={head:Head|undefined;active:Slot|undefined;mirror:Slot|undefined;key:KeyRow|undefined};
-type View={revision:number;tag:string;snapshot:DispatchSnapshot;recoveryRequired:boolean};
-type Loaded={read:Read;body:Body|OldBody;seal:SealedRailwaySave;controller:Controller;view:View};
+type View={revision:number;tag:string;snapshot:DispatchSnapshot;recoveryRequired:boolean;clock?:OfflineClock;catchupPending?:boolean};
+type Loaded={read:Read;body:SaveBody;seal:SealedRailwaySave;controller:Controller;view:View};
 const cursor=object({revision:pos,tag:sha256});
 /** One authoritative railway namespace, not the manufacturing game's legacy DB.
  * Every proposal is computed with an isolated R34/R35/R36 controller outside IDB.
  * Only a read/write CAS transaction can publish it. Non-extractable local HMAC
  * detects untrusted imports and corruption, not a compromised same-origin script
  * or a full old database rollback. No remote anti-cheat claim. */
-export function createRailwayStore(runtime:Runtime,limitsInput:unknown,options:{databaseName?:string}={}){
+export function createRailwayStore(runtime:Runtime,limitsInput:unknown,options:{databaseName?:string;offlinePolicy?:unknown}={}){
   const limits=limitDecoder(limitsInput),companyId=id(runtime.companyId),configurationSha256=sha256(runtime.configurationSha256);
+  const offline=options.offlinePolicy===undefined?null:decodeOfflinePolicy(options.offlinePolicy);
+  if(offline?.autoSettleArrivals&&!runtime.supportsLifecycle)fail('automatic settlement requires R35 lifecycle');
   const db=new RailwayDB(options.databaseName??dbName),slot=(s:'active'|'mirror')=>companyId+':'+s;
   async function read():Promise<Read>{
     return db.transaction('r',db.heads,db.slots,db.keys,async()=>({head:await db.heads.get(companyId),active:await db.slots.get(slot('active')),mirror:await db.slots.get(slot('mirror')),key:await db.keys.get(companyId)}));
@@ -94,10 +101,15 @@ export function createRailwayStore(runtime:Runtime,limitsInput:unknown,options:{
     const body=await decodeRailwaySave(seal,key,limits);
     if(body.companyId!==companyId||body.configurationSha256!==configurationSha256||body.revision!==head.revision)fail('save identity or revision mismatch');
     const controller=await runtime.openPersisted(body.snapshot,body.quotes);
+    if(body.schemaVersion===3){if(!offline)fail('offline clock policy required');checkClock(body.clock,offline,controller.snapshot().simTimeS);}
     // A committed dispatch/terminal/fleet result is bound by the actual domain
     // history; the durable wrapper journal adds identity for quote/bulk/advance.
     return {body,seal,controller};
   }
+  const arrived=(c:Controller)=>c.arrivedTripIds();
+  const due=(c:Controller)=>c.snapshot().pendingEvents.some(e=>e.simTimeS<=c.snapshot().simTimeS);
+  const pending=(c:Controller,clock:OfflineClock)=>c.snapshot().simTimeS<clock.targetSimS||due(c)||(clock.policy.autoSettleArrivals&&arrived(c).length>0);
+  const viewFor=(body:SaveBody,seal:SealedRailwaySave,c:Controller,recoveryRequired=false):View=>({revision:body.revision,tag:seal.tag,snapshot:c.snapshot(),recoveryRequired,...(body.schemaVersion===3?{clock:structuredClone(body.clock),catchupPending:pending(c,body.clock)}:{})});
   async function load(r:Read):Promise<Loaded>{
     checkHead(r);
     let active:Awaited<ReturnType<typeof decode>>|undefined,mirror:Awaited<ReturnType<typeof decode>>|undefined;
@@ -105,10 +117,10 @@ export function createRailwayStore(runtime:Runtime,limitsInput:unknown,options:{
     try{if(r.mirror?.key===slot('mirror'))mirror=await decode(r,r.mirror.seal);}catch{/* explicit mirror repair */}
     const x=active??mirror??fail('no valid latest copy; authenticated export required');
     if(active&&mirror&&!same(active.seal,mirror.seal))fail('divergent authenticated latest copies');
-    return {read:r,...x,view:{revision:x.body.revision,tag:x.seal.tag,snapshot:x.controller.snapshot(),recoveryRequired:!active||!mirror}};
+    return {read:r,...x,view:viewFor(x.body,x.seal,x.controller,!active||!mirror)};
   }
   function checkExpected(v:View,e:unknown){const c=cursor(e);if(c.revision!==v.revision||c.tag!==v.tag)fail('STALE_DURABLE_REVISION');}
-  async function publish(before:Read,body:Body,seal:SealedRailwaySave){
+  async function publish(before:Read,body:CurrentBody,seal:SealedRailwaySave){
     await db.transaction('rw',db.heads,db.slots,db.keys,async()=>{
       const h=await db.heads.get(companyId),a=await db.slots.get(slot('active')),m=await db.slots.get(slot('mirror')),k=await db.keys.get(companyId);
       if(!k||!same(h,before.head)||!same(a,before.active)||!same(m,before.mirror))fail('STALE_DURABLE_REVISION');
@@ -117,7 +129,33 @@ export function createRailwayStore(runtime:Runtime,limitsInput:unknown,options:{
       await db.heads.put({companyId,revision:body.revision,tag:seal.tag});
     });
   }
-  const bodyFor=(l:Loaded,snapshot:unknown,quotes:unknown,journal:Journal[]):Body=>({format:'railway-ceo-save',schemaVersion:2,companyId,configurationSha256,revision:checkedAdd(l.body.revision,1),previousTag:l.seal.tag,limits,snapshot,quotes,journal});
+  const bodyFor=(l:Loaded,snapshot:unknown,quotes:unknown,journal:Journal[],clock?:OfflineClock):CurrentBody=>{
+    const base:Body={format:'railway-ceo-save',schemaVersion:2,companyId,configurationSha256,revision:checkedAdd(l.body.revision,1),previousTag:l.seal.tag,limits,snapshot,quotes,journal};
+    const current=clock??(l.body.schemaVersion===3?l.body.clock:undefined);
+    return current?{...base,schemaVersion:3,clock:current}:base;
+  };
+  async function catchup(c:Controller,clock:OfflineClock,p:OfflinePolicy){
+    const start=c.snapshot().simTimeS, target=start+Math.min(p.maxBatchSimS,clock.targetSimS-start);
+    let remaining=p.maxBatchEvents;const processed:string[]=[],settled:string[]=[];
+    while(remaining>0){
+      const s=c.snapshot(),next=s.pendingEvents[0];
+      if(due(c)){
+        const r=await c.advance(s.simTimeS,remaining,s.checksum);processed.push(...r.processed);remaining-=r.processed.length;
+        if(!r.processed.length)fail('due event made no progress');
+        continue;
+      }
+      if(p.autoSettleArrivals){
+        const trip=arrived(c)[0];
+        if(trip){await c.settle({commandId:'r40:settle:'+trip,tripId:trip},s.checksum);settled.push(trip);remaining--;continue;}
+      }
+      if(s.simTimeS>=target)break;
+      // Stop at next actual event to settle at canonical arrival, independent of batch partition.
+      const at=Math.min(target,next?.simTimeS??target),r=await c.advance(at,remaining,s.checksum);
+      processed.push(...r.processed);remaining-=r.processed.length;
+      if(r.snapshot.simTimeS===s.simTimeS&&!r.processed.length)fail('clock batch made no progress');
+    }
+    return {fromSimS:start,toSimS:c.snapshot().simTimeS,targetSimS:clock.targetSimS,processed,settled,complete:!pending(c,clock)};
+  }
   async function initialize(start:unknown,seed:unknown,opening:unknown):Promise<View>{
     const c=await runtime.initialize(start,seed,opening),key=await createRailwaySaveKey();
     const body:Body={format:'railway-ceo-save',schemaVersion:2,companyId,configurationSha256,revision:1,previousTag:null,limits,snapshot:c.snapshot(),quotes:[],journal:[]};
@@ -144,15 +182,26 @@ export function createRailwayStore(runtime:Runtime,limitsInput:unknown,options:{
     const q:Request=request(input),payload=fingerprint(q.input),captured:unknown=JSON.parse(payload),expectedCursor=cursor(expected);
     if(payload.length>1000000)fail('command payload limit');
     const l=await load(await read());
-    if(l.view.recoveryRequired||l.body.schemaVersion!==2)fail('recover or migrate save first');
+    if(l.view.recoveryRequired||l.body.schemaVersion===1)fail('recover or migrate save first');
     const old=l.body.journal.find(r=>r.requestId===q.requestId);
     if(old){if(old.kind!==q.kind||old.payload!==payload)fail('durable command ID conflict');return {view:l.view,result:old.result,committedRevision:old.committedRevision,replayed:true};}
     checkExpected(l.view,expectedCursor);
     if(l.body.journal.length>=limits.maxJournalEntries)fail('journal limit; export and reconciled checkpoint required');
     const c=l.controller,checksum=c.snapshot().checksum;
+    let clock=l.body.schemaVersion===3?l.body.clock:undefined;
+    if(offline&&q.kind!=='catchup'&&(!clock||pending(c,clock)||q.kind==='advance'))fail('offline clock requires catch-up before commands; raw advance disabled');
+    if(!offline&&q.kind==='catchup')fail('offline clock not configured');
     // Only explicit production commands, never a user-supplied snapshot or event.
     let result:unknown;
     switch(q.kind){
+      case 'catchup':{
+        const p=offline??fail('offline clock not configured'),a=catchupInput(captured),t=c.snapshot().simTimeS;
+        if(!clock&&!a.sample)fail('clock anchor sample required');
+        const observed=clock&&a.sample?observeClock(clock,a.sample,t):null;
+        clock=observed?.clock??clock??anchorClock(p,a.sample,t);
+        result={observation:observed?{creditedSimS:observed.creditedSimS,creditedWallMs:observed.creditedWallMs,discardedWallMs:observed.discardedWallMs,rollback:observed.rollback,monotonicAnomaly:observed.monotonicAnomaly}:null,...await catchup(c,clock,p)};
+        break;
+      }
       case 'quote':result=await c.quoteTrip(captured,checksum);break;
       case 'dispatch':{const {snapshot,...r}=await c.dispatch(captured,checksum);result=r;break;}
       case 'bulk':{const {snapshot,...r}=await c.bulkDispatch(captured,checksum);result=r;break;}
@@ -162,11 +211,11 @@ export function createRailwayStore(runtime:Runtime,limitsInput:unknown,options:{
       case 'advance':{const a=object({target:integer,budget:pos})(captured),{snapshot,...r}=await c.advance(a.target,a.budget,checksum);result=r;break;}
     }
     const revision=checkedAdd(l.body.revision,1),journal=[...l.body.journal,{requestId:q.requestId,kind:q.kind,payload,committedRevision:revision,result}];
-    const body=bodyFor(l,c.snapshot(),c.issuedQuotes(),journal),seal=await sealRailwaySave(body,l.read.key!.key);
+    const body=bodyFor(l,c.snapshot(),c.issuedQuotes(),journal,clock),seal=await sealRailwaySave(body,l.read.key!.key);
     // Revalidate production state and persisted quote registry before publishing.
     await runtime.openPersisted(body.snapshot,body.quotes);
     await publish(l.read,body,seal);
-    return {view:{revision,tag:seal.tag,snapshot:c.snapshot(),recoveryRequired:false},result,committedRevision:revision,replayed:false};
+    return {view:viewFor(body,seal,c),result,committedRevision:revision,replayed:false};
   }
   async function recover(expected:unknown,exported?:unknown):Promise<View>{
     const r=await read(),{head}=checkHead(r);checkExpected({revision:head.revision,tag:head.tag,snapshot:null as unknown as DispatchSnapshot,recoveryRequired:true},expected);
@@ -177,7 +226,7 @@ export function createRailwayStore(runtime:Runtime,limitsInput:unknown,options:{
       if(!same(await db.heads.get(companyId),r.head)||!same(await db.slots.get(slot('active')),r.active)||!same(await db.slots.get(slot('mirror')),r.mirror)||!await db.keys.get(companyId))fail('STALE_DURABLE_REVISION');
       await db.slots.put({key:slot('active'),seal:x.seal});await db.slots.put({key:slot('mirror'),seal:x.seal});
     });
-    return {revision:head.revision,tag:head.tag,snapshot:x.controller.snapshot(),recoveryRequired:false};
+    return viewFor(x.body,x.seal,x.controller);
   }
   async function exportLatest(){const l=await load(await read());return structuredClone(l.seal);}
   return Object.freeze({initialize,open,execute,recover,exportLatest,close:()=>db.close()});

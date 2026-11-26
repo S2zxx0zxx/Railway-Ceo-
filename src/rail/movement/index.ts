@@ -246,5 +246,6 @@ export async function prepareMovement(graph:RailGraph,catalog:RollingStockCatalo
     const occupied=reservations.filter(w=>w.start<=s.simTimeS&&s.state.trips.some(t=>t.tripId===w.tripId&&t.phaseIndex===w.phaseIndex));
     return freeze({simTimeS:s.simTimeS,trips,reservations,occupied});
   }
-  return Object.freeze({scenarioSha256,plans:freeze(plans),roster:freeze(roster),events,decodeBook,decodeFleetBook,reduce,reduceFleet,initialize,restore,reserve,advance,inspect});
+  const workerRecipe=freeze(structuredClone({infrastructure:infra,plans:rawPlans,roster:roster.map(r=>({trainId:r.trainId,nodeId:r.nodeId,catalogReference:r.reference})),limits}));
+  return Object.freeze({workerRecipe,scenarioSha256,plans:freeze(plans),roster:freeze(roster),events,decodeBook,decodeFleetBook,reduce,reduceFleet,initialize,restore,reserve,advance,inspect});
 }
