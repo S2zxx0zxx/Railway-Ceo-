@@ -6,7 +6,7 @@ const context=await b.newContext({viewport:{width:360,height:800}});
 const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(String(e)));
 mkdirSync('r43-evidence',{recursive:true});
 const wait=async()=>{await page.getByRole('heading',{name:'Operations control'}).waitFor();await page.getByText('Available cash',{exact:true}).waitFor();};
-const tab=async n=>{await page.getByRole('navigation').getByRole('button',{name:n,exact:true}).click();};
+const tab=async n=>{await page.getByRole('navigation').getByRole('button',{name:n[0].toUpperCase()+n.slice(1),exact:true}).click();};
 const select=async id=>page.getByRole('button',{name:new RegExp('^'+id+' · Fictional engine')}).click();
 const read=()=>page.evaluate(()=>r43Qa.read()),backup=()=>page.evaluate(()=>r43Qa.export());
 const refresh=()=>page.getByRole('button',{name:'Refresh saved operations'}).click();
@@ -43,6 +43,12 @@ try{
  console.log('PASS actual arrival gates and itemized receipts');
  await tab('routes');await select('t2');await page.getByLabel('Configured compatible route').selectOption('relocate');await apply('Issue departure quote');await apply('Dispatch locked quote');await page.evaluate(()=>r43Qa.advance(330));await refresh();await tab('fleet');await select('t2');await apply('Settle actual arrival');const relocated=(await read()).management.rows.find(x=>x.trainId==='t2');assert.equal(relocated.yardId,'yard-a');assert.equal(relocated.nodeId,'a');
  console.log('PASS non-teleporting relocation to owned yard');
+ // Confirm a preflight cannot commit after another durable writer changes the head.
+ await tab('routes');await select('t1');await page.getByLabel('Configured compatible route').selectOption('service-template');
+ await page.getByRole('button',{name:'Issue departure quote',exact:true}).click();await page.getByRole('heading',{name:'Confirm Issue departure quote',exact:true}).waitFor();
+ const other=await context.newPage();await other.goto('http://127.0.0.1:4183/');await other.getByText('Available cash',{exact:true}).waitFor();await other.evaluate(()=>r43Qa.advance(331));await other.close();
+ const staleBefore=await backup();await page.getByRole('button',{name:'Confirm commit',exact:true}).click();await page.getByRole('alert').waitFor();assert.match(await page.getByRole('alert').innerText(),/STALE_DURABLE_REVISION/);assert.deepEqual(await backup(),staleBefore);
+ console.log('PASS stale confirmation after other tab commit is rejected without mutation');
  await tab('catalog');assert.equal(await page.getByRole('button',{name:'Choose starter / order or purchase'}).isDisabled(),true);assert.equal(await page.getByRole('button',{name:'Create company',exact:true}).isDisabled(),true);
  await page.setViewportSize({width:800,height:366});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);await page.screenshot({path:'r43-evidence/catalog-800.png',fullPage:true});
  const d=await read(),seal=await backup();const invalid=await page.evaluate(e=>r43Qa.check({requestId:'qa:bad',kind:'fleet',input:{commandId:'bad',trainId:'t2',action:'park',yardId:'yard-b'}},e),{revision:d.view.revision,tag:d.view.tag});assert.equal(invalid.ok,false);assert.deepEqual(await backup(),seal);
