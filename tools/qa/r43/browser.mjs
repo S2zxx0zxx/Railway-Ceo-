@@ -26,10 +26,10 @@ try{
  await tab('routes');await page.getByLabel('Configured compatible route').selectOption('service-template');
  const before=await backup();await page.getByRole('button',{name:'Issue departure quote',exact:true}).click();await page.getByRole('alert').waitFor();assert.match(await page.getByRole('alert').innerText(),/maintenance/);assert.deepEqual(await backup(),before);
  console.log('PASS unavailable maintenance blocks quote and durable state unchanged');
- await tab('yard');await page.getByLabel('Yard',{exact:true}).selectOption('yard-a');await apply('Park at actual location');await page.getByText('PARKED',{exact:true}).waitFor();await apply('Start service / repair');
+ await tab('yard');await page.getByLabel('Yard',{exact:true}).selectOption('yard-a');await apply('Park at actual location');await page.locator('.rf-state').filter({hasText:/^PARKED$/}).waitFor();await apply('Start service / repair');
  const servicing=await read();assert.equal(servicing.management.rows.find(x=>x.trainId==='t1').state,'SERVICE');assert.equal(servicing.management.rows.find(x=>x.trainId==='t1').maintenance.activeJob.job.costMinor,'200');
  await page.screenshot({path:'r43-evidence/service-360.png',fullPage:true});
- await page.evaluate(()=>r43Qa.advance(110));await refresh();await page.getByText('PARKED',{exact:true}).waitFor();await apply('Unpark');
+ await page.evaluate(()=>r43Qa.advance(110));await refresh();await page.locator('.rf-state').filter({hasText:/^PARKED$/}).waitFor();await apply('Unpark');
  console.log('PASS park/service completion/unpark actual jobs and cash');
  await tab('routes');await select('t2');await page.getByLabel('Configured compatible route').selectOption('service-template');await apply('Issue departure quote');
  await select('t3');await page.getByLabel('Configured compatible route').selectOption('service-template');await apply('Issue departure quote');
@@ -38,7 +38,7 @@ try{
  const active=await read();assert.equal(active.management.trips.length,2);assert.equal(active.management.rows.filter(r=>r.state==='RUNNING').length,2);
  console.log('PASS persisted quotes survive reload; actual bulk dispatch');
  await tab('fleet');await select('t2');assert.equal(await page.getByRole('button',{name:'Settle actual arrival',exact:true}).isDisabled(),true);
- await page.evaluate(()=>r43Qa.advance(220));await refresh();await page.getByText('ARRIVED',{exact:true}).waitFor();await apply('Settle actual arrival');await select('t3');await apply('Settle actual arrival');
+ await page.evaluate(()=>r43Qa.advance(220));await refresh();await page.locator('.rf-state').filter({hasText:/^ARRIVED$/}).waitFor();await apply('Settle actual arrival');await select('t3');await apply('Settle actual arrival');
  await tab('receipts');assert.equal((await read()).management.trips.filter(t=>t.closure?.outcome==='settled').length,2);await page.getByText('Actual accounting postings',{exact:true}).first().waitFor();await page.screenshot({path:'r43-evidence/receipts-360.png',fullPage:true});
  console.log('PASS actual arrival gates and itemized receipts');
  await tab('routes');await select('t2');await page.getByLabel('Configured compatible route').selectOption('relocate');await apply('Issue departure quote');await apply('Dispatch locked quote');await page.evaluate(()=>r43Qa.advance(330));await refresh();await tab('fleet');await select('t2');await apply('Settle actual arrival');const relocated=(await read()).management.rows.find(x=>x.trainId==='t2');assert.equal(relocated.yardId,'yard-a');assert.equal(relocated.nodeId,'a');
