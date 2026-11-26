@@ -80,8 +80,9 @@ jobs:
         working-directory: _r37_oracle
         run: |
           set -euo pipefail
-          python -m pytest -v python/altrios/tests 2>&1 | tee "$RUNNER_TEMP/r37-evidence/python-tests.log"
-          python -m pytest -v python/altrios/demos/test_demos.py -k speed_limit_simple_corr_demo 2>&1 | tee "$RUNNER_TEMP/r37-evidence/demo.log"
+          python -c 'import altrios, altrios.altrios_pyo3; print(altrios.__file__); print(altrios.altrios_pyo3.__file__)'
+          python -m pytest --import-mode=importlib -v python/altrios/tests 2>&1 | tee "$RUNNER_TEMP/r37-evidence/python-tests.log"
+          python -m pytest --import-mode=importlib -v python/altrios/demos/test_demos.py -k speed_limit_simple_corr_demo 2>&1 | tee "$RUNNER_TEMP/r37-evidence/demo.log"
       - name: Execute disjoint ALTRIOS research scenarios
         shell: bash
         run: |

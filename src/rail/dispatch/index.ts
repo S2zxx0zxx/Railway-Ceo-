@@ -51,8 +51,10 @@ const terminalReceipt=object({commandId:id,tripId:id,outcome:enumeration(['settl
 export type TerminalReceipt=ReturnType<typeof terminalReceipt>;
 type Opening={demand:DemandBook;revenue:RevenueBook;energy:EnergyBook;operations:OperatingBook;incentives:IncentiveBook;accounting:AccountingBook;market:EnergyMarketBook|null};
 export type DispatchState=Opening&{schemaVersion:1;revision:number;movement:MovementBook;receipts:DispatchReceipt[];closures:TerminalReceipt[];fleetHistory:FleetRecord[]};
-type Offer={templateId:string;quote:QuoteEnvelope;quoteSha256:string;allocationSha256:string};
-type Snapshot=SchedulerSnapshot<DispatchState>;
+export type Offer={templateId:string;quote:QuoteEnvelope;quoteSha256:string;allocationSha256:string};
+export type DispatchSnapshot=SchedulerSnapshot<DispatchState>;
+type Snapshot=DispatchSnapshot;
+const persistedOffer=object({templateId:id,quote:(v:unknown)=>record(v,'quote') as unknown as QuoteEnvelope,quoteSha256:sha256,allocationSha256:sha256});
 const versionMap=(s:Opening)=>({demand:s.demand.revision,revenue:s.revenue.revision,energy:s.energy.revision,operations:s.operations.revision,incentives:s.incentives.revision});
 const sortedIds=(xs:readonly string[])=>[...xs].sort(cmp);
 const allocationKey=(claims:DemandBook['trips'][number]['claims'])=>claims.map(c=>({bucketId:c.bucketId,boardIndex:c.boardIndex,alightIndex:c.alightIndex,requested:c.requested,allocated:c.allocated,unmet:c.unmet}));
@@ -525,9 +527,9 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
     const remove=[...old,...ordinary];let out=remove.length?await scheduler.cancel(s,remove.map(e=>e.id)):s;
     return scheduler.enqueue(out,[{kind:'dispatch.financial-boundary',simTimeS:due,payload:{atSimS:due}},...ordinary.map(e=>({kind:e.kind,simTimeS:e.simTimeS,payload:e.payload}))]);
   }
-  function controller(initial:Snapshot){
+  function controller(initial:Snapshot,restored:Offer[]=[]){
     let current=initial,tail:Promise<unknown>=Promise.resolve();
-    const issued=new Map<string,Offer>();
+    const issued=new Map<string,Offer>(restored.map(o=>[o.quote.quote.id,o]));
     function serial<T>(fn:()=>Promise<T>):Promise<T>{const run=tail.then(fn);tail=run.then(()=>undefined,()=>undefined);return run;}
     function cas(value:unknown){if(sha256(value)!==current.checksum)fail('STALE_SNAPSHOT');}
     async function quoteTrip(input:unknown,expectedChecksum:unknown){
@@ -635,7 +637,7 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
         s=await verify(s);current=s;return freeze({snapshot:s,processed,complete,nextDueSimS:next?.simTimeS??null});
       });
     }
-    return Object.freeze({snapshot:()=>current,quoteTrip,dispatch,bulkDispatch,advance,fleetCommand:fleetCommandRun,inspectFleet,settle:(q:unknown,c:unknown)=>terminal(q,c,'settled'),cancel:(q:unknown,c:unknown)=>terminal(q,c,'cancelled')});
+    return Object.freeze({snapshot:()=>current,issuedQuotes:()=>freeze([...issued.values()]),quoteTrip,dispatch,bulkDispatch,advance,fleetCommand:fleetCommandRun,inspectFleet,settle:(q:unknown,c:unknown)=>terminal(q,c,'settled'),cancel:(q:unknown,c:unknown)=>terminal(q,c,'cancelled')});
   }
   async function initialize(start:unknown,seed:unknown,input:unknown){
     const b=opening(input);
@@ -645,5 +647,23 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
     return controller(await verify(await syncBoundary(s)));
   }
   async function open(input:unknown){return controller(await verify(input));}
-  return Object.freeze({configurationSha256,initialize,open,verify,events,decodeState,reduce});
+  // R39 calls this ONLY after verifying the authenticated local save envelope.
+  // The caller must never pass untrusted imported quote digests as authority.
+  async function openPersisted(input:unknown,quotes:unknown){
+    const s=await verify(input),offers=distinct(list(persistedOffer,0,cfg.maxQuotes),o=>id(o.quote.quote.id))(quotes);
+    for(const o of offers){
+      const p=plan(o.templateId),q=o.quote.quote;
+      if(o.quote.issuedAtSimS>s.simTimeS||q.stateVersion>s.state.revision)fail('future persisted quote');
+      await validateTripQuote(graph,p.request,o.quote,{quoteSha256:o.quoteSha256,trainId:q.trainId,stateVersion:q.stateVersion,simTimeS:o.quote.issuedAtSimS,configurationSha256});
+      const used=s.state.receipts.find(r=>r.quoteId===q.id);
+      if(used){
+        if(used.templateId!==o.templateId||used.quoteSha256!==o.quoteSha256||used.allocationSha256!==o.allocationSha256)fail('persisted consumed quote mismatch');
+      }else if(q.stateVersion===s.state.revision){
+        const regenerated=await makeOffer(s.state,o.quote.issuedAtSimS,{quoteId:q.id,trainId:q.trainId,templateId:o.templateId});
+        if(!same(o,regenerated))fail('persisted live quote differs from trusted terms');
+      }
+    }
+    return controller(s,offers);
+  }
+  return Object.freeze({configurationSha256,companyId:cfg.governance.companyId,initialize,open,openPersisted,verify,events,decodeState,reduce});
 }

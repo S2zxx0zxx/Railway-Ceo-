@@ -35,9 +35,9 @@ R33,G4,PASS,src/rail/movement/index.ts; R33_MOVEMENT_REPORT.md; 0c6993e and c173
 R34,G4,IMPLEMENTED_UNVERIFIED,src/rail/dispatch/index.ts; R34_DISPATCH_REPORT.md; 83f17a3 CI 5/5; 1423/1423 tests; DV-047 closed,Provisional predecessors and DV-048,START R35 provisionally
 R35,G4,IMPLEMENTED_UNVERIFIED,20c07fe; 25/25 dedicated; 1448/1448 repository tests; CI 5/5; DV-049 closed,Provisional R34/R26/R27/R31; DV-051,START R36 provisionally
 R36,G4,IMPLEMENTED_UNVERIFIED,fb8f0e4 and e09d5da CI 5/5 each; 21/21 dedicated; 1469/1469 tests; DV-052 closed,Provisional R26/R35; DV-054 purchased base and circle-line policy and topology; DV-051,START R37 independently
-R37,G4,IMPLEMENTED_UNVERIFIED,12/12 synthetic; 1481/1481 repo tests; ordinary CI 5/5 for source and retry and docs; actual ALTRIOS Rust tests PASS on retry,DV-055 actual wheel/demo/holdout and approval pending; DV-056 closed,START R38 independently
-R38,G4,IMPLEMENTED_UNVERIFIED,tools/calibration/osrd; efd35c6e7a4daaf9b71d1c88460e68f6aff372da; 12/12 synthetic and 1493/1493 repo tests; 4/5 ordinary CI; native 45864116665 job 140062398379 in_progress,DV-057 actual native comparison and approved scope; DV-058 open; no calibrated production claim,START R39 provisionally R32 R35
-R39,G4,NOT_STARTED,,,Consult original V4 dependencies and acceptance
+R37,G4,IMPLEMENTED_UNVERIFIED,12/12 synthetic; 1481/1481 repo tests; ordinary CI 5/5; locked Rust tests and wheel PASS; actual Python import failed; corrected import retry,DV-055 actual Python demo/holdout and Indian approval pending; DV-056 closed,Retain actual retry evidence
+R38,G4,IMPLEMENTED_UNVERIFIED,12/12 synthetic; 1493/1493 full tests; both ordinary CI 5/5; native OSRD actual artifact verified; median 3.163266%; 0 false negatives and 3 false positives across 18 probes,DV-057 matched Indian and routing scope pending; DV-058 closed,START R39 provisionally
+R39,G4,IMPLEMENTED_UNVERIFIED,src/rail/persistence/index.ts; persisted dispatch quote registry; 8 codec tests and dedicated Chromium cross-tab tests authored,DV-059 executable CI; DV-060 portable transfer and device security scope; provisional R35/R36,START R40 provisionally after verification
 R40,G4,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R41,G4,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R42,G5,NOT_STARTED,,,Consult original V4 dependencies and acceptance
