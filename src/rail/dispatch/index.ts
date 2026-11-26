@@ -352,7 +352,9 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
       if(r.state!=='SERVICE'||r.jobId!==q.jobId||!job||job.job.id!==q.jobId||job.job.endS!==at)fail('invalid service completion time or identity');
       const operations=applyOperatingEvent(catalog,s.operations,{expectedRevision:s.operations.revision,event:{type:'service-complete',trainId:q.trainId,jobId:q.jobId,atSimS:at}});
       const commandId=await fleetId(q.jobId,'complete');
-      const next=decodeState({...s,operations,fleetHistory:fleetLog(s,{commandId,trainId:q.trainId,kind:'complete',atSimS:at,tripId:null,yardId:r.yardId,jobId:q.jobId}),revision:checkedAdd(s.revision,1)});
+      const candidate={...s,operations};
+      const accounting=await post(candidate,{type:'advance',atSimS:at},await fleetId(q.jobId,'completion-clock'));
+      const next=decodeState({...candidate,accounting,fleetHistory:fleetLog(s,{commandId,trainId:q.trainId,kind:'complete',atSimS:at,tripId:null,yardId:r.yardId,jobId:q.jobId}),revision:checkedAdd(s.revision,1)});
       projectFleet(next);return {state:next};
     }
     const q=fleetCommand(event.payload),row=fleetRow(s,q.trainId);
@@ -443,7 +445,11 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
           const aid=await fleetId(h.commandId,'maintenance'),tx=b.accounting.transactions.find(x=>x.commandId===aid);
           if(!tx||tx.action.type!=='maintenance'||tx.action.jobId!==h.jobId||tx.action.atSimS!==h.atSimS)fail('service accounting mismatch');
         }
-        if(h.kind==='complete'&&h.commandId!==await fleetId(h.jobId!,'complete'))fail('service completion identity mismatch');
+        if(h.kind==='complete'){
+          if(h.commandId!==await fleetId(h.jobId!,'complete'))fail('service completion identity mismatch');
+          const aid=await fleetId(h.jobId!,'completion-clock'),tx=b.accounting.transactions.find(x=>x.commandId===aid);
+          if(!tx||tx.action.type!=='advance'||tx.action.atSimS!==h.atSimS)fail('service completion accounting clock mismatch');
+        }
       }
     }
     const ids=sortedIds(b.receipts.filter(r=>!b.closures.some(c=>c.tripId===r.tripId)).map(r=>r.tripId));
@@ -609,7 +615,7 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
         const m=current.state.movement.trips.find(x=>x.tripId===r.tripId);
         if(!m)return r;
         const p=movement.plans.find(x=>x.id===m.planId)!;
-        return {...r,nodeId:null,state:m.phaseIndex===p.phases.length?'ARRIVED':m.phaseIndex<0?'RESERVED':p.phases[m.phaseIndex].kind==='MOVE'?'RUNNING':'DWELL'};
+        return {...r,nodeId:m.phaseIndex===p.phases.length?p.destination:m.phaseIndex<0?p.origin:p.phases[m.phaseIndex].kind==='MOVE'?null:p.phases[m.phaseIndex].from,state:m.phaseIndex===p.phases.length?'ARRIVED':m.phaseIndex<0?'RESERVED':p.phases[m.phaseIndex].kind==='MOVE'?'RUNNING':'DWELL'};
       }));
     }
     async function advance(target:unknown,budget:unknown,expectedChecksum:unknown){

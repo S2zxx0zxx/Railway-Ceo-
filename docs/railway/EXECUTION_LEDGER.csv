@@ -34,7 +34,7 @@ R32,G4,PASS,src/rail/scheduler/index.ts; R32_SCHEDULER_REPORT.md; 15683d5 and do
 R33,G4,PASS,src/rail/movement/index.ts; R33_MOVEMENT_REPORT.md; 0c6993e and c173585 CI 5/5 each; 1393/1393 tests; 40 R33; DV-046 closed,,START R34
 R34,G4,IMPLEMENTED_UNVERIFIED,src/rail/dispatch/index.ts; R34_DISPATCH_REPORT.md; 83f17a3 CI 5/5; 1423/1423 tests; DV-047 closed,Provisional predecessors and DV-048,START R35 provisionally
 R35,G4,IMPLEMENTED_UNVERIFIED,20c07fe; 25/25 dedicated; 1448/1448 repository tests; CI 5/5; DV-049 closed,Provisional R34/R26/R27/R31; DV-051,START R36 provisionally
-R36,G4,IMPLEMENTED_UNVERIFIED,src/rail/fleet/index.ts; integrated dispatch/movement/economy; tests/railway-r36.test.ts; 21 authored cases; initial three TS2345 errors corrected,Corrected CI DV-052; provisional R26/R35; purchased base acquisition and real topology integration deferred,START R37 independently after CI reconciliation
+R36,G4,IMPLEMENTED_UNVERIFIED,src/rail/fleet/index.ts; integrated dispatch/movement/economy; tests/railway-r36.test.ts; 21 authored cases; initial TS2345 corrected; 19/21 then service clock fixed,Corrected CI DV-052; provisional R26/R35; purchased base acquisition and real topology integration deferred,START R37 independently after CI reconciliation
 R37,G4,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R38,G4,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R39,G4,NOT_STARTED,,,Consult original V4 dependencies and acceptance
