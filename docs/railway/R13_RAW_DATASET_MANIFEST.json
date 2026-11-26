@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "task": "R13",
-  "status": "UPLOADED_NOT_BYTE_VERIFIED_RUNTIME_BLOCKED",
+  "status": "ATTACHMENTS_MATERIALIZED_PBF_HASH_AND_PARSER_BLOCKED",
   "observedDate": "2026-11-26",
   "source": {
     "resource": "B01",
@@ -23,7 +23,7 @@
     "retrievedAtUtc": null,
     "bytes": null,
     "receivedBytesThisAttempt": null,
-    "publishedMd5": null,
+    "publishedMd5": "2bd5e0db4194c3aa127814f96975a50d",
     "computedMd5": null,
     "sha256": null,
     "snapshotUtc": null,
@@ -41,7 +41,17 @@
     "fileinfoImplementationBlob": "c6d9dc66f151afa9f10827e8b67c7069ef13609c",
     "fileinfoExampleBlob": "71d1da972c7fd452a3933c13b88e6337907ba486",
     "binaryAvailable": false,
-    "binarySha256": null
+    "binarySha256": null,
+    "currentRuntimeAvailability": "UNKNOWN_RUNTIME_UNAVAILABLE",
+    "windowsCandidate": {
+      "channel": "conda-forge",
+      "version": "1.19.0",
+      "build": "h60971b7_3",
+      "platform": "win-64",
+      "package": "win-64/osmium-tool-1.19.0-h60971b7_3.conda",
+      "source": "https://anaconda.org/conda-forge/osmium-tool/files?page=1",
+      "installed": false
+    }
   },
   "attempts": [
     {
@@ -74,6 +84,18 @@
     {
       "check": "Owner-uploaded files: direct reads, hashes, shell listing, pwd/true and Python execution",
       "result": "Runtime ClientError before output; actual size and bytes not verified"
+    },
+    {
+      "check": "Resume R13: shell and Python commands on original mounted paths",
+      "result": "ClientError before command output"
+    },
+    {
+      "check": "File service metadata and sidecar read",
+      "result": "PBF metadata 247546068 bytes; checksum sidecar 62 bytes; installer 158341784 bytes; sidecar literal MD5 2bd5e0db4194c3aa127814f96975a50d"
+    },
+    {
+      "check": "Intentional rematerialization of PBF and sidecar",
+      "result": "Succeeded, metadata 247546068 and 62 bytes; subsequent shell hash/tool probe ClientError before command output"
     }
   ],
   "workspace": {
@@ -114,10 +136,19 @@
     ],
     "attachmentMetadataObserved": true,
     "actualBytesReadable": null,
-    "readAttempts": "Python and container ClientError before output; simple runtime commands also failed",
+    "readAttempts": "Files service read sidecar and rematerialized PBF and sidecar; container and Python runtime ClientError before executing commands; full PBF hash not computed.",
     "windowsInstallerExecuted": false,
     "sequence": "R13 then R14 onward; no skip",
-    "next": "RESUME R13"
+    "next": "RESUME R13",
+    "uploadMetadata": {
+      "pbfBytes": 247546068,
+      "sidecarBytes": 62,
+      "windowsInstallerBytes": 158341784,
+      "sidecarText": "2bd5e0db4194c3aa127814f96975a50d  eastern-zone-261101.osm.pbf",
+      "sidecarOrigin": "Owner-uploaded provider-named sidecar, not independently retrieved from provider in this retry",
+      "materializedPbfBytes": 247546068,
+      "materializedSidecarBytes": 62
+    }
   },
   "historicalDirectDownloadReceivedBytes": 0
 }
