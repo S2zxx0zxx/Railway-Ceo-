@@ -20,8 +20,8 @@ R18,G2,NOT_STARTED,,R13 actual dataset prerequisite blocked directly or transiti
 R19,G2,NOT_STARTED,,R13 actual dataset prerequisite blocked directly or transitively,Resume in original dependency order after R13
 R20,G2,NOT_STARTED,,R13 actual dataset prerequisite blocked directly or transitively,Resume in original dependency order after R13
 R21,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/demand.ts; R21_DEMAND_REPORT.md; 83cfe41 and 885658c CI 5/5 each; 61/61 R21 and 811/811 repository tests,Exact original CSV comparison DV-026 remains; DV-027 closed,R22 provisional dependency; final source reconciliation required
-R22,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/revenue.ts; tests/railway-r22.test.ts; R22_REVENUE_REPORT.md; 53883b84530711e59c942aea32358a2bbcf9e517; 81/81 R22 and 892/892 full CI tests; 8/8 readback; 4/5 workflows success,Exact original CSV comparison DV-028; R21 DV-026; remaining CI DV-029,Reconcile CI then START R23 independent
-R23,G3,NOT_STARTED,,,Consult original V4 dependencies and acceptance
+R22,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/revenue.ts; R22_REVENUE_REPORT.md; 53883b8 CI 5/5; 81/81 R22 and 892/892 repository tests,Exact original CSV DV-028 and R21 DV-026; DV-029 closed,Final source reconciliation required
+R23,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/energy.ts; tests/railway-r23.test.ts; R23_ENERGY_REPORT.md; 56 tests authored,Exact source E08-E10 CSV and fresh CI; local runtime ClientError,Reconcile R23 CI and correct known defects before R24 provisional
 R24,G3,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R25,G3,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R26,G3,NOT_STARTED,,,Consult original V4 dependencies and acceptance

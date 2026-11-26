@@ -1,6 +1,6 @@
 # Railway Manager V5 execution state
 Date: 2026-11-26 IST. Working title only; final identity pending.
-R01–R12 PASS — 12/54 accepted; R13 BLOCKED; R21/R22 IMPLEMENTED_UNVERIFIED; 39 NOT_STARTED (R14–R20 dependency-blocked). G0/G1 accepted; G2 deferred; G3 in progress. Next R22 verification then eligible R23.
+R01–R12 PASS — 12/54 accepted; R13 BLOCKED; R21/R22/R23 IMPLEMENTED_UNVERIFIED; 38 NOT_STARTED (R14–R20 dependency-blocked). G0/G1 accepted; G2 deferred; G3 in progress. Next R23 verification then eligible R24.
 Repository: S2zxx0zxx/Railway-Ceo- (same GitHub repository ID 1471611501; renamed during R09)
 Isolated branch: feat/railway-manager-v5
 Source baseline: fefd995fd189506502ae59230b9ee9c408faa544, tree f0a6d2d577284f13dc2be45b0b8c3d306ea07a48
@@ -99,3 +99,8 @@ Implementation 53883b84530711e59c942aea32358a2bbcf9e517; 8/8 readback checks pas
 
 ## Actual executable CI evidence
 Verify game run 45829921758 job 139943698591 on implementation 53883b84530711e59c942aea32358a2bbcf9e517: npm ci, typecheck, Vitest and production build all success; 81/81 R22 tests, 44/44 suites, 892/892 total tests, build 2.37s from actual logs. Fresh implementation CI observed Android QA APK and unsigned AAB 45829922433: in_progress/pending; Release dependency and license audit 45829921849: completed/success; Verify game 45829921758: completed/success; G08 save and worker acceptance 45829922037: completed/success; Browser and offline smoke 45829922035: completed/success. DV-029 remains open for remaining CI. DV-028 exact immutable original E04–E07 comparison and R21 DV-026 remain open; R22 IMPLEMENTED_UNVERIFIED despite executable pass. R23 independent accepted R06/R12; reconcile outstanding R22 CI and repair known defects before starting next task. R13–R20 deferred unchanged; no merge.
+
+## R22 reconciliation at R23
+Exact R22 implementation 53883b84530711e59c942aea32358a2bbcf9e517 CI 45829922037 45829922035 45829921849 45829921758 45829922433 all completed success. Verify job 139943698591 logs 81/81 R22; 892/892 total tests; 44/44 suites; strict typecheck/build pass. Docs-only checkpoint ec798e1cd2aff29e47d3daf84c9f6361355e1453 observed Release dependency and license audit 45830156281: completed/success; Verify game 45830156279: completed/success; Browser and offline smoke 45830156321: completed/success; G08 save and worker acceptance 45830156311: completed/success; Android QA APK and unsigned AAB 45830156378: completed/success. DV-029 closed on original full successful executable revision; any outstanding checkpoint verification remains subject to final regression. R22 remains IMPLEMENTED_UNVERIFIED because DV-028 original E04–E07 comparison and R21 DV-026 remain open. R23 independent R06/R12 PASS. R13–R20 unchanged.
+
+R23: catalog-bound diesel/electric/steam energy estimates and immutable revisioned inventory events with locked spot/contract cost, capacity, FIFO reservations, consumption/release and exact carrying-cost reconciliation implemented; 56 tests authored, no local execution. Original E08–E10 comparison DV-030; fresh CI DV-031. No real coefficients, legacy/UI/real-data edits or new dependencies. R24 provisional dependency. No merge.
