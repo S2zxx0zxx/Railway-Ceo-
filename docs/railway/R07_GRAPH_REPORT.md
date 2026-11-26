@@ -18,3 +18,6 @@ Node executed compiled shared cases: 56/56 pass, 56 unique names, exit 0. Includ
 | tests/railway-r07.test.ts | b5546f6bf79e4b66c365b50ce7b9678661230ceb | bc2dfae01157993ef981fc672d0c89a4dca3e6c55957a4dcf3240815acea97c7 |
 ## R06 closure
 Implementation b2c13be0f24f86c1bb29741fbcebccfe2bc9a528 CI 45798509142 45798509185 45798509347 45798509182 45798509155 completed success. Checkpoint d67fbe56ce1e2f3387ff6d9df3dd537a48b0bee6 CI 45798576681 45798576696 45798576613 45798576615 45798576715 completed success. R06 PASS and DV-013 closed. R07 IMPLEMENTED_UNVERIFIED pending readback/full CI; next R08 provisional. No merge.
+
+## Repository verification checkpoint
+Implementation 980e708fdc6375e37f0f69e1d92e7e12117f8df6: compare verified 3/3 exact tested source/test blob hashes, seven docs/ledger changes only; protected refs unchanged, B04 disposition consistent. First readback attempt connector disconnected; retry succeeded, no extra writes. CI: G08 save and worker acceptance 45802848179: in_progress/pending; Browser and offline smoke 45802848222: in_progress/pending; Android QA APK and unsigned AAB 45802848165: in_progress/pending; Verify game 45802848155: in_progress/pending; Release dependency and license audit 45802848255: completed/success. R07 IMPLEMENTED_UNVERIFIED; DV-014 open. R08 next under owner protocol. No merge.
