@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "task": "R13",
-  "status": "BLOCKED_NOT_ACQUIRED",
+  "status": "UPLOADED_NOT_BYTE_VERIFIED_RUNTIME_BLOCKED",
   "observedDate": "2026-11-26",
   "source": {
     "resource": "B01",
@@ -22,7 +22,7 @@
   "actual": {
     "retrievedAtUtc": null,
     "bytes": null,
-    "receivedBytesThisAttempt": 0,
+    "receivedBytesThisAttempt": null,
     "publishedMd5": null,
     "computedMd5": null,
     "sha256": null,
@@ -70,6 +70,10 @@
     {
       "check": "python import spec osmium",
       "result": "None"
+    },
+    {
+      "check": "Owner-uploaded files: direct reads, hashes, shell listing, pwd/true and Python execution",
+      "result": "Runtime ClientError before output; actual size and bytes not verified"
     }
   ],
   "workspace": {
@@ -99,6 +103,21 @@
       "R19",
       "R20"
     ],
-    "nextIndependent": "R21"
-  }
+    "nextIndependent": null,
+    "nextAuthorized": "R13"
+  },
+  "ownerHandoff": {
+    "filenames": [
+      "eastern-zone-261101.osm.pbf",
+      "eastern-zone-261101.osm.pbf.md5",
+      "Miniforge3-Windows-x86_64.exe"
+    ],
+    "attachmentMetadataObserved": true,
+    "actualBytesReadable": null,
+    "readAttempts": "Python and container ClientError before output; simple runtime commands also failed",
+    "windowsInstallerExecuted": false,
+    "sequence": "R13 then R14 onward; no skip",
+    "next": "RESUME R13"
+  },
+  "historicalDirectDownloadReceivedBytes": 0
 }
