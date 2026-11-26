@@ -35,7 +35,8 @@ export function claimAchievement(missions:readonly Mission[],rows:readonly Journ
 // Scenario-provided windows, never wall time. No automatic economic multiplier,
 // clock mutation, promotion price or real-player ranking is enabled by this module.
 const event=refine(object({id,kind:enumeration(['seasonal-demand','speed-boost']),startSimS:integer,endSimS:integer,stationIds:distinct(list(id,0,10000),x=>x)}),x=>x.endSimS>x.startSimS&&(x.kind==='seasonal-demand'?x.stationIds.length>0:x.stationIds.length===0),'invalid event window or scope');
+export const decodeEventWindows=(input:unknown)=>distinct(list(event,0,1000),x=>x.id)(input).sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:0).map(x=>({...x,stationIds:[...x.stationIds].sort()}));
 export function projectEventWindows(input:unknown,now:unknown,station?:unknown){
  const at=integer(now),sid=station===undefined?null:id(station);
- return distinct(list(event,0,1000),x=>x.id)(input).sort((a,b)=>a.id<b.id?-1:a.id>b.id?1:0).map(x=>({...x,status:at<x.startSimS?'upcoming' as const:at>=x.endSimS?'expired' as const:'active' as const,applies:at>=x.startSimS&&at<x.endSimS&&(x.kind==='speed-boost'||(sid!==null&&x.stationIds.includes(sid))),effectEnabled:false as const}));
+ return decodeEventWindows(input).map(x=>({...x,status:at<x.startSimS?'upcoming' as const:at>=x.endSimS?'expired' as const:'active' as const,applies:at>=x.startSimS&&at<x.endSimS&&(x.kind==='speed-boost'||(sid!==null&&x.stationIds.includes(sid))),effectEnabled:false as const}));
 }

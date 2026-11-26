@@ -17,6 +17,7 @@ import { decodeGovernancePolicy, evaluateSolvency, applyGovernedAccountingComman
 import {valueCompany} from '../economy/company';
 import { decodeEnergyMarket, inspectEnergyMarket, applyMarketAction, type EnergyMarketBook } from '../economy/market';
 
+import {decodeEventWindows,projectEventWindows} from '../progression';
 import {prepareFleet,fleetCommand,fleetCompletion,fleetRecord,type FleetRecord} from '../fleet';
 
 type Movement=Awaited<ReturnType<typeof prepareMovement>>;
@@ -81,7 +82,10 @@ const reason=(e:unknown)=>e instanceof Error?e.message:String(e);
  * The controller serializes commands and uses a snapshot checksum CAS. Durable
  * multi-process/tab CAS, authentication and quote registry persistence are R39. */
 export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalog,movement:Movement,configInput:unknown,lifecycleInput?:unknown,fleetInput?:unknown){
-  const cfg=config(configInput),life=lifecycleInput===undefined?null:lifecycleConfig(lifecycleInput);
+  const {progressionEvents,...baseConfig}=record(configInput,'dispatch configuration');
+  const eventWindows=progressionEvents===undefined?null:decodeEventWindows(progressionEvents);
+  if(eventWindows)for(const e of eventWindows)for(const stationId of e.stationIds)graph.station(stationId);
+  const cfg=config(baseConfig),life=lifecycleInput===undefined?null:lifecycleConfig(lifecycleInput);
   if(life){if(cfg.maxPending<2)fail('lifecycle requires queue capacity for boundary and command');life.templates.sort((a,b)=>cmp(a.templateId,b.templateId));life.crew.sort((a,b)=>cmp(a.trainId,b.trainId));for(const c of life.crew)c.employeeIds.sort(cmp);for(const t of life.templates){t.terminals.sort((a,b)=>a.stopIndex-b.stopIndex||cmp(a.activity,b.activity));t.refunds.sort((a,b)=>cmp(a.classId,b.classId));}freeze(life);}
   const fleet=fleetInput===undefined?null:prepareFleet(graph,cfg.governance.companyId,fleetInput);
   if(fleet&&!life)fail('fleet requires lifecycle configuration');
@@ -165,7 +169,7 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
   }
   const fleetRow=(s:DispatchState,trainId:string)=>projectFleet(s).find(x=>x.trainId===trainId)??fail('unknown fleet train');
   const fleetLog=(s:DispatchState,e:FleetRecord)=>fleet?[...s.fleetHistory,fleetRecord(e)]:s.fleetHistory;
-  const configurationSha256=await digest({schemaVersion:1,graphSha256:graph.graphSha256,catalogSha256:catalog.sha256,movementSha256:movement.scenarioSha256,governance:cfg.governance,plans,lifecycle:life,fleet:fleet?.config??null,limits:{maxPending:cfg.maxPending,maxQuotes:cfg.maxQuotes,maxReceipts:cfg.maxReceipts,maxBulk:cfg.maxBulk}});
+  const configurationSha256=await digest({schemaVersion:1,graphSha256:graph.graphSha256,catalogSha256:catalog.sha256,movementSha256:movement.scenarioSha256,governance:cfg.governance,plans,lifecycle:life,fleet:fleet?.config??null,...(eventWindows===null?{}:{progressionEvents:eventWindows}),limits:{maxPending:cfg.maxPending,maxQuotes:cfg.maxQuotes,maxReceipts:cfg.maxReceipts,maxBulk:cfg.maxBulk}});
   const tripId=async(quoteId:string)=>'r34:trip:'+await digest({configurationSha256,quoteId});
   const accountingId=async(commandId:string)=>'r34:dispatch:'+await digest({configurationSha256,commandId});
   async function financialBoundary(s:DispatchState){
@@ -693,7 +697,7 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
       const period=end>start?await reportAccountingPeriod(s.accounting,src(s),{startSimS:Math.max(start,end-7*86400),endSimS:end}):null;
       let valuation:Awaited<ReturnType<typeof valueCompany>>|null=null,valuationError:string|null=null;
       try{valuation=await valueCompany(s.accounting,src(s),{companyId:cfg.governance.companyId,shares:null,stock:null});}catch(e){valuationError=reason(e);}
-      return freeze({companyId:cfg.governance.companyId,simTimeS:current.simTimeS,accounting,governance,valuation,valuationError,period,policy:s.accounting.policy,governancePolicy:cfg.governance,market:s.market?inspectEnergyMarket(s.market):null,marketPolicy:s.market?.config??null,energy:inspectEnergyBook(s.energy),supportsFinance:life!==null});
+      return freeze({companyId:cfg.governance.companyId,simTimeS:current.simTimeS,accounting,governance,valuation,valuationError,period,policy:s.accounting.policy,governancePolicy:cfg.governance,progressionEvents:projectEventWindows(eventWindows??[],current.simTimeS),market:s.market?inspectEnergyMarket(s.market):null,marketPolicy:s.market?.config??null,energy:inspectEnergyBook(s.energy),supportsFinance:life!==null});
     });}
     async function inspectManagement(){return serial(async()=>{
       const s=current.state,energyView=inspectEnergyBook(s.energy),op=inspectOperatingBook(catalog,s.operations),accounting=await inspectAccountingBook(s.accounting,src(s)),governance=await evaluateSolvency(s.accounting,src(s),cfg.governance);
@@ -766,6 +770,6 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
     }
     return controller(s,offers);
   }
-  const workerRecipe=freeze(structuredClone({graph:graph.snapshot(),catalog:catalog.snapshot(),reviewedEvidence:catalog.reviewedEvidence(),movement:movement.workerRecipe,config:cfg,lifecycle:life,fleet:fleet?.config??null}));
+  const workerRecipe=freeze(structuredClone({graph:graph.snapshot(),catalog:catalog.snapshot(),reviewedEvidence:catalog.reviewedEvidence(),movement:movement.workerRecipe,config:{...cfg,...(eventWindows===null?{}:{progressionEvents:eventWindows})},lifecycle:life,fleet:fleet?.config??null}));
   return Object.freeze({workerRecipe,configurationSha256,companyId:cfg.governance.companyId,supportsLifecycle:life!==null,initialize,open,openPersisted,verify,events,decodeState,reduce});
 }

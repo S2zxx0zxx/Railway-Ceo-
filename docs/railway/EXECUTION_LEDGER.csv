@@ -43,7 +43,7 @@ R41,G4,IMPLEMENTED_UNVERIFIED,d318312b2f04368e81da5fe52a6a02458ae92a24; CI 9/9; 
 R42,G5,NOT_STARTED,,R19 hard prerequisite blocked by R13-R20 owner deferral; real map data unavailable,Do not substitute synthetic data as real; R43 independently eligible
 R43,G5,IMPLEMENTED_UNVERIFIED,0b7daa13c5592361af0aeeda69be1f626f18c5fe; actual corrected Chromium seven acceptance groups PASS; 5/5 dedicated projection tests; DV-065 closed,DV-066 unavailable route editing and acquisition and approved scenario/root/device scope,R44 implemented
 R44,G5,IMPLEMENTED_UNVERIFIED,0b7daa13c5592361af0aeeda69be1f626f18c5fe; 7/7 R44; 1537/1537 repo; four actual Chromium acceptance groups PASS; exact CI 11/11; DV-067 closed,DV-068 approved finance and production scope pending,R45 provisional
-R45,G5,BLOCKED,src/rail/progression/index.ts; R45_PROGRESSION_REPORT.md; R39 durable recognition and isolated panel; four test groups authored,DV-069 CI browser and durable race pending; DV-070 approved event effects ranking IPO and root scope missing,Continue eligible R46 on owner START; reconcile R45 remaining scope
+R45,G5,BLOCKED,src/rail/progression/index.ts; R45_PROGRESSION_REPORT.md; R39 durable recognition and isolated panel; four test groups and dedicated actual browser QA authored,DV-069 CI browser and durable race pending; DV-070 approved event effects ranking IPO and root scope missing,Continue eligible R46 on owner START; reconcile R45 remaining scope
 R46,G5,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R47,G5,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R48,G5,NOT_STARTED,,,Consult original V4 dependencies and acceptance

@@ -106,6 +106,7 @@ export function createRailwayStore(runtime:Runtime,limitsInput:unknown,options:{
     if(body.companyId!==companyId||body.configurationSha256!==configurationSha256||body.revision!==head.revision)fail('save identity or revision mismatch');
     const controller=await runtime.openPersisted(body.snapshot,body.quotes);
     if(body.schemaVersion===3){if(!offline)fail('offline clock policy required');checkClock(body.clock,offline,controller.snapshot().simTimeS);}
+    if(body.journal.some(r=>r.kind==='achievement')){const f=await controller.inspectFinance();projectAchievements(f.governance.missions,body.journal,f.governance.policySha256,f.simTimeS);}
     // A committed dispatch/terminal/fleet result is bound by the actual domain
     // history; the durable wrapper journal adds identity for quote/bulk/advance.
     return {body,seal,controller};
@@ -164,7 +165,7 @@ export function createRailwayStore(runtime:Runtime,limitsInput:unknown,options:{
   }
   async function progressionView(){
     const l=await load(await read()),f=await l.controller.inspectFinance();
-    return {view:l.view,companyId:f.companyId,missions:projectAchievements(f.governance.missions,l.body.journal,f.governance.policySha256,f.simTimeS),unlocks:f.governance.unlocks,events:[],eventEffectsEnabled:false,onlineEnabled:false};
+    return {view:l.view,companyId:f.companyId,missions:projectAchievements(f.governance.missions,l.body.journal,f.governance.policySha256,f.simTimeS),unlocks:f.governance.unlocks,events:f.progressionEvents,eventEffectsEnabled:false,onlineEnabled:false};
   }
   async function financeView(){const l=await load(await read());return {view:l.view,finance:await l.controller.inspectFinance()};}
   async function checkManagement(input:unknown,expected:unknown){
