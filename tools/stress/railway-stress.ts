@@ -5,7 +5,7 @@ import {pending,runCatchupBatch} from '../../src/rail/offline/batch';
 import {performance} from 'node:perf_hooks';
 import {strict as assert} from 'node:assert';
 export async function stressFleet(n:number,eventBudget:number,seed=123){
- const started=performance.now(),f=await fixture({stressFleet:n,capacity:n,passengers:n*20,energy:String(n*60+300),cash:'1000000',maxPending:n*8+20,maxReceipts:n,maxQuotes:n,maxBulk:n,relocation:false});
+ const started=performance.now(),f=await fixture({stressFleet:n,capacity:n,passengers:n*40+100,energy:String(n*60+300),cash:'1000000',maxPending:n*8+20,maxReceipts:n,maxQuotes:n,maxBulk:n,relocation:false});
  // R50 synthetic only: same model and corridor, explicit capacity, finite demand.
  const c=await f.runtime.initialize(0,seed,f.opening),t0=performance.now();
  let audits=0,peakPending=0,peakSnapshotBytes=0,peakHeapUsedBytes=0;const batchMs:number[]=[];

@@ -37,7 +37,7 @@ export async function fixture(o:Options={}){
  const count=o.stressFleet??3;if(!Number.isSafeInteger(count)||count<1||count>128)throw Error('Synthetic fleet size out of bounds');
  const roster=Array.from({length:count},(_,i)=>'t'+(i+1)).map(trainId=>({trainId,catalogReference:reference,nodeId:'a'}));
  const movement=await prepareMovement(g,catalog,{schemaVersion:1,resources:[{id:'block',capacity:o.capacity??2},...(o.multi?[{id:'block2',capacity:2},{id:'station',capacity:2}]:[])],edges:[{edgeId:'ab',resourceId:'block'},{edgeId:'ba',resourceId:'block'},...(o.multi?[{edgeId:'bc',resourceId:'block2'}]:[])],nodes:o.multi?[{nodeId:'b',resourceId:'station'}]:[]},[{id:'move',catalogReference:reference,request,route,dynamics:{accelerationS:10,brakingS:10,dwellS:o.multi?[20]:[]}},{id:'back',catalogReference:reference,request:backRequest,route:back,dynamics:{accelerationS:10,brakingS:10,dwellS:[]}}],roster,{maxTrips:o.stressFleet??10,maxPending:o.stressFleet?o.stressFleet*8+20:20});
- const demand=createDemandBook([bucket('p','passenger',o.passengers??100),bucket('f','freight',lab?.freight??100)].map(b=>({...b,bucket:{...b.bucket,destination,intervalEndS:lab?.demandWindowS??b.bucket.intervalEndS}}))),revenue=createRevenueBook();
+ const demand=createDemandBook([bucket('p','passenger',o.passengers??100),bucket('f','freight',lab?.freight??(o.stressFleet?o.stressFleet*20+100:100))].map(b=>({...b,bucket:{...b.bucket,destination,intervalEndS:lab?.demandWindowS??b.bucket.intervalEndS}}))),revenue=createRevenueBook();
  const cap=[{unit:'mL',quantity:o.stressFleet?String(o.stressFleet*100+1000):'1000'}],qty=o.energy??'300';
  let market:EnergyMarketBook|null=null,energy=createEnergyBook(cap);
  if(o.market){
