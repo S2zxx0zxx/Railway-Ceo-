@@ -7,7 +7,7 @@ import { canonicalRequest, digest, freezeResult } from '../routing';
 import { validateRouteSnapshot, createTripQuote, validateTripQuote, type QuoteEnvelope } from '../quotes';
 import type { prepareMovement, MovementBook } from '../movement';
 import { createScheduler, type EventTransition, type SchedulerSnapshot } from '../scheduler';
-import { decodeDemandBook, reserveDemand, closeDemand, type DemandBook } from '../economy/demand';
+import { decodeDemandBook, reserveDemand, closeDemand, isRelocationService, type DemandBook } from '../economy/demand';
 import { decodeRevenueBook, issueRevenueTerms, settleRevenue, calculateFare, calculateCargoRevenue, type RevenueBook } from '../economy/revenue';
 import { decodeEnergyBook, estimateEnergy, applyEnergyEvent, inspectEnergyBook, type EnergyBook } from '../economy/energy';
 import { decodeOperatingBook, inspectOperatingBook, inspectMaintenanceAvailability, applyOperatingEvent, type OperatingBook } from '../economy/operations';
@@ -15,6 +15,8 @@ import { decodeIncentiveBook, projectInspection, applyIncentiveEvent, type Incen
 import { decodeAccountingBook, inspectAccountingBook, type AccountingBook } from '../economy/accounting';
 import { decodeGovernancePolicy, evaluateSolvency, applyGovernedAccountingCommand } from '../economy/governance';
 import { decodeEnergyMarket, inspectEnergyMarket, applyMarketAction, type EnergyMarketBook } from '../economy/market';
+
+import {prepareFleet,fleetCommand,fleetCompletion,fleetRecord,type FleetRecord} from '../fleet';
 
 type Movement=Awaited<ReturnType<typeof prepareMovement>>;
 const fail=(s:string):never=>{throw new Error('R34: '+s);};
@@ -33,7 +35,7 @@ const pricing=(v:unknown,p='pricing')=>record(v,p).kind==='passenger'?passengerP
 const claim=object({bucketId:id,boardIndex:integer,alightIndex:integer,requested:positive,outsideWeight:positive,services:distinct(list(weight,1,10000),x=>x.serviceId),pricing});
 const energyFactor=object({loadFactorBps:factor,gradeFactorBps:factor,idleQuantityPerHour:energyQuantity,auxQuantityPerHour:energyQuantity,requestedRegenWh:energyQuantity,maxRegenBps:basisPoints});
 const risk=object({id,reason:text(240)});
-const template=object({id,movementPlanId:id,serviceId:id,request:raw,route:raw,claims:distinct(list(claim,1,128),x=>x.bucketId),energyFactors:list(energyFactor,1,100000),expectedCostMinor:minor,reserveMinor:minor,quoteTtlS:positive,delayRateMinorPerSecond:minor,delayCapMinor:minor,risks:distinct(list(risk,0,128),x=>x.id)});
+const template=object({id,movementPlanId:id,serviceId:id,request:raw,route:raw,claims:distinct(list(claim,0,128),x=>x.bucketId),energyFactors:list(energyFactor,1,100000),expectedCostMinor:minor,reserveMinor:minor,quoteTtlS:positive,delayRateMinorPerSecond:minor,delayCapMinor:minor,risks:distinct(list(risk,0,128),x=>x.id)});
 const config=object({schemaVersion:version1,governance:decodeGovernancePolicy,templates:distinct(list(template,1,10000),x=>x.id),maxPending:limit,maxQuotes:limit,maxReceipts:limit,maxBulk:limit});
 const quoteInput=object({quoteId:id,trainId:id,templateId:id});
 const command=object({commandId:id,quoteId:id});
@@ -48,7 +50,7 @@ const terminalEvent=object({commandId:id,tripId:id,outcome:enumeration(['settled
 const terminalReceipt=object({commandId:id,tripId:id,outcome:enumeration(['settled','cancelled']),atSimS:integer,arrivalSimS:nullable(integer),nodeId:id,phaseIndex:(v,p)=>integer(v,p,-1),distanceM:integer,accountingCommandId:id});
 export type TerminalReceipt=ReturnType<typeof terminalReceipt>;
 type Opening={demand:DemandBook;revenue:RevenueBook;energy:EnergyBook;operations:OperatingBook;incentives:IncentiveBook;accounting:AccountingBook;market:EnergyMarketBook|null};
-export type DispatchState=Opening&{schemaVersion:1;revision:number;movement:MovementBook;receipts:DispatchReceipt[];closures:TerminalReceipt[]};
+export type DispatchState=Opening&{schemaVersion:1;revision:number;movement:MovementBook;receipts:DispatchReceipt[];closures:TerminalReceipt[];fleetHistory:FleetRecord[]};
 type Offer={templateId:string;quote:QuoteEnvelope;quoteSha256:string;allocationSha256:string};
 type Snapshot=SchedulerSnapshot<DispatchState>;
 const versionMap=(s:Opening)=>({demand:s.demand.revision,revenue:s.revenue.revision,energy:s.energy.revision,operations:s.operations.revision,incentives:s.incentives.revision});
@@ -61,9 +63,12 @@ const reason=(e:unknown)=>e instanceof Error?e.message:String(e);
  * energy coefficients and the R33 infrastructure. User commands carry IDs only.
  * The controller serializes commands and uses a snapshot checksum CAS. Durable
  * multi-process/tab CAS, authentication and quote registry persistence are R39. */
-export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalog,movement:Movement,configInput:unknown,lifecycleInput?:unknown){
+export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalog,movement:Movement,configInput:unknown,lifecycleInput?:unknown,fleetInput?:unknown){
   const cfg=config(configInput),life=lifecycleInput===undefined?null:lifecycleConfig(lifecycleInput);
   if(life){if(cfg.maxPending<2)fail('lifecycle requires queue capacity for boundary and command');life.templates.sort((a,b)=>cmp(a.templateId,b.templateId));life.crew.sort((a,b)=>cmp(a.trainId,b.trainId));for(const c of life.crew)c.employeeIds.sort(cmp);for(const t of life.templates){t.terminals.sort((a,b)=>a.stopIndex-b.stopIndex||cmp(a.activity,b.activity));t.refunds.sort((a,b)=>cmp(a.classId,b.classId));}freeze(life);}
+  const fleet=fleetInput===undefined?null:prepareFleet(graph,cfg.governance.companyId,fleetInput);
+  if(fleet&&!life)fail('fleet requires lifecycle configuration');
+  const movementDecoder=fleet?movement.decodeFleetBook:movement.decodeBook;
   const src=(s:Opening)=>({catalog,demand:s.demand,revenue:s.revenue,energy:s.energy,operations:s.operations,incentives:s.incentives});
   const openingDecoder=object({demand:decodeDemandBook,revenue:raw,energy:decodeEnergyBook,operations:(v:unknown)=>decodeOperatingBook(catalog,v),incentives:raw,accounting:(v:unknown)=>record(v,'accounting') as unknown as AccountingBook,market:nullable(decodeEnergyMarket)});
   function opening(v:unknown):Opening{
@@ -71,14 +76,14 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
     if(b.market&&!same(inspectEnergyMarket(b.market).energy,b.energy))fail('market energy projection mismatch');
     return {...b,revenue,incentives};
   }
-  const stateRaw=object({schemaVersion:version1,revision:integer,movement:movement.decodeBook,receipts:distinct(list(receiptDecoder,0,cfg.maxReceipts),r=>r.commandId),closures:distinct(list(terminalReceipt,0,cfg.maxReceipts),r=>r.tripId),demand:raw,revenue:raw,energy:raw,operations:raw,incentives:raw,accounting:raw,market:raw});
+  const stateRaw=object({schemaVersion:version1,revision:integer,movement:movementDecoder,receipts:distinct(list(receiptDecoder,0,cfg.maxReceipts),r=>r.commandId),closures:distinct(list(terminalReceipt,0,cfg.maxReceipts),r=>r.tripId),fleetHistory:list(fleetRecord,0,fleet?.config.maxHistory??0),demand:raw,revenue:raw,energy:raw,operations:raw,incentives:raw,accounting:raw,market:raw});
   const decodeState:Decoder<DispatchState>=v=>{
-    const b=stateRaw(v),{schemaVersion,revision,movement:m,receipts,closures,...books}=b;
-    if(new Set(receipts.map(r=>r.quoteId)).size!==receipts.length||new Set(receipts.map(r=>r.tripId)).size!==receipts.length||new Set(receipts.map(r=>r.trainId)).size!==receipts.length)fail('duplicate dispatch receipt identity');
+    const b=stateRaw(v),{schemaVersion,revision,movement:m,receipts,closures,fleetHistory,...books}=b;
+    if(new Set(receipts.map(r=>r.quoteId)).size!==receipts.length||new Set(receipts.map(r=>r.tripId)).size!==receipts.length||(!fleet&&new Set(receipts.map(r=>r.trainId)).size!==receipts.length))fail('duplicate dispatch receipt identity');
     if(!life&&closures.length)fail('lifecycle not configured');
     const commands=[...receipts.map(r=>r.commandId),...closures.map(r=>r.commandId)];
     if(new Set(commands).size!==commands.length)fail('duplicate aggregate command ID');
-    return {schemaVersion,revision,movement:m,receipts:receipts.sort((a,b)=>cmp(a.commandId,b.commandId)),closures:closures.sort((a,b)=>cmp(a.tripId,b.tripId)),...opening(books)};
+    return {schemaVersion,revision,movement:m,receipts:receipts.sort((a,b)=>cmp(a.commandId,b.commandId)),closures:closures.sort((a,b)=>cmp(a.tripId,b.tripId)),fleetHistory,...opening(books)};
   };
   const plans=await Promise.all(cfg.templates.map(async t=>{
     const q=canonicalRequest(t.request),r=await validateRouteSnapshot(graph,q,t.route);
@@ -119,7 +124,31 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
       if(t.refunds.length!==classes.size||t.refunds.some(x=>!classes.has(x.classId)))fail('explicit refund policy required per fare class');
     }
   }
-  const configurationSha256=await digest({schemaVersion:1,graphSha256:graph.graphSha256,catalogSha256:catalog.sha256,movementSha256:movement.scenarioSha256,governance:cfg.governance,plans,lifecycle:life,limits:{maxPending:cfg.maxPending,maxQuotes:cfg.maxQuotes,maxReceipts:cfg.maxReceipts,maxBulk:cfg.maxBulk}});
+  if(fleet){
+    for(const x of fleet.config.relocations){
+      const p=plan(x.templateId),tp=terminalPolicy(x.templateId);
+      if(!isRelocationService(p.settings.serviceId)||p.settings.claims.length||p.movement.destination!==fleet.yard(x.yardId).nodeId||tp.subsidyProgramId!==null||tp.inspectionMode!=='none'||p.settings.delayRateMinorPerSecond!=='0'||p.settings.delayCapMinor!=='0')fail('invalid relocation template');
+    }
+  }
+  for(const p of plans){
+    const relocation=fleet?.destination(p.settings.id)??null;
+    if(relocation===null?(isRelocationService(p.settings.serviceId)||!p.settings.claims.length):!isRelocationService(p.settings.serviceId))fail('invalid commercial or relocation demand policy');
+  }
+  function projectFleet(s:DispatchState){
+    if(!fleet)throw Error('R36: fleet not configured');
+    if(s.operations.opening.length!==movement.roster.length)fail('fleet roster mismatch');
+    const starts=movement.roster.map(r=>{
+      const own=s.operations.opening.find(o=>o.train.id===r.trainId)??fail('missing owned roster train');
+      if(!same(own.catalogReference,r.reference)||own.train.companyId!==cfg.governance.companyId)fail('fleet opening model/company mismatch');
+      return {trainId:r.trainId,nodeId:r.nodeId,state:own.train.state,baseId:own.train.baseId,routeId:own.train.routeId};
+    });
+    const op=inspectOperatingBook(catalog,s.operations);
+    const jobs=op.receipts.flatMap(x=>x.type==='service-start'?[{jobId:x.job.id,trainId:x.job.trainId,startS:x.job.startS,endS:x.job.endS,completedAtSimS:op.receipts.flatMap(y=>y.type==='service-complete'&&y.jobId===x.job.id?[y.completedAtSimS]:[])[0]??null}]:[]);
+    return fleet.project(starts,s.fleetHistory,s.receipts.map(r=>({...r,origin:plan(r.templateId).movement.origin,routeId:plan(r.templateId).movement.routeId})),s.closures,jobs);
+  }
+  const fleetRow=(s:DispatchState,trainId:string)=>projectFleet(s).find(x=>x.trainId===trainId)??fail('unknown fleet train');
+  const fleetLog=(s:DispatchState,e:FleetRecord)=>fleet?[...s.fleetHistory,fleetRecord(e)]:s.fleetHistory;
+  const configurationSha256=await digest({schemaVersion:1,graphSha256:graph.graphSha256,catalogSha256:catalog.sha256,movementSha256:movement.scenarioSha256,governance:cfg.governance,plans,lifecycle:life,fleet:fleet?.config??null,limits:{maxPending:cfg.maxPending,maxQuotes:cfg.maxQuotes,maxReceipts:cfg.maxReceipts,maxBulk:cfg.maxBulk}});
   const tripId=async(quoteId:string)=>'r34:trip:'+await digest({configurationSha256,quoteId});
   const accountingId=async(commandId:string)=>'r34:dispatch:'+await digest({configurationSha256,commandId});
   async function financialBoundary(s:DispatchState){
@@ -150,9 +179,14 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
     return {g,a,due,payroll};
   }
   async function ready(s:DispatchState,at:number,trainId:string,p:ReturnType<typeof plan>){
-    if(s.receipts.some(t=>t.trainId===trainId)||s.movement.trips.some(t=>t.trainId===trainId))fail('train already dispatched or awaiting settlement');
+    if(fleet){
+      const row=fleetRow(s,trainId);
+      if(!['IDLE','ASSIGNED'].includes(row.state)||row.tripId||row.yardId||row.jobId)fail('train unavailable in fleet state');
+      if(row.nodeId!==p.movement.origin)fail('train not at actual route origin');
+      const dest=fleet.destination(p.settings.id);if(dest!==null)fleet.capacity(projectFleet(s),dest);
+    }else if(s.receipts.some(t=>t.trainId===trainId)||s.movement.trips.some(t=>t.trainId===trainId))fail('train already dispatched or awaiting settlement');
     const own=s.operations.opening.find(x=>x.train.id===trainId)??fail('unknown owned train');
-    if(!same(own.catalogReference,p.reference)||!['IDLE','ASSIGNED'].includes(own.train.state))fail('train model or availability state mismatch');
+    if(!same(own.catalogReference,p.reference)||(!fleet&&!['IDLE','ASSIGNED'].includes(own.train.state)))fail('train model or availability state mismatch');
     if(inspectMaintenanceAvailability(catalog,s.operations,trainId,at)!=='AVAILABLE')fail('train unavailable for maintenance');
     const runtime=inspectOperatingBook(catalog,s.operations).trains.find(x=>x.trainId===trainId)??fail('unknown train state');
     if(runtime.conditionBps===0)fail('train has zero condition');
@@ -204,7 +238,7 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
     const envelope=await createTripQuote(graph,v.p.request,v.p.route,{id:q.quoteId,trainId:q.trainId,stateVersion:s.revision,issuedAtSimS:at,expiresAtSimS:checkedAdd(at,v.p.settings.quoteTtlS),configurationSha256,terms:v.terms});
     return freeze({templateId:q.templateId,quote:envelope,quoteSha256:envelope.quoteSha256,allocationSha256:v.allocationSha256});
   }
-  const events:Registry=Object.freeze({...movement.events,'dispatch.execute':executeInput,'dispatch.terminal':terminalEvent,'dispatch.financial-boundary':object({atSimS:integer})});
+  const events:Registry=Object.freeze({...movement.events,'fleet.command':fleetCommand,'fleet.complete':fleetCompletion,'dispatch.execute':executeInput,'dispatch.terminal':terminalEvent,'dispatch.financial-boundary':object({atSimS:integer})});
   async function post(s:DispatchState,action:unknown,commandId:string){
     return (await applyGovernedAccountingCommand(s.accounting,src(s),cfg.governance,{expectedRevision:s.accounting.revision,expectedSources:versionMap(s),commandId,action})).accounting;
   }
@@ -305,21 +339,67 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
       next={...next,operations};next={...next,accounting:await post(next,{type:'depreciation',atSimS:at,trainId:r.trainId,throughSimS:at},await terminalId(q.commandId,'depreciation'))};
     }
     const closure=terminalReceipt({commandId:q.commandId,tripId:q.tripId,outcome:q.outcome,atSimS:at,arrivalSimS:q.outcome==='settled'?arrival:null,nodeId:node,phaseIndex:m.phaseIndex,distanceM:distance,accountingCommandId:aid});
-    const movementBook=q.outcome==='cancelled'?movement.decodeBook({...next.movement,trips:next.movement.trips.filter(x=>x.tripId!==q.tripId)}):next.movement;
-    return {state:decodeState({...next,movement:movementBook,closures:[...s.closures,closure],revision:checkedAdd(s.revision,1)}),cancel:q.cancelEventId?[q.cancelEventId]:[]};
+    const movementBook=fleet||q.outcome==='cancelled'?movementDecoder({...next.movement,trips:next.movement.trips.filter(x=>x.tripId!==q.tripId)}):next.movement;
+    return {state:decodeState({...next,movement:movementBook,closures:[...s.closures,closure],fleetHistory:fleetLog(s,{commandId:q.commandId,trainId:r.trainId,kind:'close',atSimS:at,tripId:q.tripId,yardId:q.outcome==='settled'?fleet?.destination(r.templateId)??null:null,jobId:null}),revision:checkedAdd(s.revision,1)}),cancel:q.cancelEventId?[q.cancelEventId]:[]};
+  }
+  const fleetId=async(commandId:string,kind:string)=>'r36:'+kind+':'+await digest({configurationSha256,commandId,kind});
+  async function fleetAction(s:DispatchState,event:Readonly<SimEvent>,at:number):Promise<EventTransition<DispatchState>>{
+    if(!fleet)throw Error('R36: fleet not configured');
+    const done=event.kind==='fleet.complete';
+    if(done){
+      const q=fleetCompletion(event.payload),r=fleetRow(s,q.trainId);
+      const job=inspectOperatingBook(catalog,s.operations).maintenance.find(x=>x.trainId===q.trainId)?.activeJob;
+      if(r.state!=='SERVICE'||r.jobId!==q.jobId||!job||job.job.id!==q.jobId||job.job.endS!==at)fail('invalid service completion time or identity');
+      const operations=applyOperatingEvent(catalog,s.operations,{expectedRevision:s.operations.revision,event:{type:'service-complete',trainId:q.trainId,jobId:q.jobId,atSimS:at}});
+      const commandId=await fleetId(q.jobId,'complete');
+      const next=decodeState({...s,operations,fleetHistory:fleetLog(s,{commandId,trainId:q.trainId,kind:'complete',atSimS:at,tripId:null,yardId:r.yardId,jobId:q.jobId}),revision:checkedAdd(s.revision,1)});
+      projectFleet(next);return {state:next};
+    }
+    const q=fleetCommand(event.payload),row=fleetRow(s,q.trainId);
+    if(q.commandId.startsWith('r36:')||s.fleetHistory.some(x=>x.commandId===q.commandId)||s.receipts.some(x=>x.commandId===q.commandId)||s.closures.some(x=>x.commandId===q.commandId))fail('duplicate or reserved fleet command ID');
+    if(row.tripId||row.inboundYardId||row.jobId)fail('train active or in service');
+    const {g,a,due}=await financialBoundary(s);
+    if(due!==null&&at>=due)fail('mandatory financial boundary must run first');
+    if(g.stage==='RESTART_AUTHORIZED')fail('company archived');
+    const av=inspectMaintenanceAvailability(catalog,s.operations,q.trainId,at);
+    if(av==='DISPOSED'||av==='UNCONFIGURED'||av==='SERVICE')fail('invalid asset availability');
+    let next=s;
+    let jobId:string|null=null;
+    let schedule:EventTransition<DispatchState>['schedule']=[];
+    if(q.action==='service'){
+      if(q.yardId!==null||row.state!=='PARKED'||row.yardId===null||g.stage==='LIQUIDATION')fail('service requires owned parked train and active company');
+      if(av!=='REPAIR_DUE'&&av!=='SERVICE_DUE')fail('service not due');
+      jobId=await fleetId(q.commandId,'job');
+      const operations=applyOperatingEvent(catalog,s.operations,{expectedRevision:s.operations.revision,event:{type:'service-start',trainId:q.trainId,jobId,atSimS:at,availableCashMinor:a.liquidityView.availableCashMinor}});
+      const active=inspectOperatingBook(catalog,operations).maintenance.find(x=>x.trainId===q.trainId)?.activeJob??fail('missing active service');
+      next={...s,operations};next={...next,accounting:await post(next,{type:'maintenance',atSimS:at,jobId},await fleetId(q.commandId,'maintenance'))};
+      schedule=[{kind:'fleet.complete',simTimeS:active.job.endS,payload:{trainId:q.trainId,jobId}}];
+    }else if(q.action==='park'){
+      if(q.yardId===null)fail('yard required');
+      if(!['IDLE','ASSIGNED'].includes(row.state))fail('invalid parking transition');
+      const target=fleet.capacity(projectFleet(s),q.yardId);if(target.nodeId!==row.nodeId)fail('parking requires actual base location');
+    }else {
+      if(q.yardId!==null||row.state!=='PARKED')fail('invalid unpark transition');
+      if(av!=='AVAILABLE')fail('train requires service before unpark');
+      if(g.stage==='LIQUIDATION')fail('company cannot unpark during liquidation');
+    }
+    const item=fleetRecord({commandId:q.commandId,trainId:q.trainId,kind:q.action,atSimS:at,tripId:null,yardId:q.action==='service'?row.yardId:q.yardId,jobId});
+    const out=decodeState({...next,fleetHistory:fleetLog(s,item),revision:checkedAdd(s.revision,1)});
+    projectFleet(out);return {state:out,schedule};
   }
   async function reduce(input:Readonly<DispatchState>,event:Readonly<SimEvent>):Promise<EventTransition<DispatchState>>{
     const s=decodeState(input),at=integer(event.simTimeS);
+    if(event.kind==='fleet.command'||event.kind==='fleet.complete')return fleetAction(s,event,at);
     if(event.kind==='dispatch.financial-boundary'){if(object({atSimS:integer})(event.payload).atSimS!==at)fail('boundary time mismatch');return {state:await runBoundary(s,at)};}
     if(event.kind==='dispatch.terminal')return closeTrip(s,terminalEvent(event.payload),at);
     if(event.kind==='movement.phase'){
-      const out=movement.reduce(s.movement,event);
+      const out=fleet?movement.reduceFleet(s.movement,event):movement.reduce(s.movement,event);
       return {state:{...s,movement:out.state,revision:checkedAdd(s.revision,1)},schedule:out.schedule,cancel:out.cancel};
     }
     if(event.kind!=='dispatch.execute')return fail('unknown aggregate event');
     const q=executeInput(event.payload),p=plan(q.templateId),offer=q.quote;
     if(q.baseVersion>s.revision||offer.quote.stateVersion!==q.baseVersion)fail('stale quote revision');
-    if(s.receipts.length>=cfg.maxReceipts||s.receipts.some(r=>r.commandId===q.commandId||r.quoteId===offer.quote.id)||s.closures.some(r=>r.commandId===q.commandId))fail('duplicate dispatch or receipt limit');
+    if(s.receipts.length>=cfg.maxReceipts||s.receipts.some(r=>r.commandId===q.commandId||r.quoteId===offer.quote.id)||s.closures.some(r=>r.commandId===q.commandId)||s.fleetHistory.some(r=>r.commandId===q.commandId))fail('duplicate dispatch or receipt limit');
     await validateTripQuote(graph,p.request,offer,{quoteSha256:q.quoteSha256,trainId:offer.quote.trainId,stateVersion:q.baseVersion,simTimeS:at,configurationSha256});
     const v=await preview(s,at,offer.quote.trainId,q.templateId,offer.quote.id);
     if(v.allocationSha256!==q.allocationSha256)fail('quoted demand allocation changed');
@@ -327,7 +407,8 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
     if(recalculated.quoteSha256!==q.quoteSha256)fail('quoted terms changed');
     // All following calls are pure candidates. No assignment to committed state
     // until R32 and the controller validate the entire resulting snapshot.
-    const m=movement.reduce(s.movement,{...event,kind:'movement.reserve',payload:{tripId:v.tid,trainId:offer.quote.trainId,planId:p.movement.id,departureSimS:at}});
+    const moveEvent={...event,kind:'movement.reserve',payload:{tripId:v.tid,trainId:offer.quote.trainId,planId:p.movement.id,departureSimS:at}};
+    const m=fleet?movement.reduceFleet(s.movement,moveEvent,fleetRow(s,offer.quote.trainId).nodeId):movement.reduce(s.movement,moveEvent);
     let market=s.market,energy:EnergyBook;
     if(market){
       const mv=inspectEnergyMarket(market);
@@ -341,7 +422,7 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
     if(s.accounting.transactions.some(x=>x.commandId===aid))fail('accounting command identity already used');
     const accounting=(await applyGovernedAccountingCommand(s.accounting,src(books),cfg.governance,{expectedRevision:s.accounting.revision,expectedSources:versionMap(books),commandId:aid,action:{type:'reserve-trip',atSimS:at,tripId:v.tid,amountMinor:offer.quote.reserveMinor}})).accounting;
     const receipt=receiptDecoder({commandId:q.commandId,quoteId:offer.quote.id,templateId:q.templateId,trainId:offer.quote.trainId,tripId:v.tid,atSimS:at,quote:offer,quoteSha256:q.quoteSha256,allocationSha256:q.allocationSha256,accountingCommandId:aid});
-    return {state:decodeState({...books,accounting,movement:m.state,revision:checkedAdd(s.revision,1),receipts:[...s.receipts,receipt]}),schedule:m.schedule,cancel:m.cancel};
+    return {state:decodeState({...books,accounting,movement:m.state,revision:checkedAdd(s.revision,1),receipts:[...s.receipts,receipt],fleetHistory:fleetLog(s,{commandId:q.commandId,trainId:offer.quote.trainId,kind:'dispatch',atSimS:at,tripId:v.tid,yardId:fleet?.destination(q.templateId)??null,jobId:null})}),schedule:m.schedule,cancel:m.cancel};
   }
   const scheduler=createScheduler<DispatchState>({policySha256:configurationSha256,graphSha256s:[graph.graphSha256],maxPending:cfg.maxPending,decodeState,events,reduce,nextBoundary:async s=>{
     const {due}=await financialBoundary(s);return due===null?null:{simTimeS:due,kind:'dispatch.financial-boundary'};
@@ -353,6 +434,18 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
     const {due}=await financialBoundary(b);
     if(a.liquidityView.simTimeS>s.simTimeS||(due!==null&&(life?s.simTimeS>due:s.simTimeS>=due)))fail('unreconciled financial clock');
     if(b.market&&inspectEnergyMarket(b.market).simTimeS>s.simTimeS)fail('market clock ahead of simulation');
+    if(fleet){
+      projectFleet(b);
+      for(const h of b.fleetHistory){
+        if(h.atSimS>s.simTimeS)fail('future fleet record');
+        if(h.kind==='service'){
+          if(h.jobId!==await fleetId(h.commandId,'job'))fail('service job identity mismatch');
+          const aid=await fleetId(h.commandId,'maintenance'),tx=b.accounting.transactions.find(x=>x.commandId===aid);
+          if(!tx||tx.action.type!=='maintenance'||tx.action.jobId!==h.jobId||tx.action.atSimS!==h.atSimS)fail('service accounting mismatch');
+        }
+        if(h.kind==='complete'&&h.commandId!==await fleetId(h.jobId!,'complete'))fail('service completion identity mismatch');
+      }
+    }
     const ids=sortedIds(b.receipts.filter(r=>!b.closures.some(c=>c.tripId===r.tripId)).map(r=>r.tripId));
     for(const actual of [b.movement.trips.filter(t=>!b.closures.some(c=>c.tripId===t.tripId)).map(t=>t.tripId),b.demand.trips.filter(t=>t.status==='reserved').map(t=>t.tripId),b.revenue.records.filter(r=>!r.closed).map(r=>r.terms.tripId),energy.reservations.filter(r=>!r.closed).map(r=>r.id),a.liquidityView.reservations.filter(r=>!r.closed).map(r=>r.id)])if(!same(ids,sortedIds(actual)))fail('orphan or missing active reservation');
     const expected=new Map<string,{phaseIndex:number;simTimeS:number}>();
@@ -360,7 +453,7 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
       const p=plan(r.templateId),m=b.movement.trips.find(t=>t.tripId===r.tripId)!,d=b.demand.trips.find(t=>t.tripId===r.tripId)!,rev=b.revenue.records.find(t=>t.terms.tripId===r.tripId)!,er=energy.reservations.find(t=>t.id===r.tripId)!,cash=a.liquidityView.reservations.find(t=>t.id===r.tripId)!;
       const closure=b.closures.find(c=>c.tripId===r.tripId);
       if(!d||!rev||!er||!cash)fail('missing dispatch source history');
-      if(r.atSimS>s.simTimeS||r.tripId!==await tripId(r.quoteId)||r.accountingCommandId!==await accountingId(r.commandId)||(!closure||closure.outcome==='settled')&&(!m||m.trainId!==r.trainId||m.planId!==p.movement.id||m.departureSimS!==r.atSimS)||d.dispatchSimS!==r.atSimS||rev.terms.policySha256!==configurationSha256||r.quote.quote.id!==r.quoteId||r.quote.quote.stateVersion>=b.revision||cash.amountMinor!==r.quote.quote.reserveMinor||await digest(allocationKey(d.claims))!==r.allocationSha256)fail('dispatch receipt binding mismatch');
+      if(r.atSimS>s.simTimeS||r.tripId!==await tripId(r.quoteId)||r.accountingCommandId!==await accountingId(r.commandId)||(!closure||(!fleet&&closure.outcome==='settled'))&&(!m||m.trainId!==r.trainId||m.planId!==p.movement.id||m.departureSimS!==r.atSimS)||d.dispatchSimS!==r.atSimS||rev.terms.policySha256!==configurationSha256||r.quote.quote.id!==r.quoteId||r.quote.quote.stateVersion>=b.revision||cash.amountMinor!==r.quote.quote.reserveMinor||await digest(allocationKey(d.claims))!==r.allocationSha256)fail('dispatch receipt binding mismatch');
       await validateTripQuote(graph,p.request,r.quote,{quoteSha256:r.quoteSha256,trainId:r.trainId,stateVersion:r.quote.quote.stateVersion,simTimeS:r.atSimS,configurationSha256});
       const tx=b.accounting.transactions.find(x=>x.commandId===r.accountingCommandId);
       if(!tx||tx.action.type!=='reserve-trip'||tx.action.tripId!==r.tripId||tx.action.atSimS!==r.atSimS||tx.action.amountMinor!==cash.amountMinor)fail('missing accounting reservation transaction');
@@ -371,7 +464,7 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
         if(closure.accountingCommandId!==await terminalId(closure.commandId,'close')||closure.atSimS<r.atSimS||closure.atSimS>s.simTimeS||!tx||tx.action.type!=='settle-trip'||tx.action.tripId!==r.tripId||tx.action.atSimS!==closure.atSimS||!rev.closed||!er.closed||!cash.closed)fail('terminal receipt binding mismatch');
         const op=b.operations.events.find(e=>e.type==='trip'&&e.trip.tripId===r.tripId);
         if(closure.outcome==='settled'){
-          if(d.status!=='served'||er.closed?.outcome!=='consumed'||!m||m.phaseIndex!==p.movement.phases.length||closure.phaseIndex!==m.phaseIndex||closure.nodeId!==p.movement.destination||closure.distanceM!==p.movement.distanceM||closure.arrivalSimS!==checkedAdd(r.atSimS,p.movement.durationS)||rev.closed?.evidence.arrivalSimS!==closure.arrivalSimS||!op||op.type!=='trip'||op.trip.distanceM!==closure.distanceM||op.trip.arrivalSimS!==closure.arrivalSimS)fail('settled trip evidence mismatch');
+          if(d.status!=='served'||er.closed?.outcome!=='consumed'||(!fleet&&(!m||m.phaseIndex!==p.movement.phases.length))||(fleet&&!!m)||closure.phaseIndex!==p.movement.phases.length||closure.nodeId!==p.movement.destination||closure.distanceM!==p.movement.distanceM||closure.arrivalSimS!==checkedAdd(r.atSimS,p.movement.durationS)||rev.closed?.evidence.arrivalSimS!==closure.arrivalSimS||!op||op.type!=='trip'||op.trip.distanceM!==closure.distanceM||op.trip.arrivalSimS!==closure.arrivalSimS)fail('settled trip evidence mismatch');
         }else if(m||d.status!=='released'||closure.arrivalSimS!==null||rev.closed?.evidence.arrivalSimS!==null||closure.distanceM>=p.movement.distanceM||(closure.distanceM===0?(er.closed?.outcome!=='released'||!!op||closure.nodeId!==p.movement.origin||closure.atSimS!==r.atSimS):(er.closed?.outcome!=='consumed'||!op||op.type!=='trip'||op.trip.distanceM!==closure.distanceM||op.trip.arrivalSimS!==closure.atSimS)))fail('cancelled trip evidence mismatch');
         if(closure.outcome==='cancelled'){
           const elapsed=closure.atSimS-r.atSimS,phases=p.movement.phases;
@@ -391,6 +484,11 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
       if(m.phaseIndex>=0){const t=checkedAdd(m.departureSimS,m.phaseIndex===phases.length?p.movement.durationS:phases[m.phaseIndex].startS);if(t>s.simTimeS)fail('movement phase in future');}
       if(phase<=phases.length){const t=checkedAdd(m.departureSimS,phase===phases.length?p.movement.durationS:phases[phase].startS);if(t<s.simTimeS)fail('overdue movement phase');expected.set(r.tripId,{phaseIndex:phase,simTimeS:t});}
     }
+    const servicePending=new Map<string,{trainId:string;at:number}>();
+    if(fleet)for(const x of inspectOperatingBook(catalog,b.operations).maintenance)if(x.activeJob){
+      if(x.activeJob.job.endS<s.simTimeS)fail('overdue service completion');
+      servicePending.set(x.activeJob.job.id,{trainId:x.trainId,at:x.activeJob.job.endS});
+    }
     if(b.closures.some(c=>!b.receipts.some(r=>r.tripId===c.tripId)))fail('orphan terminal receipt');
     const boundary=s.pendingEvents.filter(e=>e.kind==='dispatch.financial-boundary');
     if(life){
@@ -398,12 +496,13 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
     }else if(boundary.length)fail('unexpected financial boundary');
     for(const e of s.pendingEvents){
       if(e.kind==='dispatch.financial-boundary')continue;
+      if(e.kind==='fleet.complete'){const q=fleetCompletion(e.payload),j=servicePending.get(q.jobId);if(!j||j.trainId!==q.trainId||j.at!==e.simTimeS)fail('invalid service completion queue');servicePending.delete(q.jobId);continue;}
       if(e.kind!=='movement.phase')fail('unexpected pending aggregate event');
       const p=object({tripId:id,phaseIndex:integer})(e.payload),x=expected.get(p.tripId);
       if(!x||x.phaseIndex!==p.phaseIndex||x.simTimeS!==e.simTimeS)fail('invalid or duplicate pending phase');
       expected.delete(p.tripId);
     }
-    if(expected.size)fail('missing movement phase');
+    if(expected.size||servicePending.size)fail('missing movement or service phase');
     return s;
   }
   // Keep exactly one next mandatory event in the single R32 queue. Explicit
@@ -486,6 +585,33 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
         current=snapshot;return freeze({snapshot,receipt,replayed:false});
       });
     }
+    async function fleetCommandRun(input:unknown,expectedChecksum:unknown){
+      const q=fleetCommand(input),expected=sha256(expectedChecksum);
+      return serial(async()=>{
+        if(!fleet)fail('fleet not configured');
+        const prior=current.state.fleetHistory.find(r=>r.commandId===q.commandId);
+        if(prior){
+          if(prior.kind!==q.action||prior.trainId!==q.trainId||(q.action==='service'?q.yardId!==null:prior.yardId!==q.yardId))fail('fleet command ID conflict');
+          return freeze({snapshot:current,receipt:prior,replayed:true});
+        }
+        cas(expected);
+        if(current.pendingEvents.some(e=>e.simTimeS<=current.simTimeS))fail('process due events before fleet command');
+        const queued=await scheduler.enqueue(current,[{kind:'fleet.command',simTimeS:current.simTimeS,payload:q}]);
+        const out=await scheduler.advance(queued,current.simTimeS,1);
+        if(!out.complete)fail('fleet command event budget exhausted');
+        const snapshot=await verify(await syncBoundary(out.snapshot)),receipt=snapshot.state.fleetHistory.find(r=>r.commandId===q.commandId)??fail('missing fleet receipt');
+        current=snapshot;return freeze({snapshot,receipt,replayed:false});
+      });
+    }
+    function inspectFleet(){
+      const rows=projectFleet(current.state);
+      return freeze(rows.map(r=>{
+        const m=current.state.movement.trips.find(x=>x.tripId===r.tripId);
+        if(!m)return r;
+        const p=movement.plans.find(x=>x.id===m.planId)!;
+        return {...r,nodeId:null,state:m.phaseIndex===p.phases.length?'ARRIVED':m.phaseIndex<0?'RESERVED':p.phases[m.phaseIndex].kind==='MOVE'?'RUNNING':'DWELL'};
+      }));
+    }
     async function advance(target:unknown,budget:unknown,expectedChecksum:unknown){
       const t=integer(target),n=limit(budget),expected=sha256(expectedChecksum);
       return serial(async()=>{
@@ -503,13 +629,13 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
         s=await verify(s);current=s;return freeze({snapshot:s,processed,complete,nextDueSimS:next?.simTimeS??null});
       });
     }
-    return Object.freeze({snapshot:()=>current,quoteTrip,dispatch,bulkDispatch,advance,settle:(q:unknown,c:unknown)=>terminal(q,c,'settled'),cancel:(q:unknown,c:unknown)=>terminal(q,c,'cancelled')});
+    return Object.freeze({snapshot:()=>current,quoteTrip,dispatch,bulkDispatch,advance,fleetCommand:fleetCommandRun,inspectFleet,settle:(q:unknown,c:unknown)=>terminal(q,c,'settled'),cancel:(q:unknown,c:unknown)=>terminal(q,c,'cancelled')});
   }
   async function initialize(start:unknown,seed:unknown,input:unknown){
     const b=opening(input);
     const a=await inspectAccountingBook(b.accounting,src(b));
     if(a.liquidityView.simTimeS!==integer(start))fail('opening accounting clock mismatch');
-    const s=await scheduler.initialize(start,seed,{...b,schemaVersion:1,revision:0,movement:{schemaVersion:1,trips:[]},receipts:[],closures:[]});
+    const s=await scheduler.initialize(start,seed,{...b,schemaVersion:1,revision:0,movement:{schemaVersion:1,trips:[]},receipts:[],closures:[],fleetHistory:[]});
     return controller(await verify(await syncBoundary(s)));
   }
   async function open(input:unknown){return controller(await verify(input));}

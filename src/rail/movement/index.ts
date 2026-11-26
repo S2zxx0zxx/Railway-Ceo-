@@ -140,31 +140,33 @@ export async function prepareMovement(graph:RailGraph,catalog:RollingStockCatalo
     }
     return groups;
   }
-  const decodeBook:Decoder<MovementBook>=(input,path='movement book')=>{
+  const decodeInternal=(input:unknown,path='movement book',fleet=false):MovementBook=>{
     const b=bookDecoder(input,path);
     if(b.trips.length>limits.maxTrips)fail('movement history capacity exceeded');
     if(new Set(b.trips.map(t=>t.trainId)).size!==b.trips.length)fail('train already reserved or awaiting settlement');
     for(const t of b.trips){
       const p=getPlan(t.planId),train=getTrain(t.trainId);
-      if(train.modelId!==p.modelId||train.nodeId!==p.origin||t.phaseIndex>p.phases.length||t.lanes.length!==p.phases.length)fail('invalid trip identity, origin or phase');
+      if(train.modelId!==p.modelId||(!fleet&&train.nodeId!==p.origin)||t.phaseIndex>p.phases.length||t.lanes.length!==p.phases.length)fail('invalid trip identity, origin or phase');
       add(t.departureSimS,p.durationS);
       for(let i=0;i<t.lanes.length;i++)if(t.lanes[i]>=capacities.get(p.phases[i].resourceId)!)fail('invalid resource lane');
     }
     b.trips.sort((a,b)=>cmp(a.tripId,b.tripId));index(b.trips);return b;
   };
+  const decodeBook:Decoder<MovementBook>=(v,p)=>decodeInternal(v,p);
+  const decodeFleetBook:Decoder<MovementBook>=(v,p)=>decodeInternal(v,p,true);
   const events:Registry=Object.freeze({'movement.reserve':reservePayload,'movement.phase':stepPayload});
   const due=(t:Trip):EventRequest|null=>{
     const p=getPlan(t.planId),i=t.phaseIndex+1;
     if(i>p.phases.length)return null;
     return {kind:'movement.phase',simTimeS:add(t.departureSimS,i===p.phases.length?p.durationS:p.phases[i].startS),payload:{tripId:t.tripId,phaseIndex:i}};
   };
-  function reduce(input:Readonly<MovementBook>,event:Readonly<SimEvent>):EventTransition<MovementBook>{
-    const b=decodeBook(input),at=integer(event.simTimeS);
+  function transition(input:Readonly<MovementBook>,event:Readonly<SimEvent>,fleet:boolean,origin?:string):EventTransition<MovementBook>{
+    const decode=fleet?decodeFleetBook:decodeBook,b=decode(input),at=integer(event.simTimeS);
     if(event.kind==='movement.reserve'){
       const r=reservePayload(event.payload),p=getPlan(r.planId),train=getTrain(r.trainId);
       if(r.departureSimS<at)fail('departure in the past');
       if(b.trips.length>=limits.maxTrips||b.trips.some(t=>t.tripId===r.tripId||t.trainId===r.trainId))fail('duplicate trip or train already reserved');
-      if(train.modelId!==p.modelId||train.nodeId!==p.origin)fail('train model or origin mismatch');
+      if(train.modelId!==p.modelId||(fleet?origin:train.nodeId)!==p.origin)fail('train model or origin mismatch');
       add(r.departureSimS,p.durationS);
       const t:Trip={...r,phaseIndex:-1,lanes:[]},groups=index(b.trips);
       for(const phase of p.phases){
@@ -178,7 +180,7 @@ export async function prepareMovement(graph:RailGraph,catalog:RollingStockCatalo
         const w=window(t,phase,lane),k=JSON.stringify([w.resourceId,w.lane]),group=groups.get(k)??[];group.push(w);groups.set(k,group);
       }
       b.trips.push(t);const next=due(t)!;
-      return {state:decodeBook(b),schedule:[next]};
+      return {state:decode(b),schedule:[next]};
     }
     if(event.kind!=='movement.phase')return fail('unknown movement event');
     const r=stepPayload(event.payload),t=b.trips.find(x=>x.tripId===r.tripId)??fail('unknown trip');
@@ -186,8 +188,11 @@ export async function prepareMovement(graph:RailGraph,catalog:RollingStockCatalo
     if(!expected||expected.simTimeS!==at||copy(expected.payload)!==copy(r))fail('stale duplicate or out-of-order movement phase');
     t.phaseIndex=r.phaseIndex;
     const next=due(t);
-    return {state:decodeBook(b),schedule:next?[next]:[]};
+    return {state:decode(b),schedule:next?[next]:[]};
   }
+  function reduce(input:Readonly<MovementBook>,event:Readonly<SimEvent>){return transition(input,event,false);}
+  // Only an aggregate that verifies terminal history may supply the current origin.
+  function reduceFleet(input:Readonly<MovementBook>,event:Readonly<SimEvent>,origin?:string){return transition(input,event,true,origin);}
   // R32 is the only clock/event queue. The aggregate in R34 can use the
   // exported registry/decoder/reducer directly on its own R32 instance.
   const scheduler=createScheduler<MovementBook>({policySha256:scenarioSha256,graphSha256s:[graph.graphSha256],maxPending:limits.maxPending,decodeState:decodeBook,events,reduce});
@@ -241,5 +246,5 @@ export async function prepareMovement(graph:RailGraph,catalog:RollingStockCatalo
     const occupied=reservations.filter(w=>w.start<=s.simTimeS&&s.state.trips.some(t=>t.tripId===w.tripId&&t.phaseIndex===w.phaseIndex));
     return freeze({simTimeS:s.simTimeS,trips,reservations,occupied});
   }
-  return Object.freeze({scenarioSha256,plans:freeze(plans),events,decodeBook,reduce,initialize,restore,reserve,advance,inspect});
+  return Object.freeze({scenarioSha256,plans:freeze(plans),roster:freeze(roster),events,decodeBook,decodeFleetBook,reduce,reduceFleet,initialize,restore,reserve,advance,inspect});
 }

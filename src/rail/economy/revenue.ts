@@ -37,7 +37,7 @@ const passengerTerm=object({bucketId:id,classId:id,quantity:positive,policy:fare
 const cargoTerm=object({bucketId:id,consignmentId:id,massKg:positiveKg,rateMinorPerTonneKm:minor,paidDistanceM:positiveM,serviceFactorBps:basisPoints});
 const passengerKey=(x:{bucketId:string;classId:string})=>JSON.stringify([x.bucketId,x.classId]);
 const terms=object({tripId:id,policySha256:sha256,segmentDistancesM:list(positiveM,1,31),promisedDurationS:positiveS,delayRateMinorPerSecond:minor,delayCapMinor:minor,passengers:distinct(list(passengerTerm,0,1024),passengerKey),cargo:distinct(list(cargoTerm,0,4096),x=>x.consignmentId)});
-const binding=object({serviceId:id,dispatchSimS:seconds,stopIds:list(id,2,32),claims:distinct(list(object({bucketId:id,boardIndex:integer,alightIndex:integer,allocated:integer}),1,128),x=>x.bucketId)});
+const binding=object({serviceId:id,dispatchSimS:seconds,stopIds:list(id,2,32),claims:distinct(list(object({bucketId:id,boardIndex:integer,alightIndex:integer,allocated:integer}),0,128),x=>x.bucketId)});
 const passengerReceipt=object({bucketId:id,classId:id,paid:integer,unpaid:integer,refundMinor:minor});
 const cargoReceipt=object({consignmentId:id,deliveredKg:positiveKg,finalDestinationId:id});
 const settlement=object({arrivalSimS:nullable(seconds),passengers:distinct(list(passengerReceipt,0,1024),passengerKey),cargo:distinct(list(cargoReceipt,0,4096),x=>x.consignmentId)});

@@ -80,7 +80,7 @@ function model(seed:number,tripId:string,bucketId:string,classId:string,quantity
 const checkPlan=distinct(list(object({bucketId:id,classId:id,checked:integer}),0,1024),x=>key(x.bucketId,x.classId));
 function inspectionProjection(c:Config,d:Demand,r:Revenue,tripId:string,plan:unknown){
   const {t,v}=tripRecord(d,r,tripId),rows=checkPlan(plan);
-  if(t.status==='released')fail('released trip cannot inspect');
+  if(t.status==='released'||t.serviceId.startsWith('r36:relocation:'))fail('released or relocation trip cannot inspect');
   if(rows.length!==v.terms.passengers.length)fail('inspection plan must cover every passenger class');
   if(v.terms.passengers.reduce((n,x)=>n+BigInt(x.quantity),0n)>100000n)fail('inspection passenger work limit');
   const byKey=new Map(rows.map(x=>[key(x.bucketId,x.classId),x]));
@@ -123,7 +123,7 @@ function replay(input:unknown,d:Demand,r:Revenue){
       if(grants.has(e.tripId))fail('trip subsidy already claimed');
       const p=programs.get(e.programId)??fail('unknown subsidy program'),q=p.terms;
       const {t,v,arrival}=completed(d,r,e.tripId,e.atSimS);
-      if(t.serviceId!==q.serviceId||JSON.stringify(t.stopIds)!==JSON.stringify(q.stopIds))fail('ineligible route');
+      if(t.serviceId.startsWith('r36:relocation:')||t.serviceId!==q.serviceId||JSON.stringify(t.stopIds)!==JSON.stringify(q.stopIds))fail('ineligible route');
       if(t.dispatchSimS<q.program.startS||arrival>=q.program.endS||e.atSimS>=q.program.endS)fail('outside subsidy window');
       const units=q.unit==='trip'?1n:q.unit==='passenger'?v.terms.passengers.reduce((n,x)=>n+BigInt(x.quantity),0n):v.terms.cargo.reduce((n,x)=>n+BigInt(x.massKg),0n);
       const grant=min(p.remaining,units*BigInt(q.rateMinor));

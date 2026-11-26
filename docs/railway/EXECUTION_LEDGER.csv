@@ -32,9 +32,9 @@ R30,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/company.ts; R30_COMPANY_REPORT.md
 R31,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/governance.ts; R31_GOVERNANCE_REPORT.md; 66501728 Verify 43/43 R31 and 1310/1310 repository tests; 4/5 original CI; Android retry completed success,Provisional predecessors and integration,Final reconciliation required
 R32,G4,PASS,src/rail/scheduler/index.ts; R32_SCHEDULER_REPORT.md; 15683d5 and docs-only 9cc9fde CI 5/5 each; 1353/1353 tests; 40 dedicated plus 3 integration; DV-045 closed,,START R33
 R33,G4,PASS,src/rail/movement/index.ts; R33_MOVEMENT_REPORT.md; 0c6993e and c173585 CI 5/5 each; 1393/1393 tests; 40 R33; DV-046 closed,,START R34
-R34,G4,IMPLEMENTED_UNVERIFIED,src/rail/dispatch/index.ts; R34_DISPATCH_REPORT.md; 83f17a3 CI 5/5; 1423/1423 tests; DV-047 closed,Provisional predecessors and DV-048; docs-only DV-050,START R35 provisionally
-R35,G4,IMPLEMENTED_UNVERIFIED,src/rail/dispatch/index.ts; src/rail/economy/accounting.ts; tests/railway-r35.test.ts; 20c07fed7747f4e3901d40800c03f30b7d0e8ac0; 25/25 dedicated and 1448/1448 repo tests; 2/5 corrected CI successes,DV-049 remaining platform CI; provisional R34/R26/R27/R31; DV-051 outstanding partial delivery/disruption and recovery scope,START R36 compatible isolated lifecycle provisionally
-R36,G4,NOT_STARTED,,,Consult original V4 dependencies and acceptance
+R34,G4,IMPLEMENTED_UNVERIFIED,src/rail/dispatch/index.ts; R34_DISPATCH_REPORT.md; 83f17a3 CI 5/5; 1423/1423 tests; DV-047 closed,Provisional predecessors and DV-048,START R35 provisionally
+R35,G4,IMPLEMENTED_UNVERIFIED,20c07fe; 25/25 dedicated; 1448/1448 repository tests; CI 5/5; DV-049 closed,Provisional R34/R26/R27/R31; DV-051,START R36 provisionally
+R36,G4,IMPLEMENTED_UNVERIFIED,src/rail/fleet/index.ts; integrated dispatch/movement/economy; tests/railway-r36.test.ts; 21 authored cases,Fresh CI DV-052; provisional R26/R35; purchased base acquisition and real topology integration deferred,START R37 independently after CI reconciliation
 R37,G4,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R38,G4,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R39,G4,NOT_STARTED,,,Consult original V4 dependencies and acceptance

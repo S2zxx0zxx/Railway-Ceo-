@@ -136,7 +136,8 @@ async function evaluate(input:unknown,c:AccountingSources,policyInput:unknown){
   const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(p)));
   const policyHash=Array.from(new Uint8Array(bytes),b=>b.toString(16).padStart(2,'0')).join('');
   const life=lifecycle(p,x,c,policyHash);
-  const completed=r.records.filter(t=>t.closed&&t.closed.evidence.arrivalSimS!==null),closed=r.records.filter(t=>t.closed!==null);
+  const commercial=r.records.filter(t=>!t.binding.serviceId.startsWith('r36:relocation:'));
+  const completed=commercial.filter(t=>t.closed&&t.closed.evidence.arrivalSimS!==null),closed=commercial.filter(t=>t.closed!==null);
   const onTime=completed.filter(t=>BigInt(t.closed!.evidence.arrivalSimS!)-BigInt(t.binding.dispatchSimS)<=BigInt(t.terms.promisedDurationS)).length;
   const reliability=closed.length?Number(BigInt(onTime)*10000n/BigInt(closed.length)):null;
   const fleet=op.maintenance.filter(t=>t.asset?.disposedAtSimS===null).length;

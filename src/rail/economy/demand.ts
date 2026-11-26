@@ -65,9 +65,9 @@ export function allocateMarket(input:unknown){
 }
 const bucketEntry=object({kind,bucket:decodeDemandBucket});
 const claimInput=object({bucketId:id,boardIndex:integer,alightIndex:integer,requested:positive,outsideWeight:positive,services:distinct(list(weight,1,10000),v=>v.serviceId)});
-const tripSpec=object({tripId:id,serviceId:id,dispatchSimS:seconds,stopIds:list(id,2,32),capacitySeats:seats,cargoCapacityKg:kilograms,claims:distinct(list(claimInput,1,128),c=>c.bucketId)});
+const tripSpec=object({tripId:id,serviceId:id,dispatchSimS:seconds,stopIds:list(id,2,32),capacitySeats:seats,cargoCapacityKg:kilograms,claims:distinct(list(claimInput,0,128),c=>c.bucketId)});
 const claimResult=object({...{bucketId:id,boardIndex:integer,alightIndex:integer,requested:positive},allocated:integer,marketQuota:integer,unmet:integer});
-const tripRecord=object({tripId:id,serviceId:id,dispatchSimS:seconds,stopIds:list(id,2,32),capacitySeats:seats,cargoCapacityKg:kilograms,status:enumeration(['reserved','served','released']),claims:distinct(list(claimResult,1,128),c=>c.bucketId)});
+const tripRecord=object({tripId:id,serviceId:id,dispatchSimS:seconds,stopIds:list(id,2,32),capacitySeats:seats,cargoCapacityKg:kilograms,status:enumeration(['reserved','served','released']),claims:distinct(list(claimResult,0,128),c=>c.bucketId)});
 const book=object({schemaVersion:version1,revision:integer,buckets:distinct(list(bucketEntry,0,100000),e=>e.bucket.id),trips:distinct(list(tripRecord,0,10000),t=>t.tripId)});
 type Book=Decoded<typeof book>;
 type Bucket=Decoded<typeof bucketEntry>;
@@ -75,6 +75,10 @@ type Trip=Decoded<typeof tripRecord>;
 type Claim=Decoded<typeof claimResult>;
 export type DemandBook=ReadonlyTree<Book>;
 const fail=(reason:string):never=>{throw new TypeError('Demand: '+reason);};
+export const isRelocationService=(serviceId:string)=>serviceId.startsWith('r36:relocation:')&&serviceId.length>'r36:relocation:'.length;
+function checkPurpose(t:Pick<Trip,'serviceId'|'claims'>){
+  if(isRelocationService(t.serviceId)?t.claims.length!==0:t.claims.length===0)fail('only explicit empty relocation may omit demand claims');
+}
 function compareClaim(a:{boardIndex:number;alightIndex:number;bucketId:string},b:typeof a){return a.boardIndex-b.boardIndex||a.alightIndex-b.alightIndex||order(a.bucketId,b.bucketId);}
 function checkClaim(c:{boardIndex:number;alightIndex:number},b:Bucket,t:Pick<Trip,'stopIds'|'dispatchSimS'>){
   if(c.boardIndex>=c.alightIndex||c.alightIndex>=t.stopIds.length||t.stopIds[c.boardIndex]!==b.bucket.origin||t.stopIds[c.alightIndex]!==b.bucket.destination)fail('OD does not match ordered stops');
@@ -107,6 +111,7 @@ function consumeCapacity(left:number[],c:{boardIndex:number;alightIndex:number},
 export function decodeDemandBook(input:unknown):DemandBook{
   const s=sorted(book(input)),byId=indexes(s),sums=new Map(s.buckets.map(e=>[e.bucket.id,{reserved:0n,served:0n}]));
   for(const t of s.trips){
+    checkPurpose(t);
     const left=capacities(t);
     for(const c of t.claims){
       const b=lookup(byId,c.bucketId);checkClaim(c,b,t);
@@ -137,6 +142,7 @@ function current(input:unknown,revision:number):Book{
  * Dispatch interval is checked at dispatch (not future boarding); no claim is a sale. */
 export function reserveDemand(input:unknown,command:unknown):DemandBook{
   const q=reserveCommand(command),s=current(input,q.expectedRevision),t=q.trip;
+  checkPurpose(t);
   if(s.trips.some(x=>x.tripId===t.tripId))fail('duplicate trip');
   const byId=indexes(s),left=capacities(t),claims:Claim[]=[];
   for(const c of [...t.claims].sort(compareClaim)){
