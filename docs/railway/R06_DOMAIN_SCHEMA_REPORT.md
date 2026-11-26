@@ -29,3 +29,6 @@ R05 dbf82a42ac06e059568ba1d7e6f2a38e5dceb750 and checkpoint eefc7f5d075bd8cd4f3d
 
 ## Repository readback checkpoint
 Implementation b2c13be0f24f86c1bb29741fbcebccfe2bc9a528; all five source/test file hashes matched local-tested Git blobs. Compare: five added source/test files, five docs-only changes; protected refs unchanged. CI: Android QA APK and unsigned AAB 45798509182: in_progress/pending; Verify game 45798509142: in_progress/pending; Browser and offline smoke 45798509185: in_progress/pending; G08 save and worker acceptance 45798509155: in_progress/pending; Release dependency and license audit 45798509347: in_progress/pending. DV-013 open for fresh repository CI; no false PASS. Next R07 under owner protocol. No merge.
+
+## R06 closure at R07
+Both implementation b2c13be0f24f86c1bb29741fbcebccfe2bc9a528 and checkpoint d67fbe56ce1e2f3387ff6d9df3dd537a48b0bee6 five CI runs completed success (implementation 45798509142 45798509185 45798509347 45798509182 45798509155; checkpoint 45798576681 45798576696 45798576613 45798576615 45798576715). R06 PASS; DV-013 closed.

@@ -126,13 +126,19 @@
       "licenseClaim": "MIT",
       "role": "RUNTIME_CANDIDATE",
       "pin": "01bb37e39c66ff4eddaf3b0beda40903a663e627",
-      "decision": "CANDIDATE_PIN_REVIEW_ONLY",
-      "reviewTask": "R03 or subsequent task per V4 ledger",
+      "decision": "REFERENCE_ONLY",
+      "reviewTask": "R07",
       "licenseReviewed": "MIT",
       "licenseEvidence": "https://github.com/graphology/graphology/blob/01bb37e39c66ff4eddaf3b0beda40903a663e627/LICENSE.txt",
       "licenseBlob": "158967c8da93f1ea5ab5ac8efa7d7269392a0737",
       "productionAccepted": false,
-      "blocker": "Source package manifest graphology 0.26.0 (blob e4db5837c592bd4a287a937b790f74ae946deba6); package tarball integrity and graphology-types peer pin at adoption. Evaluate container only; authoritative routing remains R09; no second route engine."
+      "blocker": "No runtime adoption; reconsider only with integrity/transitive pins and demonstrated single-container parity/device budget.",
+      "r07Review": {
+        "evidence": "docs/railway/R07_GRAPH_REPORT.md",
+        "version": "0.26.0",
+        "installed": false,
+        "reason": "Single original graph; generic mutable graph not needed"
+      }
     },
     {
       "id": "B05",
