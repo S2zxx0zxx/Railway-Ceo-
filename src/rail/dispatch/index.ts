@@ -293,7 +293,7 @@ export async function prepareDispatch(graph:RailGraph,catalog:RollingStockCatalo
       let market=next.market;
       if(market&&inspectEnergyMarket(market).simTimeS<at)market=applyMarketAction(market,{expectedRevision:market.revision,action:{type:'advance',targetSimS:at}});
       next={...next,market,energy:market?inspectEnergyMarket(market).energy:next.energy};
-      const recovered=await applyRecoveryCommand(next.accounting,src(next),cfg.governance,{id:aid,expectedAccountingRevision:next.accounting.revision,expectedSources:versionMap(next),action},market??undefined);
+      const recovered=await applyRecoveryCommand(next.accounting,src(next),cfg.governance,{id:aid.slice('r44:'.length),expectedAccountingRevision:next.accounting.revision,expectedSources:versionMap(next),action},market??undefined);
       next={...next,accounting:recovered.accounting,operations:recovered.operations,energy:recovered.energy,market:recovered.market};
     }
     return decodeState({...next,revision:checkedAdd(s.revision,1)});
