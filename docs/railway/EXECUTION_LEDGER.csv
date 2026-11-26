@@ -30,7 +30,7 @@ R28,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/liquidity.ts; R28_LIQUIDITY_REPOR
 R29,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/accounting.ts; R29_ACCOUNTING_REPORT.md; cc9cdea and d6987ad CI 5/5 each; 33/33 R29 and 1217/1217 repository tests,Prior policy acceptance and DV-006; DV-042 closed,Final reconciliation required
 R30,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/company.ts; R30_COMPANY_REPORT.md; 60a2e5f and 9db0070 CI 5/5 each; 50/50 R30 and 1267/1267 tests,Prior source-policy and dependency acceptance; DV-043 closed,Final reconciliation required
 R31,G3,IMPLEMENTED_UNVERIFIED,src/rail/economy/governance.ts; R31_GOVERNANCE_REPORT.md; 66501728 Verify 43/43 R31 and 1310/1310 repository tests; 4/5 original CI; Android retry completed success,Provisional predecessors and integration,Final reconciliation required
-R32,G4,IMPLEMENTED_UNVERIFIED,src/rail/scheduler/index.ts; tests/railway-r32.test.ts; R29/R31 integration tests; R32_SCHEDULER_REPORT.md,Initial CI fixture TS2345 repaired; corrected executable CI DV-045; aggregate integration DV-006/008 remains,Next eligible R33 provisionally after CI reconciliation
+R32,G4,IMPLEMENTED_UNVERIFIED,src/rail/scheduler/index.ts; R32_SCHEDULER_REPORT.md; 15683d5ca555a2b0f5e5b0733c8d089b1d67af8b; 40 dedicated plus 3 domain integration tests; 1353/1353 repository tests; 2/5 completed CI successes,DV-045 remaining platform CI; DV-006/008 future integration,START R33 provisionally
 R33,G4,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R34,G4,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R35,G4,NOT_STARTED,,,Consult original V4 dependencies and acceptance
