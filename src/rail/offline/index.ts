@@ -44,3 +44,12 @@ export function observeClock(input:unknown,sampleInput:unknown,simTime:unknown){
  return {clock:decodeOfflineClock({...c,wallHighMs:Math.max(c.wallHighMs,s.wallMs),sessionId:s.sessionId,monotonicHighMs:same?Math.max(c.monotonicHighMs,s.monotonicMs):s.monotonicMs,targetSimS:checkedAdd(c.targetSimS,credited),remainderMilliSimS:remainder,creditedWallMs:checkedAdd(c.creditedWallMs,allowed),discardedWallMs:checkedAdd(c.discardedWallMs,wall-allowed),rollbackCount:checkedAdd(c.rollbackCount,rollback?1:0),monotonicAnomalyCount:checkedAdd(c.monotonicAnomalyCount,monoAnomaly?1:0),cappedCount:checkedAdd(c.cappedCount,allowed<Math.min(wall,mono)?1:0)}),creditedSimS:credited,creditedWallMs:allowed,discardedWallMs:wall-allowed,rollback,monotonicAnomaly:monoAnomaly};
 }
 export const catchupInput=object({sample:nullable(decodeClockSample)});
+
+// Keep deterministic automatic settlement identifiers outside manual command space.
+export const AUTO_SETTLEMENT_PREFIX='r40:settle:';
+export function autoSettlementCommandId(tripId:unknown,occupied:ReadonlySet<string>){
+ const base=AUTO_SETTLEMENT_PREFIX+id(tripId);
+ let candidate=base,index=0;
+ while(occupied.has(candidate)){index=checkedAdd(index,1);candidate=base+':'+index;}
+ return id(candidate);
+}

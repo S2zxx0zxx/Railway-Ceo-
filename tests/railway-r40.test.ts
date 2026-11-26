@@ -1,5 +1,5 @@
 import {describe,it,expect} from 'vitest';
-import {anchorClock,observeClock,checkClock,decodeOfflinePolicy} from '../src/rail/offline';
+import {anchorClock,observeClock,checkClock,decodeOfflinePolicy,autoSettlementCommandId} from '../src/rail/offline';
 import {rebuildRailwayRuntime} from '../src/rail/offline/runtime';
 import {fixture} from './fixtures/railway-r39';
 const policy={schemaVersion:1,maxWallDeltaMs:60000,simSecondsPerWallSecond:2,maxBacklogSimS:100,maxBatchSimS:20,maxBatchEvents:2,maxBatchesPerWake:3,autoSettleArrivals:true};
@@ -16,5 +16,6 @@ describe('R40 explicit clock policy, synthetic inputs',()=>{
  it('fractional conversion is partition-equivalent before caps',()=>{const a=observeClock(start(),sample(1501),10);const b=observeClock(a.clock,sample(1999),10);const c=observeClock(start(),sample(1999),10);expect(b.clock).toEqual(c.clock);expect(c.clock.remainderMilliSimS).toBe(998);});
  it('full backlog discards further credit until processed, never retroactively grants it',()=>{const a=observeClock(start(),sample(100000,0,'two'),10);const b=observeClock(a.clock,sample(101000,1000,'two'),10);expect(b.creditedSimS).toBe(0);expect(b.clock.targetSimS).toBe(110);expect(observeClock(b.clock,sample(101000,1000,'two'),110).creditedSimS).toBe(0);});
  it('rejects policy mismatch, past target and oversized persisted backlog',()=>{const c=start();expect(()=>checkClock(c,{...policy,maxWallDeltaMs:1},10)).toThrow();expect(()=>checkClock(c,policy,11)).toThrow();expect(()=>checkClock({...c,targetSimS:111},policy,10)).toThrow();});
+ it('resolves pre-existing automatic ID collisions deterministically without reusing receipts',()=>{const base='r40:settle:trip';expect(autoSettlementCommandId('trip',new Set())).toBe(base);expect(autoSettlementCommandId('trip',new Set([base+':2',base,base+':1']))).toBe(base+':3');expect(autoSettlementCommandId('trip',new Set([base+':2',base]))).toBe(base+':1');});
  it('rebuilds actual worker runtime with exact trusted configuration and rejects mismatch',async()=>{const {runtime,authority}=await fixture();const r=await rebuildRailwayRuntime(runtime.workerRecipe,runtime.configurationSha256);expect(r.configurationSha256).toBe(runtime.configurationSha256);expect((await r.open(authority.snapshot())).snapshot()).toEqual(authority.snapshot());await expect(rebuildRailwayRuntime(runtime.workerRecipe,'0'.repeat(64))).rejects.toThrow('configuration mismatch');});
 });

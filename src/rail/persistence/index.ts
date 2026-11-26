@@ -2,7 +2,7 @@ import Dexie,{type Table} from 'dexie';
 import {integer,checkedAdd} from '../../domain/units';
 import {object,list,distinct,id,sha256,nullable,enumeration,record,text} from '../../domain/validation';
 import type {prepareDispatch,DispatchSnapshot} from '../dispatch';
-import {anchorClock,observeClock,checkClock,decodeOfflinePolicy,decodeOfflineClock,catchupInput,type OfflineClock,type OfflinePolicy} from '../offline';
+import {anchorClock,observeClock,checkClock,decodeOfflinePolicy,decodeOfflineClock,catchupInput,AUTO_SETTLEMENT_PREFIX,autoSettlementCommandId,type OfflineClock,type OfflinePolicy} from '../offline';
 
 type Runtime=Awaited<ReturnType<typeof prepareDispatch>>;
 type Controller=Awaited<ReturnType<Runtime['open']>>;
@@ -146,7 +146,12 @@ export function createRailwayStore(runtime:Runtime,limitsInput:unknown,options:{
       }
       if(p.autoSettleArrivals){
         const trip=arrived(c)[0];
-        if(trip){await c.settle({commandId:'r40:settle:'+trip,tripId:trip},s.checksum);settled.push(trip);remaining--;continue;}
+        if(trip){
+          // A legacy save may already contain the predictable base ID.
+          // Choose the first unused ID deterministically, including fleet history.
+          const occupied=new Set([...s.state.receipts,...s.state.closures,...s.state.fleetHistory].map(x=>x.commandId));
+          await c.settle({commandId:autoSettlementCommandId(trip,occupied),tripId:trip},s.checksum);settled.push(trip);remaining--;continue;
+        }
       }
       if(s.simTimeS>=target)break;
       // Stop at next actual event to settle at canonical arrival, independent of batch partition.
@@ -187,6 +192,12 @@ export function createRailwayStore(runtime:Runtime,limitsInput:unknown,options:{
     if(old){if(old.kind!==q.kind||old.payload!==payload)fail('durable command ID conflict');return {view:l.view,result:old.result,committedRevision:old.committedRevision,replayed:true};}
     checkExpected(l.view,expectedCursor);
     if(l.body.journal.length>=limits.maxJournalEntries)fail('journal limit; export and reconciled checkpoint required');
+    if(q.kind==='dispatch'||q.kind==='bulk'||q.kind==='settle'||q.kind==='cancel'||q.kind==='fleet'){
+      for(const value of q.kind==='bulk'?list(raw)(captured):[captured]){
+        const row=record(value,'manual command');
+        if(typeof row.commandId==='string'&&row.commandId.startsWith(AUTO_SETTLEMENT_PREFIX))fail('reserved automatic settlement command ID');
+      }
+    }
     const c=l.controller,checksum=c.snapshot().checksum;
     let clock=l.body.schemaVersion===3?l.body.clock:undefined;
     if(offline&&q.kind!=='catchup'&&(!clock||pending(c,clock)||q.kind==='advance'))fail('offline clock requires catch-up before commands; raw advance disabled');

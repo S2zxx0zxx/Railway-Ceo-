@@ -19,6 +19,8 @@ try{
  await setup(page);await setup(other);
  const baseline=await page.evaluate(async()=>{const x=r40,p={...x.policy,maxBatchEvents:100,maxBatchSimS:120,maxBatchesPerWake:2};await x.seed('r40-baseline',p);const runner=x.runner('r40-baseline',p,'direct'),v=await runner.wake(x.sample(121000));x.check(!v.catchupPending&&v.snapshot.simTimeS===120&&v.snapshot.state.closures.length===1,'baseline complete');runner.close();return v.snapshot;});
  const initial=await page.evaluate(async()=>{const x=r40;return x.cursor(await x.seed('r40-worker'));});
+ await page.evaluate(async()=>{const x=r40,s=x.create('r40-worker'),v=await s.open(),before=await s.exportLatest();const tripId=v.snapshot.state.receipts[0].tripId;await x.rejects(()=>s.execute(x.cmd('poison','cancel',{commandId:'r40:settle:'+tripId,tripId}),x.cursor(v)),'reserved automatic settlement command ID');x.check(JSON.stringify(await s.exportLatest())===JSON.stringify(before),'reserved namespace attack must leave durable state unchanged');s.close();});
+ console.log('PASS reserved automatic settlement ID cannot be claimed by manual command');
  const race=await Promise.all([page,other].map((p,i)=>p.evaluate(async({initial,i})=>{const x=r40,s=x.create('r40-worker');try{const r=await s.execute(x.cmd('race-'+i,'catchup',{sample:x.sample(121000)}),initial);return {ok:true,view:r.view};}catch(e){return {ok:false,error:String(e)};}finally{s.close();}},{initial,i})));
  assert.equal(race.filter(x=>x.ok).length,1);assert.match(race.find(x=>!x.ok).error,/STALE_DURABLE_REVISION/);
  const won=race.find(x=>x.ok).view;assert.equal(won.clock.targetSimS,120);assert.equal(won.clock.creditedWallMs,120000);assert.equal(won.catchupPending,true);
