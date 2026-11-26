@@ -141,25 +141,25 @@ export function createRailwayStore(runtime:Runtime,limitsInput:unknown,options:{
     return l.view;
   }
   async function execute(input:unknown,expected:unknown){
-    const q:Request=request(input),payload=fingerprint(q.input);
+    const q:Request=request(input),payload=fingerprint(q.input),captured:unknown=JSON.parse(payload),expectedCursor=cursor(expected);
     if(payload.length>1000000)fail('command payload limit');
     const l=await load(await read());
     if(l.view.recoveryRequired||l.body.schemaVersion!==2)fail('recover or migrate save first');
     const old=l.body.journal.find(r=>r.requestId===q.requestId);
     if(old){if(old.kind!==q.kind||old.payload!==payload)fail('durable command ID conflict');return {view:l.view,result:old.result,committedRevision:old.committedRevision,replayed:true};}
-    checkExpected(l.view,expected);
+    checkExpected(l.view,expectedCursor);
     if(l.body.journal.length>=limits.maxJournalEntries)fail('journal limit; export and reconciled checkpoint required');
     const c=l.controller,checksum=c.snapshot().checksum;
     // Only explicit production commands, never a user-supplied snapshot or event.
     let result:unknown;
     switch(q.kind){
-      case 'quote':result=await c.quoteTrip(q.input,checksum);break;
-      case 'dispatch':{const {snapshot,...r}=await c.dispatch(q.input,checksum);result=r;break;}
-      case 'bulk':{const {snapshot,...r}=await c.bulkDispatch(q.input,checksum);result=r;break;}
-      case 'settle':{const {snapshot,...r}=await c.settle(q.input,checksum);result=r;break;}
-      case 'cancel':{const {snapshot,...r}=await c.cancel(q.input,checksum);result=r;break;}
-      case 'fleet':{const {snapshot,...r}=await c.fleetCommand(q.input,checksum);result=r;break;}
-      case 'advance':{const a=object({target:integer,budget:pos})(q.input),{snapshot,...r}=await c.advance(a.target,a.budget,checksum);result=r;break;}
+      case 'quote':result=await c.quoteTrip(captured,checksum);break;
+      case 'dispatch':{const {snapshot,...r}=await c.dispatch(captured,checksum);result=r;break;}
+      case 'bulk':{const {snapshot,...r}=await c.bulkDispatch(captured,checksum);result=r;break;}
+      case 'settle':{const {snapshot,...r}=await c.settle(captured,checksum);result=r;break;}
+      case 'cancel':{const {snapshot,...r}=await c.cancel(captured,checksum);result=r;break;}
+      case 'fleet':{const {snapshot,...r}=await c.fleetCommand(captured,checksum);result=r;break;}
+      case 'advance':{const a=object({target:integer,budget:pos})(captured),{snapshot,...r}=await c.advance(a.target,a.budget,checksum);result=r;break;}
     }
     const revision=checkedAdd(l.body.revision,1),journal=[...l.body.journal,{requestId:q.requestId,kind:q.kind,payload,committedRevision:revision,result}];
     const body=bodyFor(l,c.snapshot(),c.issuedQuotes(),journal),seal=await sealRailwaySave(body,l.read.key!.key);

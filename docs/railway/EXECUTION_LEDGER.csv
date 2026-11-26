@@ -37,7 +37,7 @@ R35,G4,IMPLEMENTED_UNVERIFIED,20c07fe; 25/25 dedicated; 1448/1448 repository tes
 R36,G4,IMPLEMENTED_UNVERIFIED,fb8f0e4 and e09d5da CI 5/5 each; 21/21 dedicated; 1469/1469 tests; DV-052 closed,Provisional R26/R35; DV-054 purchased base and circle-line policy and topology; DV-051,START R37 independently
 R37,G4,IMPLEMENTED_UNVERIFIED,12/12 synthetic; 1481/1481 repo tests; ordinary CI 5/5; locked Rust tests and wheel PASS; actual Python import failed; corrected import retry,DV-055 actual Python demo/holdout and Indian approval pending; DV-056 closed,Retain actual retry evidence
 R38,G4,IMPLEMENTED_UNVERIFIED,12/12 synthetic; 1493/1493 full tests; both ordinary CI 5/5; native OSRD actual artifact verified; median 3.163266%; 0 false negatives and 3 false positives across 18 probes,DV-057 matched Indian and routing scope pending; DV-058 closed,START R39 provisionally
-R39,G4,IMPLEMENTED_UNVERIFIED,src/rail/persistence/index.ts; persisted dispatch quote registry; 8 codec tests and dedicated Chromium cross-tab tests authored; initial TS18048 fixed,DV-059 executable CI; DV-060 portable transfer and device security scope; provisional R35/R36,START R40 provisionally after verification
+R39,G4,IMPLEMENTED_UNVERIFIED,src/rail/persistence/index.ts; persisted dispatch quote registry; 8 codec tests and dedicated Chromium cross-tab tests authored; initial TS18048 fixed; 7 browser groups passed; input capture hardened,DV-059 executable CI; DV-060 portable transfer and device security scope; provisional R35/R36,START R40 provisionally after verification
 R40,G4,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R41,G4,NOT_STARTED,,,Consult original V4 dependencies and acceptance
 R42,G5,NOT_STARTED,,,Consult original V4 dependencies and acceptance

@@ -57,6 +57,14 @@ try {
  console.log('PASS rejects older valid export; authenticated v1 to v2 migration preserves journal and state');
  await page.evaluate(async()=>{const x=r39,store=x.mod.createRailwayStore(x.f.runtime,{maxJournalEntries:1,maxBytes:16000000},{databaseName:'r39-cap-evidence'}),v=await store.initialize(0,123,x.f.opening),r=await store.execute(x.cmd('q','quote',{quoteId:'q1',trainId:'t1',templateId:'service-template'}),x.cursor(v));await x.rejects(()=>store.execute(x.cmd('d','dispatch',{commandId:'c1',quoteId:'q1'}),x.cursor(r.view)),'journal limit');x.check((await store.open()).tag===r.view.tag,'journal limit must not mutate state');store.close();});
  console.log('PASS explicit journal cap fails closed without receipt eviction');
+ await page.evaluate(async()=>{const x=r39,store=x.mod.createRailwayStore(x.f.runtime,x.limits,{databaseName:'r39-input-evidence'}),v=await store.initialize(0,123,x.f.opening),q={quoteId:'q1',trainId:'t1',templateId:'service-template'},e=x.cursor(v),promise=store.execute(x.cmd('q','quote',q),e);q.trainId='t2';q.quoteId='altered';e.revision=999;const issued=await promise;x.check(issued.result.quote.quote.id==='q1'&&issued.result.quote.quote.trainId==='t1','immutable command and cursor capture');
+  const advanced=await store.execute(x.cmd('tick','advance',{target:30,budget:20}),x.cursor(issued.view)),before=await store.exportLatest();
+  await x.rejects(()=>store.execute(x.cmd('expired','dispatch',{commandId:'c1',quoteId:'q1'}),x.cursor(advanced.view)),'expired');
+  x.check(JSON.stringify(await store.exportLatest())===JSON.stringify(before),'expired persisted quote cannot mutate state');
+  const other=await (await import('/tests/fixtures/railway-r39.ts')).fixture({ttl:31}),wrong=x.mod.createRailwayStore(other.runtime,x.limits,{databaseName:'r39-input-evidence'});
+  await x.rejects(()=>wrong.open(),'no valid latest');wrong.close();store.close();
+ });
+ console.log('PASS captured input and cursor cannot be mutated while awaiting; expired quote and wrong configuration fail closed');
  await context.close();
  console.log('R39_BROWSER_ACCEPTANCE PASS');
 }finally{await browser.close();}
