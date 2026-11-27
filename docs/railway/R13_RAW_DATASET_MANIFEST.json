@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "task": "R13",
-  "status": "ATTACHMENTS_MATERIALIZED_PBF_HASH_AND_PARSER_BLOCKED",
+  "status": "OWNER_REPORTED_LOCAL_VALIDATION_PENDING_ARTIFACT_AND_RIGHTS_REVIEW",
   "observedDate": "2026-11-26",
   "source": {
     "resource": "B01",
@@ -156,5 +156,81 @@
       "noCodexRequired": true
     }
   },
-  "historicalDirectDownloadReceivedBytes": 0
+  "historicalDirectDownloadReceivedBytes": 0,
+  "reportedLocalVerification": {
+    "source": "Owner-pasted Gemini CLI report; actual JSON/lock bytes not yet received or independently hashed",
+    "date": "2026-11-27",
+    "status": "REPORTED_LOCAL_PASS_PENDING_EVIDENCE_AND_RIGHTS",
+    "pbf": {
+      "bytes": 247546068,
+      "md5": "2bd5e0db4194c3aa127814f96975a50d",
+      "sha256": "6f84fd4d634839b12b96126debd9e9b0237af8c927c5d746a6e272407fa1363a",
+      "sidecarBytes": 62,
+      "sidecarSha256": "06506014cebc79436524cb831cff6e748060f0bba44e8b053576cfb606c47a39",
+      "crc32": "1198aa55",
+      "generator": "osmium/1.16.0",
+      "snapshotUtc": "2026-11-01T21:21:36Z",
+      "replicationSequence": 1846,
+      "ordered": true,
+      "multipleVersions": false,
+      "withHistory": false,
+      "counts": {
+        "nodes": 40636804,
+        "ways": 3882397,
+        "relations": 11657,
+        "changesets": 0
+      }
+    },
+    "osmium": {
+      "version": "1.19.0",
+      "build": "h60971b7_3",
+      "libosmium": "2.23.1",
+      "binarySha256": "6fb24c9f0859592d613c06628e19f00b7d081818d13183c25ef5274fcc77083b",
+      "fileinfoExit": 0,
+      "scriptExit": 0
+    },
+    "artifacts": {
+      "verification": {
+        "name": "R13_VERIFICATION.json",
+        "bytes": 15800,
+        "sha256": "b5944b80558586370f5fedd2b04d4ddeb770e7b069d5794b97df6111b3678e93"
+      },
+      "lock": {
+        "name": "R13_CONDA_EXPLICIT.txt",
+        "bytes": 1634,
+        "sha256": "a7ef24933aadc024488da411c36fa7f1a717ad82586268c8f6078297f97641cd"
+      }
+    },
+    "workspace": {
+      "privateOutsideGitReported": true,
+      "indiaLocationOwnerAttested": true,
+      "independentlyVerified": false,
+      "miniforgeVersion": "26.9.4-2",
+      "condaVersion": "26.9.4",
+      "installerSignatureReportedValid": true,
+      "originalsReportedPreserved": true,
+      "childEnvironment": "PYTHONNOUSERSITE=1; use absolute PowerShell/conda paths; prepend System32 and WindowsPowerShell to child PATH only"
+    },
+    "upstream": {
+      "ownerSidecarMatchReported": true,
+      "independentProviderFetch": "ChatGPT web attempt failed (binary sidecar inaccessible); PC HTTPS recheck pending"
+    },
+    "rights": {
+      "status": "REVIEW_OPEN",
+      "sources": [
+        "https://opendatacommons.org/licenses/odbl/1-0/",
+        "https://osmfoundation.org/wiki/Licence/Licence_and_Legal_FAQ",
+        "https://osmfoundation.org/wiki/Attribution_Guidelines",
+        "https://www.geospatial.dst.gov.in/Guidelines.aspx",
+        "https://dst.gov.in/news/list-featuresinstallations-and-their-sensitive-attributes-reference-guidelines-acquiring-and"
+      ],
+      "conclusions": "OSM commercial use allowed subject to ODbL; segregate geographic derived database from independent game code/data; attribution, derivative DB offer/alterations and distribution conditions before release. DST guideline 8 allows processing subject to Indian Entity, sensitive attributes and accuracy conditions; actual accuracy not established by decimal precision; no foreign transfer, no raw data in Git. Owner eligibility and local workspace attestation, applicable negative attribute/precision and boundary review pending. Not legal certification."
+    },
+    "acceptance": {
+      "C01": "BLOCKED",
+      "R13": "BLOCKED",
+      "C02": "NOT_STARTED",
+      "rawPbfUploadAllowed": false
+    }
+  }
 }
