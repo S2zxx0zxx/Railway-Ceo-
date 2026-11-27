@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "task": "R13",
-  "status": "LOCAL_FILTER_SOURCE_AUDITED_REMEDIATION_AND_COMPLIANCE_PENDING",
+  "status": "V2_REMEDIATION_REPORTED_INDEPENDENT_VERIFICATION_PENDING",
   "observedDate": "2026-11-26",
   "source": {
     "resource": "B01",
@@ -363,7 +363,7 @@
     "ownerEligibilityAttested": true,
     "technicalAcquisitionAcceptance": "SATISFIED",
     "fullC01": "BLOCKED",
-    "reason": "Uploaded filter independently tested: 11/11 original pass, six additional reproducible defects and one missing relation contract; compliance unresolved",
+    "reason": "V2 fixes and 18/18 synthetic PASS reported by Gemini; independent V2 artifact review/rerun and compliance determination pending",
     "policyPath": "docs/railway/C01_C02_LOCAL_DATA_POLICY.json",
     "handoffPath": "docs/railway/C01_COMPLIANCE_PREFLIGHT.md",
     "C02": "NOT_STARTED",
@@ -513,6 +513,47 @@
       "Remediate confirmed synthetic correctness defects and prove explicit relation/member disposition and complete reference integrity under fail-closed policy",
       "Applicable self-certification determination and approved safe civilian scope",
       "Coordinator acceptance"
+    ],
+    "releaseAllowed": false
+  },
+  "v2FilterRemediationReport": {
+    "date": "2026-11-27",
+    "basis": "22b98b6df7120fcf4740c542081a5b0eb5b2347b",
+    "source": "Owner-pasted Gemini CLI report only; updated artifact bytes not received; no independent V2 execution",
+    "artifacts": [
+      {
+        "name": "c02_rail_prefilter.py",
+        "bytes": 18081,
+        "sha256": "8b80604e5d4cf6e826cbb5a80a4db2d5004b29c628fee2984b745f39541fcb4a"
+      },
+      {
+        "name": "test_c02_prefilter_synthetic.py",
+        "bytes": 17020,
+        "sha256": "8b331ed3d3e0235657733d44720189528ebcf881d2f6635d6d7ae38f8f4c471e"
+      },
+      {
+        "name": "C02_CIVILIAN_RAIL_EXTRACTION_POLICY.json",
+        "bytes": 5441,
+        "sha256": "d5eeed70d02ffa7de64558a1ab543184715b2f3a944af97bc64ec593d3ef7085"
+      },
+      {
+        "name": "R13_PREFILTER_REMEDIATION_SANITIZED.json",
+        "bytes": 6590,
+        "sha256": "74bfa761219d1eea2895e2dc4543e41717f089a5b4f3815f29cd291dc0619ff3"
+      }
+    ],
+    "reportedTests": {
+      "original": "11/11",
+      "additional": "7/7",
+      "combined": "18/18",
+      "exitCode": 0,
+      "independentVerification": false
+    },
+    "reportedRemediation": "Six geometry/reference/identity defects and relation/member contract addressed; original files preserved per report. Actual source review and synthetic rerun pending. No real PBF processing reported.",
+    "remaining": [
+      "Verify exact four updated files and rerun independent original and regression checks against synthetic data only",
+      "Resolve applicable self-certification determination and safe civilian/territorial scope",
+      "Coordinator C01 acceptance before C02; separate public distribution/ODbL gate"
     ],
     "releaseAllowed": false
   }

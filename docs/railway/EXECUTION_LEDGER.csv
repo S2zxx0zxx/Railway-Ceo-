@@ -11,7 +11,7 @@ R09,G1,PASS,src/rail/routing/index.ts; src/worker/rail-routing.ts; R09_ROUTING_R
 R10,G1,PASS,src/rail/routing/index.ts; src/rail/quotes/index.ts; R10_QUOTE_REPORT.md; a93ef65 CI 5/5; 560/560 repository tests; docs-only 54c5411 Android HTTP429 tracked DV-020,,START R11
 R11,G1,PASS,tests/fixtures/railway-synthetic.ts; R11_SYNTHETIC_REPORT.md; 768a4db and 4b90f53 CI 5/5 each; 671/671 repository tests,,START R12
 R12,G1,PASS,src/rail/catalog/index.ts; R12_CATALOG_REPORT.md; d3e1348 and 5790505 CI 5/5 each; 750/750 repo tests,,START R13
-R13,G2,BLOCKED,R13 manifest and acquisition report; original technical acceptance satisfied; actual filter source hashes verified and 11/11 synthetic tests pass,Additional synthetic checks 0/7; compliance remains unresolved,Correct preflight prerequisite gaps and reconcile compliance before C02
+R13,G2,BLOCKED,R13 manifest and acquisition report; original technical acquisition acceptance satisfied; Gemini V2 18/18 synthetic PASS reported,V2 updated artifacts not yet received; independent tests and compliance pending,Verify V2 artifacts and reconcile compliance before C02
 R14,G2,NOT_STARTED,,C01 local compliance preflight pending; technical R13 evidence reconciled,START C02 only after C01 acceptance
 R15,G2,NOT_STARTED,,R13 actual dataset prerequisite blocked directly or transitively,Resume in original dependency order after R13
 R16,G2,NOT_STARTED,,R13 actual dataset prerequisite blocked directly or transitively,Resume in original dependency order after R13
