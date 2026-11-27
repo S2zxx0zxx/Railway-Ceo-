@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "task": "R13",
-  "status": "OWNER_REPORTED_LOCAL_VALIDATION_PENDING_ARTIFACT_AND_RIGHTS_REVIEW",
+  "status": "REPORTED_LOCAL_AND_UPSTREAM_PASS_PENDING_ARTIFACT_AND_POLICY_ACCEPTANCE",
   "observedDate": "2026-11-26",
   "source": {
     "resource": "B01",
@@ -232,5 +232,49 @@
       "C02": "NOT_STARTED",
       "rawPbfUploadAllowed": false
     }
+  },
+  "reportedProvenanceReconciliation": {
+    "source": "Owner-pasted Gemini CLI report; evidence files not uploaded to ChatGPT, no independent file-byte verification",
+    "retrievedUtc": "2026-11-27T13:21:37.081687+00:00",
+    "url": "https://download.geofabrik.de/asia/india/eastern-zone/eastern-zone-261101.osm.pbf.md5",
+    "httpStatus": 200,
+    "exitCode": 0,
+    "bytes": 62,
+    "sidecarSha256": "06506014cebc79436524cb831cff6e748060f0bba44e8b053576cfb606c47a39",
+    "md5": "2bd5e0db4194c3aa127814f96975a50d",
+    "threeWayMatchReported": true,
+    "sanitizedArtifacts": [
+      {
+        "name": "R13_VERIFICATION_SANITIZED.json",
+        "bytes": 15679,
+        "sha256": "8f529a919704d25d17f1a01dd39c616272caf6a55d5b2bf755548397f42cf71d"
+      },
+      {
+        "name": "R13_CONDA_EXPLICIT_SANITIZED.txt",
+        "bytes": 1613,
+        "sha256": "562d34ff7175380dcb07a8d9a8028cc67dcc3d7397a5c40e6b1238e0f22c2082"
+      },
+      {
+        "name": "R13_PROVENANCE_RECONCILIATION_SANITIZED.json",
+        "bytes": 5339,
+        "sha256": "e09e7c056958227bf589d1a8504d354379e2c177cb5362372cc8033ecf95bf54"
+      },
+      {
+        "name": "R13_DATA_USE_REVIEW.md",
+        "bytes": 7363,
+        "sha256": "f94c5bf83c2c91c46a19fe1c9d9779ee8eb50832385af968b3616ca56dce51d8"
+      }
+    ],
+    "officialReview": {
+      "negativeList": "https://dst.gov.in/sites/default/files/Final%20List%20of%20Negative%20Attributes_0.pdf",
+      "pagesReviewed": 6,
+      "numberedEntries": 51,
+      "review": "Official PDF text and six page images reviewed by assistant. No sensitive feature inventory or locations recorded. Civilian-only minimum required attribute policy; deny uncertain/restricted records, test against synthetic examples; actual local filter verification outstanding.",
+      "guidelines": "https://www.geospatial.dst.gov.in/Guidelines.aspx",
+      "selfCertification": "https://www.geospatial.dst.gov.in/IndianEntityTermsandCondition.aspx",
+      "odbl": "https://opendatacommons.org/licenses/odbl/1-0/",
+      "decision": "Separate actual derived geographic database and independent game data/code; comply with ODbL attribution, share-alike and access before public use. No political boundary depiction until authorized SOI layer. Treat accuracy unknown conservatively, keep raw/derived data local in India until reviewed. Indian Entity eligibility owner confirmation and applicable self-certification remain open; no legal clearance claimed. Official PDF retrieval blocker resolved, application of restrictions not yet verified."
+    },
+    "acceptance": "C01/R13 BLOCKED pending sanitized evidence and owner/policy confirmation; C02 not started."
   }
 }
