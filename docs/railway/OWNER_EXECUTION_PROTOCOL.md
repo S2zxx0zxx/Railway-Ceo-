@@ -24,3 +24,7 @@ Owner directs continuation through R49–R54, keeping R13–R20 and R42 deferred
 2026-11-26T19:03:08.8702652Z R47_ANDROID PASS separate QA app, airplane-mode guest start, force-stop resume, persisted quote and native lifecycle
 2026-11-26T19:03:11.6062986Z SHA256 digest of uploaded artifact zip is 6d1dec00b3dca841ef50e7e9bbd4788ae876c0190331820bdaedb7e1013dd1bc
 DV-075 CLOSED executable scope only; DV-076 remains open. R47 15/15 exact CI and DV-073 closed executable only; DV-074 remains open. R49 not started by this documentation-only reconciliation.
+
+
+## Owner-directed remaining implementation program — 27 November 2026
+Owner changes sequencing: complete every missing/skipped/partial feature first, then fresh full audit + consolidated FIX IT, then R54. Read docs/railway/REMAINING_IMPLEMENTATION_PLAN.md and REMAINING_IMPLEMENTATION_LEDGER.csv. C01–C43 maps all 39 unfinished R tasks plus four supplements; no R acceptance changes in planning. Original MR register preserved; standalone remediation HOLD, R54 HOLD. First START C01 / RESUME R13; approved private workspace and actual PBF verification required. R18/R19 may proceed after R15 before R16; R17 and R20 retain oracle dependency. If blocked record and propose only independently eligible owner-authorized work. Preserve PR1/main, no merge/publish/signing. Planning-only source/archive hashes verified; no game code changed.
