@@ -694,5 +694,32 @@
     "independentIntakeDefects": 3,
     "realPbfProcessed": false,
     "releaseAllowed": false
+  },
+  "c02FinalIntakeBundleReview": {
+    "basis": "ce8e45f0f191144b8fd98fe42b8385e77566f776",
+    "zipSha256": "a203a32f87f3d5bd8cd75deb95ff88104947d9be4330bf9cbad8f44fb80ff858",
+    "bytes": 77598,
+    "files": 27,
+    "manifest": "26/26",
+    "crc": "PASS",
+    "v3": "36/36",
+    "c02Independent": "8/8 executed",
+    "c02NotRun": [
+      "c02_06_e2e_synthetic_osmium_file_smoke"
+    ],
+    "typescriptIndependent": "2/2 PASS",
+    "geminiReported": {
+      "c02": "9/9",
+      "oracle": "34/34",
+      "planetilerHelpExit": 0
+    },
+    "priorIntakeDefectsClosedInRegressionScope": true,
+    "syntheticRecords": 35500,
+    "retained": 29940,
+    "excluded": 5560,
+    "elapsedSeconds": 6.552,
+    "peakPythonHeapBytes": 580489,
+    "realPbfProcessed": false,
+    "releaseAllowed": false
   }
 }
