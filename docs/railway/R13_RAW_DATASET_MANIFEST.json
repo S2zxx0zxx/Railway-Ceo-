@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "task": "R13",
-  "status": "REPORTED_LOCAL_PREFLIGHT_PASS_POLICY_BLOCKERS_REMAIN",
+  "status": "LOCAL_PREFLIGHT_ARTIFACTS_VERIFIED_POLICY_GATE_PENDING",
   "observedDate": "2026-11-26",
   "source": {
     "resource": "B01",
@@ -363,7 +363,7 @@
     "ownerEligibilityAttested": true,
     "technicalAcquisitionAcceptance": "SATISFIED",
     "fullC01": "BLOCKED",
-    "reason": "Local technical preflight reported PASS; actual sanitized evidence, applicable self-certification determination and safe civilian scope review pending",
+    "reason": "Four new preflight artifacts hash verified; actual filter/test source review and applicable certification/safe civilian scope remain",
     "policyPath": "docs/railway/C01_C02_LOCAL_DATA_POLICY.json",
     "handoffPath": "docs/railway/C01_COMPLIANCE_PREFLIGHT.md",
     "C02": "NOT_STARTED",
@@ -418,5 +418,50 @@
       "policyScope": "Reported prefilter excludes real spur/siding/yard; conservative for initial public rail scope, not final proof of GP-011/032 or yard game coverage. Keep fictional game-owned yard mechanics separate; no claim all real yard data required. Review actual filter policy and tests before approval.",
       "acceptance": "C01 BLOCKED; actual sanitized preflight report and reviewable non-sensitive implementation evidence pending, applicable certification and safe civilian scope unresolved. C02 NOT_STARTED. C09 independent contract review may be proposed under owner authorization; no real geographic dependency bypass."
     }
+  },
+  "localPreflightArtifactInspection": {
+    "date": "2026-11-27",
+    "files": [
+      {
+        "name": "C01_C02_LOCAL_DATA_POLICY.json",
+        "bytes": 5480,
+        "sha256": "cce86cda5d62fd3b9d150c250f40acf3d7e1bc11f5db1351b99be159214ad984",
+        "originalGitBlobMatch": true
+      },
+      {
+        "name": "C01_COMPLIANCE_PREFLIGHT.md",
+        "bytes": 2685,
+        "sha256": "f498647982c2cb8a4212d337bf149c0e77839469191e5e92c287160086feb893",
+        "originalGitBlobMatch": true
+      },
+      {
+        "name": "C02_CIVILIAN_RAIL_EXTRACTION_POLICY.json",
+        "bytes": 3944,
+        "sha256": "b5ae117c2bba7e74f5f8692b88a8e4e40e4e2efc2da03e8e84f91c33267e2b8f"
+      },
+      {
+        "name": "R13_COMPLIANCE_PREFLIGHT_SANITIZED.json",
+        "bytes": 8229,
+        "sha256": "c1f7167d22b88c93656cb1848383014302c6b8c65cccbe507c4418d02e5cad2d"
+      }
+    ],
+    "allFourMatchReported": true,
+    "sourceAndParserHashesConsistent": true,
+    "syntheticTestResult": "11/11 reported by local evidence; source module and test suite not uploaded, no independent rerun",
+    "originalArchives": "Actual SHA256 and CRC checked again, 3059/15 files; R13/R14 exact task rows reopened",
+    "review": "Policy JSON inspected: deny-overrides-allow, metadata minimization and no boundary display are appropriate preliminary controls. Generic tags, missing access or usage, and tag exclusions alone do not establish civilian eligibility or territorial compliance. No explicit relation/member extraction contract in uploaded filter policy; must reconcile complete reference audit before R14 acceptance. Siding/yard exclusion is pilot scope not full yard gameplay coverage. Do not produce a restricted-site inventory or assume legal clearance. No actual extraction.",
+    "certification": {
+      "status": "UNRESOLVED",
+      "officialGuidelines": "https://geospatial.dst.gov.in/Guidelines.aspx",
+      "officialTerms": "https://www.geospatial.dst.gov.in/IndianEntityTermsandCondition.aspx",
+      "officialContact": "https://geospatial.dst.gov.in/",
+      "finding": "Official guidance removes blanket prior approval and uses self-certification for adherence. No definitive evidence of timing/applicability for this particular private prototype, no executed declaration. Seek owner determination supported by official clarification if unclear; do not claim filing or waive project gate."
+    },
+    "remaining": [
+      "Review actual non-sensitive prefilter and synthetic test source (not received)",
+      "Applicable self-certification determination and documented safe civilian/territorial scope",
+      "C01 coordinator final acceptance before C02"
+    ],
+    "releaseAllowed": false
   }
 }

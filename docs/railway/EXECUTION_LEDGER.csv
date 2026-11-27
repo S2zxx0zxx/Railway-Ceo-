@@ -11,7 +11,7 @@ R09,G1,PASS,src/rail/routing/index.ts; src/worker/rail-routing.ts; R09_ROUTING_R
 R10,G1,PASS,src/rail/routing/index.ts; src/rail/quotes/index.ts; R10_QUOTE_REPORT.md; a93ef65 CI 5/5; 560/560 repository tests; docs-only 54c5411 Android HTTP429 tracked DV-020,,START R11
 R11,G1,PASS,tests/fixtures/railway-synthetic.ts; R11_SYNTHETIC_REPORT.md; 768a4db and 4b90f53 CI 5/5 each; 671/671 repository tests,,START R12
 R12,G1,PASS,src/rail/catalog/index.ts; R12_CATALOG_REPORT.md; d3e1348 and 5790505 CI 5/5 each; 750/750 repo tests,,START R13
-R13,G2,BLOCKED,R13 manifest and acquisition report; local technical acceptance satisfied; local preflight 11/11 reported,Actual preflight artifact and applicable certification/safe civilian scope determination pending,Complete policy reconciliation before C02; independent C09 review only on owner authorization
+R13,G2,BLOCKED,R13 manifest and acquisition report; technical acquisition acceptance satisfied; four preflight artifacts verified,Filter/test source review and applicable certification/safe civilian scope pending,Complete preflight policy reconciliation before C02
 R14,G2,NOT_STARTED,,C01 local compliance preflight pending; technical R13 evidence reconciled,START C02 only after C01 acceptance
 R15,G2,NOT_STARTED,,R13 actual dataset prerequisite blocked directly or transitively,Resume in original dependency order after R13
 R16,G2,NOT_STARTED,,R13 actual dataset prerequisite blocked directly or transitively,Resume in original dependency order after R13
