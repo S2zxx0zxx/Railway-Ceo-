@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "task": "R13",
-  "status": "LOCAL_TECHNICAL_EVIDENCE_RECONCILED_POLICY_GATE_PENDING",
+  "status": "TECHNICAL_ACCEPTANCE_SATISFIED_LOCAL_COMPLIANCE_PREFLIGHT_PENDING",
   "observedDate": "2026-11-26",
   "source": {
     "resource": "B01",
@@ -357,5 +357,16 @@
       "interpretation": "Para 8(ii) generally no prior approval except specified restrictions; self-certification conveys adherence. Para 7(f) any Indian citizen qualifies as individual; company/LLP ownership/control conditions separate. Need owner confirmation of individual eligibility or publisher entity status; no inference from location. Official self-certification terms endpoint returned 502 on current fetch. Actual data screening still pending; no claim of legal clearance.",
       "next": "Obtain owner confirmation; establish local-only reviewed civilian allowlist/deny uncertain attributes, independent geographic DB ODbL obligations, no political boundary layer without SoI compliance. Actual extraction only after recorded project preflight. Public redistribution remains gated separately."
     }
+  },
+  "currentAcceptance": {
+    "asOf": "2026-11-27",
+    "ownerEligibilityAttested": true,
+    "technicalAcquisitionAcceptance": "SATISFIED",
+    "fullC01": "BLOCKED",
+    "reason": "Local screening safeguards and applicable self-certification status must be confirmed; no formal legal clearance",
+    "policyPath": "docs/railway/C01_C02_LOCAL_DATA_POLICY.json",
+    "handoffPath": "docs/railway/C01_COMPLIANCE_PREFLIGHT.md",
+    "C02": "NOT_STARTED",
+    "releaseAllowed": false
   }
 }
