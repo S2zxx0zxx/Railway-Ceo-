@@ -651,5 +651,27 @@
     "previousElevenFailuresClosedInSyntheticScope": true,
     "realPbfProcessed": false,
     "releaseAllowed": false
+  },
+  "c02PreparationIndependentReview": {
+    "basis": "af7ab9fa5da11707bad06b06bc27aa9d9cf689e9",
+    "artifactHashesMatched": 7,
+    "artifactHashesTotal": 7,
+    "v3Supplied": "36/36",
+    "v3Independent": "16/16",
+    "c02FullIndependent": {
+      "passed": 3,
+      "blockedEnvironment": 2,
+      "reportedByGemini": "5/5"
+    },
+    "pythonAdapterStructuralFixtures": "2/2",
+    "typescriptIndependentlyExecuted": false,
+    "syntheticRecords": 35500,
+    "retained": 29940,
+    "excluded": 5560,
+    "elapsedSeconds": 5.741,
+    "peakPythonHeapBytes": 580109,
+    "deterministicSha256": "b150eb5b64ad4b4374429db1f5aede9b15a84831b6404dd092e39c3c20da220b",
+    "realPbfProcessed": false,
+    "releaseAllowed": false
   }
 }
