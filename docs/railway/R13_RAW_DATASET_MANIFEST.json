@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "task": "R13",
-  "status": "REPORTED_LOCAL_AND_UPSTREAM_PASS_PENDING_ARTIFACT_AND_POLICY_ACCEPTANCE",
+  "status": "LOCAL_TECHNICAL_EVIDENCE_RECONCILED_POLICY_GATE_PENDING",
   "observedDate": "2026-11-26",
   "source": {
     "resource": "B01",
@@ -276,5 +276,86 @@
       "decision": "Separate actual derived geographic database and independent game data/code; comply with ODbL attribution, share-alike and access before public use. No political boundary depiction until authorized SOI layer. Treat accuracy unknown conservatively, keep raw/derived data local in India until reviewed. Indian Entity eligibility owner confirmation and applicable self-certification remain open; no legal clearance claimed. Official PDF retrieval blocker resolved, application of restrictions not yet verified."
     },
     "acceptance": "C01/R13 BLOCKED pending sanitized evidence and owner/policy confirmation; C02 not started."
+  },
+  "independentEvidenceInspection": {
+    "date": "2026-11-27",
+    "method": "Read uploaded eight files in local container; actual byte size and SHA256, parsed four JSONs, normalized lock comparison, package IDs and cross-record assertions. No raw PBF or Windows executable rerun.",
+    "files": [
+      {
+        "name": "geofabrik-eastern-zone-261101.osm.pbf.md5",
+        "bytes": 62,
+        "sha256": "06506014cebc79436524cb831cff6e748060f0bba44e8b053576cfb606c47a39",
+        "matchReported": true
+      },
+      {
+        "name": "R13_CONDA_EXPLICIT.txt",
+        "bytes": 1631,
+        "sha256": "3cdcc459c49c2583d01fb390a10e92eea8883ace3e0db02e45da58d1d95cee87",
+        "matchReported": false
+      },
+      {
+        "name": "R13_CONDA_EXPLICIT_SANITIZED.txt",
+        "bytes": 1613,
+        "sha256": "562d34ff7175380dcb07a8d9a8028cc67dcc3d7397a5c40e6b1238e0f22c2082",
+        "matchReported": true
+      },
+      {
+        "name": "R13_DATA_USE_REVIEW.md",
+        "bytes": 7363,
+        "sha256": "f94c5bf83c2c91c46a19fe1c9d9779ee8eb50832385af968b3616ca56dce51d8",
+        "matchReported": true
+      },
+      {
+        "name": "R13_PROVENANCE_RECONCILIATION.json",
+        "bytes": 4990,
+        "sha256": "d268ee80927bf5dc10497b3089f0e06abb61815a16a2fba4320ad7232ffb9ddf",
+        "matchReported": true
+      },
+      {
+        "name": "R13_PROVENANCE_RECONCILIATION_SANITIZED.json",
+        "bytes": 5339,
+        "sha256": "e09e7c056958227bf589d1a8504d354379e2c177cb5362372cc8033ecf95bf54",
+        "matchReported": true
+      },
+      {
+        "name": "R13_VERIFICATION.json",
+        "bytes": 15800,
+        "sha256": "b5944b80558586370f5fedd2b04d4ddeb770e7b069d5794b97df6111b3678e93",
+        "matchReported": true
+      },
+      {
+        "name": "R13_VERIFICATION_SANITIZED.json",
+        "bytes": 15679,
+        "sha256": "8f529a919704d25d17f1a01dd39c616272caf6a55d5b2bf755548397f42cf71d",
+        "matchReported": true
+      }
+    ],
+    "lockNormalization": {
+      "uploadedBytes": 1631,
+      "reportedBytes": 1634,
+      "reason": "Missing UTF-8 BOM in uploaded copy; prepending EF BB BF reproduces reported original SHA256 exactly",
+      "reconstructedSha256": "a7ef24933aadc024488da411c36fa7f1a717ad82586268c8f6078297f97641cd",
+      "packageLinesIdentical": true,
+      "packageIdentities": 13,
+      "condaForgeWin64DigestEntries": 13
+    },
+    "checks": {
+      "sidecarBytesVerified": true,
+      "threeWayMd5RecordConsistent": true,
+      "pbfSha256RecordConsistent": true,
+      "parserExitRecordZero": true,
+      "orderedSingleVersionSnapshot": true,
+      "countsAndTimestampConsistent": true,
+      "pin": "1.19.0=h60971b7_3",
+      "allSevenOtherFileHashesMatch": true,
+      "originalArchiveHashesAndCrcVerified": true
+    },
+    "limitations": "Actual PBF bytes, local executable and upstream network execution not independently rerun; original uploaded JSON records are coherent evidence, not external attestation. No private paths, coordinates or original raw evidence committed.",
+    "policy": {
+      "source": "https://www.geospatial.dst.gov.in/Guidelines.aspx",
+      "reviewed": "2026-11-27",
+      "interpretation": "Para 8(ii) generally no prior approval except specified restrictions; self-certification conveys adherence. Para 7(f) any Indian citizen qualifies as individual; company/LLP ownership/control conditions separate. Need owner confirmation of individual eligibility or publisher entity status; no inference from location. Official self-certification terms endpoint returned 502 on current fetch. Actual data screening still pending; no claim of legal clearance.",
+      "next": "Obtain owner confirmation; establish local-only reviewed civilian allowlist/deny uncertain attributes, independent geographic DB ODbL obligations, no political boundary layer without SoI compliance. Actual extraction only after recorded project preflight. Public redistribution remains gated separately."
+    }
   }
 }
