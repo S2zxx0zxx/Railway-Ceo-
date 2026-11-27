@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "task": "R13",
-  "status": "V2_ARTIFACTS_VERIFIED_ADDITIONAL_SYNTHETIC_FAILURES_BLOCK_C01",
+  "status": "V3_DEFINED_SYNTHETIC_REGRESSION_PASS_COMPLIANCE_PENDING",
   "observedDate": "2026-11-26",
   "source": {
     "resource": "B01",
@@ -363,7 +363,7 @@
     "ownerEligibilityAttested": true,
     "technicalAcquisitionAcceptance": "SATISFIED",
     "fullC01": "BLOCKED",
-    "reason": "Actual V2 artifact hashes and supplied synthetic suite verified; independent expanded tests 11 failures; V3 remediation and compliance determination required",
+    "reason": "V3 defined synthetic regressions independently verified; applicable self-certification and safe civilian/territorial scope unresolved",
     "policyPath": "docs/railway/C01_C02_LOCAL_DATA_POLICY.json",
     "handoffPath": "docs/railway/C01_COMPLIANCE_PREFLIGHT.md",
     "C02": "NOT_STARTED",
@@ -606,6 +606,49 @@
       },
       "r13r14RowsMatch": true
     },
+    "realPbfProcessed": false,
+    "releaseAllowed": false
+  },
+  "v3IndependentReview": {
+    "basis": "3b8ef936f9527d059dfcc5779099686631b5234e",
+    "artifactHashMatches": 4,
+    "artifacts": [
+      {
+        "name": "c02_rail_prefilter.py",
+        "bytes": 23495,
+        "sha256": "dacd8e10122695004cb531623bb937c760fb5b94746a549eb06e9235a0be7938"
+      },
+      {
+        "name": "test_c02_prefilter_synthetic.py",
+        "bytes": 31078,
+        "sha256": "c6c2c9217418f100f2593bfac600c840b58e7a152491d686aaf446eea377a215"
+      },
+      {
+        "name": "C02_CIVILIAN_RAIL_EXTRACTION_POLICY.json",
+        "bytes": 6250,
+        "sha256": "3929be9cd5ae29054f732bc2c5e7304a8b3899a89666de893bbd2cb6a4b93e70"
+      },
+      {
+        "name": "R13_PREFILTER_V3_VERIFICATION_SANITIZED.json",
+        "bytes": 17736,
+        "sha256": "22aa1fb3a082b43c07da7d713a8ab3f9165e1119ef5b9f2c9c9341e04724a5e0"
+      }
+    ],
+    "suppliedSuite": {
+      "passed": 36,
+      "total": 36,
+      "exitCode": 0,
+      "reportExactMatch": true
+    },
+    "unchangedCoordinatorSuite": {
+      "passed": 16,
+      "total": 16,
+      "exitCode": 0,
+      "overlapsSupplied": true
+    },
+    "originalTaskLedgerByteMatch": true,
+    "archivesCrcAndSha256Match": true,
+    "previousElevenFailuresClosedInSyntheticScope": true,
     "realPbfProcessed": false,
     "releaseAllowed": false
   }
