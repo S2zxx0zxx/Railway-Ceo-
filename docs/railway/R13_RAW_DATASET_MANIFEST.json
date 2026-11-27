@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "task": "R13",
-  "status": "TECHNICAL_ACCEPTANCE_SATISFIED_LOCAL_COMPLIANCE_PREFLIGHT_PENDING",
+  "status": "REPORTED_LOCAL_PREFLIGHT_PASS_POLICY_BLOCKERS_REMAIN",
   "observedDate": "2026-11-26",
   "source": {
     "resource": "B01",
@@ -363,10 +363,60 @@
     "ownerEligibilityAttested": true,
     "technicalAcquisitionAcceptance": "SATISFIED",
     "fullC01": "BLOCKED",
-    "reason": "Local screening safeguards and applicable self-certification status must be confirmed; no formal legal clearance",
+    "reason": "Local technical preflight reported PASS; actual sanitized evidence, applicable self-certification determination and safe civilian scope review pending",
     "policyPath": "docs/railway/C01_C02_LOCAL_DATA_POLICY.json",
     "handoffPath": "docs/railway/C01_COMPLIANCE_PREFLIGHT.md",
     "C02": "NOT_STARTED",
     "releaseAllowed": false
+  },
+  "localPreflightReport": {
+    "date": "2026-11-27",
+    "evidenceSource": "Owner-pasted Gemini report; new actual artifact bytes not received",
+    "checkpoint": "109ffc2328276f03595281025952729a6544298c",
+    "verification": {
+      "name": "R13_COMPLIANCE_PREFLIGHT_SANITIZED.json",
+      "bytes": 8229,
+      "sha256": "c1f7167d22b88c93656cb1848383014302c6b8c65cccbe507c4418d02e5cad2d"
+    },
+    "reported": {
+      "workspaceOutsideGitAndSync": true,
+      "sourceAndParserHashesUnchanged": true,
+      "syntheticTestsPassed": 11,
+      "syntheticTestsTotal": 11,
+      "realExtractionPerformed": false,
+      "negativeList": {
+        "url": "https://www.dst.gov.in/static/uploads/2025/10/377573618229195cf17d8745e5f0042c.pdf",
+        "http": 200,
+        "bytes": 445775,
+        "sha256": "ce442221c3ac80e0dfe626dd210812f5ce0415d6fe8711c5cd25476cd251e7ee",
+        "pages": 6
+      },
+      "filterArtifacts": [
+        {
+          "name": "C02_CIVILIAN_RAIL_EXTRACTION_POLICY.json",
+          "sha256": "b5ae117c2bba7e74f5f8692b88a8e4e40e4e2efc2da03e8e84f91c33267e2b8f"
+        },
+        {
+          "name": "c02_rail_prefilter.py",
+          "sha256": "2cdd869be392aef4f07235d09f604ab4abaf86eca242d25f5af8961a8213e26f"
+        },
+        {
+          "name": "test_c02_prefilter_synthetic.py",
+          "sha256": "d148d1b1573120681fe42037997f3a4dabad3d5c17d4e8fe9afea30d302ba184"
+        }
+      ],
+      "certificationFiled": false,
+      "readyForC02RealExtraction": false
+    },
+    "coordinatorReview": {
+      "technicalR13": "SATISFIED previously",
+      "archivesReopenedActual": "Both expected SHA256 match; 3059 and 15 regular entries; CRC clean; original task rows R13 and R14 match",
+      "officialGuidelines": "https://www.geospatial.dst.gov.in/Guidelines.aspx",
+      "officialPortal": "https://www.geospatial.dst.gov.in/Login.aspx",
+      "negativeListReview": "Legacy official PDF cached text reopened; page 2 image inspected; page 6 screenshot failed and text inspected. New CMS binary could not be independently fetched here; Gemini hash remains reported. DST para 8(ii)-(iii) does not impose blanket prior approval or prohibited geographic areas; listed attribute restrictions are specific. Do not treat an across-the-board border buffer as statutory ban on ordinary civilian rail. No mapping or inventory of restricted facilities; require documented safe civilian scope, exclude uncertain data; seek DST clarification if applicability unresolved. No blanket legal clearance.",
+      "certification": "No filing evidence; owner must personally verify eligibility and applicable undertakings before submitting; correct official entry is Login.aspx, not assumed SelfCertification.aspx. Do not certify incomplete compliance. If uncertain ask DST for written guidance.",
+      "policyScope": "Reported prefilter excludes real spur/siding/yard; conservative for initial public rail scope, not final proof of GP-011/032 or yard game coverage. Keep fictional game-owned yard mechanics separate; no claim all real yard data required. Review actual filter policy and tests before approval.",
+      "acceptance": "C01 BLOCKED; actual sanitized preflight report and reviewable non-sensitive implementation evidence pending, applicable certification and safe civilian scope unresolved. C02 NOT_STARTED. C09 independent contract review may be proposed under owner authorization; no real geographic dependency bypass."
+    }
   }
 }
