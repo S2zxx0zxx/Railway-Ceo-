@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "task": "R13",
-  "status": "V2_REMEDIATION_REPORTED_INDEPENDENT_VERIFICATION_PENDING",
+  "status": "V2_ARTIFACTS_VERIFIED_ADDITIONAL_SYNTHETIC_FAILURES_BLOCK_C01",
   "observedDate": "2026-11-26",
   "source": {
     "resource": "B01",
@@ -363,7 +363,7 @@
     "ownerEligibilityAttested": true,
     "technicalAcquisitionAcceptance": "SATISFIED",
     "fullC01": "BLOCKED",
-    "reason": "V2 fixes and 18/18 synthetic PASS reported by Gemini; independent V2 artifact review/rerun and compliance determination pending",
+    "reason": "Actual V2 artifact hashes and supplied synthetic suite verified; independent expanded tests 11 failures; V3 remediation and compliance determination required",
     "policyPath": "docs/railway/C01_C02_LOCAL_DATA_POLICY.json",
     "handoffPath": "docs/railway/C01_COMPLIANCE_PREFLIGHT.md",
     "C02": "NOT_STARTED",
@@ -555,6 +555,58 @@
       "Resolve applicable self-certification determination and safe civilian/territorial scope",
       "Coordinator C01 acceptance before C02; separate public distribution/ODbL gate"
     ],
+    "releaseAllowed": false
+  },
+  "v2IndependentReview": {
+    "basis": "e521d4597565e67360f7d13c4a8f8a5a7399618b",
+    "artifactHashMatches": 4,
+    "artifactsTotal": 4,
+    "suppliedSuite": {
+      "original": "11/11",
+      "additional": "7/7",
+      "combined": "18/18",
+      "exitCode": 0
+    },
+    "extendedSuite": {
+      "passed": 5,
+      "total": 16,
+      "failed": 11,
+      "exitCode": 1,
+      "passes": [
+        "node exclusion conflict rejected both orders",
+        "valid batch references accepted",
+        "missing relation member quarantined",
+        "unreferenced geometry dropped",
+        "excluded node propagates to way and relation"
+      ],
+      "findings": [
+        "way exclusion conflict survives both orderings",
+        "relation exclusion conflict survives both orderings",
+        "conflicting allowed node geometry silently overwritten",
+        "conflicting allowed way geometry silently overwritten",
+        "identical relation duplicated",
+        "direct way evaluation without reference context accepts",
+        "direct relation evaluation without reference context accepts",
+        "denyOperatorTypes not wired; synthetic operator:type probe retained",
+        "track allowedUsageValues not enforced for unknown nonempty value",
+        "oversized numeric coordinate throws OverflowError",
+        "non-object batch element throws AttributeError"
+      ]
+    },
+    "immutableArchives": {
+      "v4": {
+        "sha256": "ebd171202005b8a680540c7f9add297298feb69ea11acc1b36f5c86c46b9f4ea",
+        "files": 3059,
+        "crcPass": true
+      },
+      "v5": {
+        "sha256": "ba177fb4ecbc7247696459e4794fec878adf2c0f0b6ebc07903339653376e41d",
+        "files": 15,
+        "crcPass": true
+      },
+      "r13r14RowsMatch": true
+    },
+    "realPbfProcessed": false,
     "releaseAllowed": false
   }
 }
