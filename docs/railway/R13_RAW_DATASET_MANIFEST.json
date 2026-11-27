@@ -673,5 +673,26 @@
     "deterministicSha256": "b150eb5b64ad4b4374429db1f5aede9b15a84831b6404dd092e39c3c20da220b",
     "realPbfProcessed": false,
     "releaseAllowed": false
+  },
+  "c02LocalToolchainReview": {
+    "basis": "093d7045727a413395ff3e939f3c51899664a277",
+    "currentHashes": "8/8",
+    "preservedV3Hashes": "4/4",
+    "mavenZipEntries": 104,
+    "mavenZipCRC": "PASS",
+    "v3Supplied": "36/36",
+    "c02Core": "3/3",
+    "c02FullGeminiReported": "6/6",
+    "oracleGeminiReported": "34/34",
+    "dependencyListSha256": "091ded608cae513dd1357a121eb2851903275cdfcf420b16628b2286be7a47a8",
+    "dependencyListMarkdownMismatch": true,
+    "syntheticRecords": 35500,
+    "retained": 29940,
+    "excluded": 5560,
+    "elapsedSeconds": 6.542,
+    "peakPythonHeapBytes": 580261,
+    "independentIntakeDefects": 3,
+    "realPbfProcessed": false,
+    "releaseAllowed": false
   }
 }
