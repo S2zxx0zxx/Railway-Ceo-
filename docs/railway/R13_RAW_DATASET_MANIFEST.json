@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "task": "R13",
-  "status": "LOCAL_PREFLIGHT_ARTIFACTS_VERIFIED_POLICY_GATE_PENDING",
+  "status": "LOCAL_FILTER_SOURCE_AUDITED_REMEDIATION_AND_COMPLIANCE_PENDING",
   "observedDate": "2026-11-26",
   "source": {
     "resource": "B01",
@@ -363,7 +363,7 @@
     "ownerEligibilityAttested": true,
     "technicalAcquisitionAcceptance": "SATISFIED",
     "fullC01": "BLOCKED",
-    "reason": "Four new preflight artifacts hash verified; actual filter/test source review and applicable certification/safe civilian scope remain",
+    "reason": "Uploaded filter independently tested: 11/11 original pass, six additional reproducible defects and one missing relation contract; compliance unresolved",
     "policyPath": "docs/railway/C01_C02_LOCAL_DATA_POLICY.json",
     "handoffPath": "docs/railway/C01_COMPLIANCE_PREFLIGHT.md",
     "C02": "NOT_STARTED",
@@ -461,6 +461,58 @@
       "Review actual non-sensitive prefilter and synthetic test source (not received)",
       "Applicable self-certification determination and documented safe civilian/territorial scope",
       "C01 coordinator final acceptance before C02"
+    ],
+    "releaseAllowed": false
+  },
+  "localFilterSourceReview": {
+    "date": "2026-11-27",
+    "inputs": [
+      {
+        "name": "c02_rail_prefilter.py",
+        "bytes": 7926,
+        "sha256": "2cdd869be392aef4f07235d09f604ab4abaf86eca242d25f5af8961a8213e26f"
+      },
+      {
+        "name": "test_c02_prefilter_synthetic.py",
+        "bytes": 7059,
+        "sha256": "d148d1b1573120681fe42037997f3a4dabad3d5c17d4e8fe9afea30d302ba184"
+      }
+    ],
+    "sourceHashesMatchReported": true,
+    "independentSyntheticExecution": {
+      "original": {
+        "passed": 11,
+        "total": 11,
+        "exitCode": 0,
+        "retained": 3,
+        "excluded": 8
+      },
+      "additional": {
+        "passed": 0,
+        "total": 7,
+        "confirmedDefects": 6,
+        "missingContract": 1,
+        "findings": [
+          "Ordinary untagged geometry nodes rejected and associated synthetic track quarantined",
+          "Missing node references accepted",
+          "Station node output loses geometry",
+          "Station way output loses member references",
+          "Invalid coordinate accepted",
+          "Missing object identity accepted",
+          "Relation/member processing contract absent"
+        ]
+      }
+    },
+    "archives": {
+      "sha256AndCrcRechecked": true,
+      "v4Files": 3059,
+      "v5Files": 15
+    },
+    "scope": "Only synthetic records tested; no actual geographic data, no PBF extraction. Preliminary filter not accepted for production. Privacy and exclusion safeguards must not be weakened; no real data until compliance gates clear.",
+    "remaining": [
+      "Remediate confirmed synthetic correctness defects and prove explicit relation/member disposition and complete reference integrity under fail-closed policy",
+      "Applicable self-certification determination and approved safe civilian scope",
+      "Coordinator acceptance"
     ],
     "releaseAllowed": false
   }
