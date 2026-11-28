@@ -61,5 +61,13 @@
       "publish"
     ]
   },
-  "releaseAllowed": false
+  "releaseAllowed": false,
+  "civilianMapScope": {
+    "contract": "C01_CIVILIAN_MAP_SCOPE.json",
+    "productDirection": "OWNER_DIRECTED_RECORDED",
+    "specificTerritory": "PENDING_EVIDENCE",
+    "dstClarification": "OWNER_REPORTED_EMAIL_SENT_REPLY_PENDING",
+    "realPbfProcessingAllowed": false,
+    "releaseAllowed": false
+  }
 }
